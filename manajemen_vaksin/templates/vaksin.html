@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+
+<style>
+    .button {
+      border: none;
+      color: white;
+      background-color:rgb(28, 28, 81);
+      padding: 10px 25px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 15px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 7px;
+    }
+
+    .delete {
+        background-color: red;
+    }
+</style>
+
+<h1>List Vaccination</h1>
+
+<button class="button" align="left" style="margin-left: 1020px;">+ Create New Vaccination</button>
+
+<table bgcolor="grey" align="center" style="margin-top: 10px;" >
+    <tr bgcolor="white">
+        <th width="50">No</th>
+        <th width="100">Kunjungan</th>
+        <th width="200">Tanggal Kunjungan</th>
+        <th width="300">Vaksin</th>
+        <th width="400">Action</th>
+    </tr>
+    <tr bgcolor="white" align="center">
+        <td>1</td>
+        <td>KJN001</td>
+        <td>Rabu, 5 Februari 2025</td>
+        <td>VAC001 - Rabies Vaccine </td>
+        <td>
+            <button class="button">Update</button>
+            <button class="button delete">Delete</button>
+        </td>
+    </tr>
+</table>
