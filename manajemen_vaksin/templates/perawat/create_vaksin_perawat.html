@@ -26,6 +26,8 @@
       margin: 4px 2px;
       cursor: pointer;
       border-radius: 7px;
+      font-family: Arial;
+      text-decoration: none;
       }
 
     .cancel {
@@ -61,7 +63,7 @@
 </form>
 
 <div align="right" style="margin-right: 100px;">
-    <input class="button cancel" type="button" value="Cancel">
+    <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel" type="button" value="Cancel">Cancel</a>
     <input class="button" type="submit" value="Create">
 </div>
 

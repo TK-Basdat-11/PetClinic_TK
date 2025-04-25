@@ -26,6 +26,8 @@
       margin: 4px 2px;
       cursor: pointer;
       border-radius: 7px;
+      font-family: Arial;
+      text-decoration: none;
       }
 
     .cancel {
@@ -51,6 +53,6 @@
 </div>
 
 <div align="right" style="margin-right: 100px;">
-    <button class="button cancel">Cancel</button>
+    <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel">Cancel</a>
     <button class="button">Update Stock</button>
 </div>
