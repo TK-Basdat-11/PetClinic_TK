@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 
-<h1 style="margin-left: 100px; font-family: Arial">Create New Vaccination</h1>
 <style>
     .button {
       border-style: solid;
@@ -14,6 +13,8 @@
       margin: 4px 2px;
       cursor: pointer;
       border-radius: 7px;
+      font-family: Arial;
+      text-decoration: none;
       }
 
     .cancel {
@@ -46,6 +47,8 @@
     }
 </style>
 
+<h1 style="margin-left: 100px; font-family: Arial">Create New Vaccination</h1>
+
 <div>
 <label for="Kunjungan" style="margin-left: 100px; font-size: large; font-family: Arial;">Kunjungan</label>
 </div>
@@ -73,6 +76,6 @@
 </div>
 
 <div align="right" style="margin-right: 100px;">
-<button class="button cancel">Cancel</button>
+<a href="{% url 'vaksin:vaksin_dokter' %}" class="button cancel">Cancel</a>
 <button class="button">Create</button>
 </div>

@@ -13,6 +13,8 @@
     margin: 4px 2px;
     cursor: pointer;
     border-radius: 7px;
+    text-decoration: none;
+    font-family: Arial;
     }
 
   .cancel {
@@ -34,6 +36,6 @@
 </p>
 
 <div align="right" style="margin-right: 100px;">
-    <button class="button cancel">Cancel</button>
+    <a href="{% url 'vaksin:vaksin_dokter' %}" class="button cancel">Cancel</a>
     <button class="button">Confirm Deletion</button>
 </div>

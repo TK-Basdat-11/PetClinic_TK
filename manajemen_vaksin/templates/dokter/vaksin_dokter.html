@@ -22,7 +22,7 @@
 
 <h1 style="margin-left: 100px; font-family: Arial;">List Vaccination</h1>
 
-<button class="button" align="left" style="margin-left: 1095px;">+ Create New Vaccination</button>
+<a href="{% url 'vaksin:create_vaksin_dokter' %}" class="button" align="left" style="margin-left: 1100px; font-family: Arial;">+ Create New Vaccination</a>
 
 <table bgcolor="lightgray" align="center" style="margin-top: 10px; font-family: Arial;" >
     <tr bgcolor="white">
@@ -39,7 +39,7 @@
         <td>VAC001 - Feline Panleukopenia</td>
         <td>
             <button class="button">Update</button>
-            <button class="button delete">Delete</button>
+            <a href="{% url 'vaksin:delete_vaksin_dokter' %}" class="button delete">Delete</a>
         </td>
     </tr>
     <tr bgcolor="white" align="center">
