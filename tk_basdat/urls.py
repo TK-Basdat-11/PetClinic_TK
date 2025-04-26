@@ -5,4 +5,5 @@ urlpatterns = [
     # path('admin/', admin.site.urls),
     path('vaksin/', include('manajemen_vaksin.urls', namespace='vaksin')),
     path('listklien/', include('data_klien_hewan.urls', namespace='listklien')),
+    path('dashboard/', include('dashboard.urls', namespace='dashboard')),
 ]
