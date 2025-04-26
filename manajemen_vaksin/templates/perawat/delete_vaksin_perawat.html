@@ -1,31 +1,36 @@
 <!DOCTYPE html>
 
-<style>
-.button {
-    border-style: solid;
-    border-color: red;
-    color: white;
-    background-color:red;
-    padding: 10px 25px;
-    text-align: center;
-    display: inline-block;
-    font-size: 15px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 7px;
-    font-family: Arial;
-    text-decoration: none;
+<head>
+    <meta charset="UTF-8" />
+    <title>Delete Vaksin</title>
+    <style>
+    .button {
+        border-style: solid;
+        border-color: red;
+        color: white;
+        background-color:red;
+        padding: 10px 25px;
+        text-align: center;
+        display: inline-block;
+        font-size: 15px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 7px;
+        font-family: Arial;
+        text-decoration: none;
+        }
+
+    .cancel {
+        background-color: white;
+        color: rgb(28, 28, 81);
+        border-style: solid;
+        border-color: lightgray;
+        border-width: 1px;
     }
+    </style>
+</head>
 
-  .cancel {
-      background-color: white;
-      color: rgb(28, 28, 81);
-      border-style: solid;
-      border-color: lightgray;
-      border-width: 1px;
-  }
-</style>
-
+<body>
 <h1 style="margin-left: 100px; font-family: Arial; color:red">Delete Vaccine</h1>
 
 <p style="font-family: Arial; margin-left: 100px;">
@@ -39,3 +44,4 @@
     <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel">Cancel</a>
     <button class="button">Confirm Deletion</button>
 </div>
+</body>
