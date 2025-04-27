@@ -1,7 +1,7 @@
 from django.urls import path
 from data_klien_hewan.views import *
 
-app_name = 'vaksin' 
+app_name = 'listklien' 
 
 urlpatterns = [
     path('', list_klien, name='list_klien'),
