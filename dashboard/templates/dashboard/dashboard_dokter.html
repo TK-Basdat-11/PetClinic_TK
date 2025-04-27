@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% include 'components/navbar_dokter.html' %}
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
@@ -6,12 +7,12 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin-left: 100px;
     }
     .profile-fdo table {
       border-collapse: separate;
       border-spacing: 0 8px;
       margin-top: 16px;
+      margin-left: 100px;
     }
     .profile-fdo th,
     .profile-fdo td {
@@ -52,6 +53,7 @@
     .table table {
       border-collapse: collapse;
       background-color: lightgray;
+      margin-left: 100px;
     }
     .table th,
     .table td {
@@ -68,7 +70,7 @@
 </head>
 <body>
   <div class="header">
-    <h1>Profile Dokter</h1>
+    <h1 style="margin-left: 100px;">Profile Dokter</h1>
     <a href="{% url 'dashboard:update_password' %}" class="button updatepassword">Update Password</a>
     <a class="button">Update Profile</a>
   </div>
@@ -107,7 +109,7 @@
   </div>
 
   <div class="table">
-    <h2>Daftar Sertifikat</h2>
+    <h2 style="margin-left: 100px;">Daftar Sertifikat</h2>
     <table>
         <tr>
             <th width="190">No</th>
@@ -133,7 +135,7 @@
   </div>
 
   <div class="table">
-    <h2>Daftar Jadwal Praktik</h2>
+    <h2 style="margin-left: 100px;">Daftar Jadwal Praktik</h2>
     <table>
         <tr>
             <th width="190">No</th>

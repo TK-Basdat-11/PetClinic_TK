@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Dokter Navbar</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .navbar {
+      background-color: rgb(28, 28, 81);
+      padding: 12px 0;
+    }
+    .navbar .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 5px 50px;
+    }
+    .navbar .menu {
+      display: flex;
+      gap: 24px;
+      font-weight: bold;
+    }
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-size: 15px;
+    }
+    .navbar a:hover {
+      text-decoration: underline;
+    }
+    .logout {
+      background-color: red;
+      border-radius: 100px;
+      width: 100px;
+      align-self: center;
+      padding: 10px;
+      font-weight: bold;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="menu">
+        <a href="{% url 'dashboard:dashboard_dokter' %}">Dashboard</a>
+        <a href="#">Daftar Jenis Hewan</a>
+        <a href="#">Perawatan Hewan</a>
+        <a href="#">Daftar Kunjungan</a>
+        <a href="#">Manajemen Obat</a>
+        <a href="#">Manajemen Jenis Perawatan</a>
+        <a href="#">Manajemen Pemberian Obat</a>
+        <a href="{% url 'vaksin:vaksin_dokter' %}">Manajemen Vaksinasi Hewan</a>
+      </div>
+      <div class="menu">
+        <a href="#" class="logout">Logout</a>
+      </div>
+    </div>
+  </nav>
+</body>
+</html>
