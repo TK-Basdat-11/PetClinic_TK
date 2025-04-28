@@ -12,10 +12,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 from urllib.parse import urlparse
 
-# load_dotenv()
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'manajemen_vaksin',
     'data_klien_hewan',
+    'manajemen_obat',
 ]
 
 MIDDLEWARE = [
@@ -60,7 +61,7 @@ ROOT_URLCONF = 'tk_basdat.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / "templates"],
+        'DIRS': [os.path.join(BASE_DIR, 'tk_basdat/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -83,11 +84,11 @@ tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'tk_basdat', # ganti sesuai nama database masing"
-        'USER': 'postgres', # ganti sesuai username masing"
-        'PASSWORD': 'root', # ganti sesuai pass masing"
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': tmpPostgres.path.replace('/', ''),
+        'USER': tmpPostgres.username,
+        'PASSWORD': tmpPostgres.password,
+        'HOST': tmpPostgres.hostname,
+        'PORT': 5432,
     }
 }
 
