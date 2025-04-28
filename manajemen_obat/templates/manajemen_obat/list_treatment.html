@@ -4,17 +4,10 @@
 
 {% block content %}
 <div class="container mx-auto p-4">
-    {% if demo %}
-    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
-        <p><strong>Demo Mode</strong> - Menampilkan data tiruan (mock data)</p>
-        <p class="text-sm mt-2"><a href="{% url 'obat:demo_view' %}" class="underline">Kembali ke indeks demo</a></p>
-    </div>
-    {% endif %}
-
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Daftar Jenis Perawatan</h1>
         <div>
-            <a href="{% if demo %}{% url 'obat:demo_view' %}?view=create_treatment{% else %}{% url 'obat:create_treatment' %}{% endif %}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
+            <a href="{% url 'obat:create_treatment' %}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
                 Tambah Jenis Perawatan
             </a>
         </div>
@@ -31,47 +24,43 @@
     {% endif %}
 
     <div class="bg-white shadow-md rounded-lg overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Perawatan</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {% if treatments %}
-                    {% for treatment in treatments %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ treatment.0 }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ treatment.1 }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rp {{ treatment.2 }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <a href="{% if demo %}{% url 'obat:demo_view' %}?view=create_treatment{% else %}{% url 'obat:update_treatment' treatment.0 %}{% endif %}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
-                            <a href="{% if demo %}{% url 'obat:demo_view' %}?view=delete_treatment{% else %}{% url 'obat:delete_treatment' treatment.0 %}{% endif %}" class="text-red-600 hover:text-red-900">Hapus</a>
-                        </td>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Perawatan</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">Belum ada data jenis perawatan</td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% if treatments %}
+                        {% for treatment in treatments %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ treatment.0 }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ treatment.1 }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rp {{ treatment.2 }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
+                                <a href="{% url 'obat:update_treatment' treatment.0 %}" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-3 py-1 rounded mr-1">Edit</a>
+                                <a href="{% url 'obat:delete_treatment' treatment.0 %}" class="bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded">Hapus</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">Belum ada data jenis perawatan</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
     </div>
     
     <div class="mt-6">
-        {% if demo %}
-        <a href="{% url 'obat:demo_view' %}" class="text-blue-600 hover:text-blue-800">
-            &larr; Kembali ke indeks demo
-        </a>
-        {% else %}
         <a href="{% url 'obat:list_medicine' %}" class="text-blue-600 hover:text-blue-800">
             &larr; Kembali ke Manajemen Obat
         </a>
-        {% endif %}
     </div>
 </div>
 {% endblock %} 

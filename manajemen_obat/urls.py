@@ -12,7 +12,6 @@ from manajemen_obat.views import (
     list_prescriptions,
     create_prescription,
     delete_prescription,
-    demo_view,
 )
 
 app_name = 'manajemen_obat'
@@ -30,5 +29,4 @@ urlpatterns = [
     path('prescription/', list_prescriptions, name='list_prescriptions'),
     path('prescription/create/', create_prescription, name='create_prescription'),
     path('prescription/delete/<str:treatment_code>/<str:med_code>/', delete_prescription, name='delete_prescription'),
-    path('demo/', demo_view, name='demo_view'),
 ] 
