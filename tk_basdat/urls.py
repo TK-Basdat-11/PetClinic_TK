@@ -6,4 +6,5 @@ urlpatterns = [
     path('vaksin/', include('manajemen_vaksin.urls', namespace='vaksin')),
     path('listklien/', include('data_klien_hewan.urls', namespace='listklien')),
     path('dashboard/', include('dashboard.urls', namespace='dashboard')),
+    path('obat/', include('manajemen_obat.urls', namespace='obat')),
 ]

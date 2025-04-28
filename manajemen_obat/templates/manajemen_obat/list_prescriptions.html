@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Pemberian Obat (Resep){% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    {% if demo %}
+    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
+        <p><strong>Demo Mode</strong> - Menampilkan data tiruan (mock data){% if is_client %} - <strong>Tampilan Klien</strong>{% endif %}</p>
+        <p class="text-sm mt-2"><a href="{% url 'obat:demo_view' %}" class="underline">Kembali ke indeks demo</a></p>
+    </div>
+    {% endif %}
+
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Daftar Pemberian Obat (Resep)</h1>
+        {% if not is_client %}
+        <div>
+            <a href="{% if demo %}{% url 'obat:demo_view' %}?view=create_prescription{% else %}{% url 'obat:create_prescription' %}{% endif %}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
+                Tambah Resep
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+        <div class="p-4 {% if message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'error' %}bg-red-100 text-red-700{% endif %} rounded mb-2">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Perawatan</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Obat</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kuantitas</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Harga</th>
+                    {% if not is_client %}
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% if prescriptions %}
+                    {% for prescription in prescriptions %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ prescription.0 }} - {{ prescription.1 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ prescription.2 }} - {{ prescription.3 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ prescription.4 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rp {{ prescription.5 }}</td>
+                        {% if not is_client %}
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="{% if demo %}{% url 'obat:demo_view' %}?view=delete_prescription{% else %}{% url 'obat:delete_prescription' prescription.0 prescription.2 %}{% endif %}" class="text-red-600 hover:text-red-900">Hapus</a>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="{% if is_client %}4{% else %}5{% endif %}" class="px-6 py-4 text-center text-sm text-gray-500">Belum ada data resep</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="mt-6 space-x-4">
+        {% if demo %}
+        <a href="{% url 'obat:demo_view' %}" class="text-blue-600 hover:text-blue-800">
+            &larr; Kembali ke indeks demo
+        </a>
+        {% else %}
+        <a href="{% url 'obat:list_medicine' %}" class="text-blue-600 hover:text-blue-800">
+            &larr; Manajemen Obat
+        </a>
+        <a href="{% url 'obat:list_treatment' %}" class="text-blue-600 hover:text-blue-800">
+            &larr; Manajemen Jenis Perawatan
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 
