@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Perawat Navbar</title>
+  <title>Dokter Navbar</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -29,7 +29,7 @@
     .navbar a {
       color: white;
       text-decoration: none;
-      font-size: 16px;
+      font-size: 15px;
     }
     .navbar a:hover {
       text-decoration: underline;
@@ -52,11 +52,14 @@
   <nav class="navbar">
     <div class="container">
       <div class="menu">
-        <a href="{% url 'dashboard:dashboard_perawat' %}">Dashboard</a>
-        <a href="{% url 'obat:list_medicine' %}">Manajemen Obat</a>
-        <a href="{% url 'obat:list_treatment' %}">Manajemen Jenis Perawatan</a>
-        <a href="{% url 'obat:list_prescriptions' %}">Manajemen Pemberian Obat</a>
-        <a href="{% url 'vaksin:vaksin_perawat' %}">Manajemen Vaksin</a>
+        <a href="{% url 'dashboard:dashboard_dokter' %}">Dashboard</a>
+        <a href="#">Daftar Jenis Hewan</a>
+        <a href="#">Perawatan Hewan</a>
+        <a href="#">Daftar Kunjungan</a>
+        <a href="{% url 'obat:list_obat' %}">Manajemen Obat</a>
+        <a href="{% url 'obat:list_perawatan' %}">Manajemen Jenis Perawatan</a>
+        <a href="{% url 'obat:list_resep' %}">Manajemen Pemberian Obat</a>
+        <a href="{% url 'vaksin:vaksin_dokter' %}">Manajemen Vaksinasi Hewan</a>
       </div>
       <div class="menu">
         <a href="#" class="logout">Logout</a>

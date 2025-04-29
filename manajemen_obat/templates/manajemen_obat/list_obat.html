@@ -7,7 +7,7 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Daftar Obat</h1>
         <div class="space-x-2">
-            <a href="{% url 'obat:create_medicine' %}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
+            <a href="{% url 'obat:create_obat' %}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
                 Tambah Obat
             </a>
         </div>
@@ -46,9 +46,9 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ medicine.3 }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ medicine.4 }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
-                                <a href="{% url 'obat:update_medicine' medicine.0 %}" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-3 py-1 rounded mr-1">Edit</a>
+                                <a href="{% url 'obat:update_obat' medicine.0 %}" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-3 py-1 rounded mr-1">Edit</a>
                                 <a href="{% url 'obat:update_stock' %}?medicine={{ medicine.0 }}" class="bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1 rounded mr-1">Stok</a>
-                                <a href="{% url 'obat:delete_medicine' medicine.0 %}" class="bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded">Hapus</a>
+                                <a href="{% url 'obat:delete_obat' medicine.0 %}" class="bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded">Hapus</a>
                             </td>
                         </tr>
                         {% endfor %}

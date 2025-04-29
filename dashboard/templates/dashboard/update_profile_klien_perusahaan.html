@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+{% include 'components/navbar_klien.html' %}
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Update Profile Perusahaan</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+    }
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: rgb(28, 28, 81);
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #333;
+    }
+    input[type="text"],
+    input[type="tel"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    .button-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+    }
+    .submit-button, .cancel-button {
+      padding: 10px 25px;
+      border-radius: 7px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .submit-button {
+      background-color: rgb(28, 28, 81);
+      color: white;
+      border: 1px solid rgb(28, 28, 81);
+    }
+    .cancel-button {
+      background-color: white;
+      color: rgb(28, 28, 81);
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Update Profile Perusahaan</h1>
+    
+    <form method="post" action="">
+      {% csrf_token %}
+      
+      <div class="form-group">
+        <label for="company_name">Nama Perusahaan:</label>
+        <input type="text" id="company_name" name="company_name" value="PT Hewan Perkasa" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="address">Alamat:</label>
+        <textarea id="address" name="address" rows="3" required>Jl. Melati No.23, Kel. Sukamaju, Kec. Cibinong, Kab. Bogor, Jawa Barat, 16914</textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="phone">Nomor Telepon:</label>
+        <input type="tel" id="phone" name="phone" value="081234567890" required>
+      </div>
+      
+      <div class="button-container">
+        <a href="{% url 'dashboard:dashboard_klien' %}" class="cancel-button">Batal</a>
+        <button type="submit" class="submit-button">Simpan Perubahan</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html> 

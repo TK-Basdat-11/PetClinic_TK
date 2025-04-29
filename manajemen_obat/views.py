@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.template import TemplateDoesNotExist
 from django.http import HttpResponse
 
-def list_medicine(request):
+def list_obat(request):
     medicines = []
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -20,16 +20,15 @@ def list_medicine(request):
         'medicines': medicines,
         'user_role': user_role,
     }
-    return render(request, 'manajemen_obat/list_medicine.html', context)
+    return render(request, 'manajemen_obat/list_obat.html', context)
 
-def create_medicine(request):
+def create_obat(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         price = request.POST.get('price')
         dosage = request.POST.get('dosage')
         stock = request.POST.get('stock')
         
-        # Validate input
         errors = {}
         if not name:
             errors['name'] = 'Nama obat tidak boleh kosong'
@@ -62,15 +61,10 @@ def create_medicine(request):
                 'stock': stock,
                 'user_role': user_role,
             }
-            return render(request, 'manajemen_obat/form_medicine.html', context)
+            return render(request, 'manajemen_obat/form_obat.html', context)
         
         with connection.cursor() as cursor:
-            # Debug: Print the current codes in the database
-            cursor.execute("SELECT kode FROM PETCLINIC.OBAT ORDER BY kode")
-            current_codes = cursor.fetchall()
-            print("Current medicine codes:", current_codes)
             
-            # Get the maximum number
             cursor.execute("""
             SELECT MAX(CAST(SUBSTRING(kode, 4) AS INTEGER))
             FROM PETCLINIC.OBAT
@@ -95,17 +89,16 @@ def create_medicine(request):
             """, [med_code, name, price, dosage, stock])
             
         messages.success(request, f'Obat {med_code} berhasil ditambahkan!')
-        return redirect('obat:list_medicine')
+        return redirect('obat:list_obat')
     
-    # Get user role from session or set a default
     user_role = request.session.get('user_role', 'perawat')
     
     context = {
         'user_role': user_role,
     }
-    return render(request, 'manajemen_obat/form_medicine.html', context)
+    return render(request, 'manajemen_obat/form_obat.html', context)
 
-def update_medicine(request, med_code):
+def update_obat(request, med_code):
     medicine = None
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -126,14 +119,13 @@ def update_medicine(request, med_code):
     
     if not medicine:
         messages.error(request, 'Obat tidak ditemukan!')
-        return redirect('obat:list_medicine')
+        return redirect('obat:list_obat')
     
     if request.method == 'POST':
         name = request.POST.get('name')
         price = request.POST.get('price')
         dosage = request.POST.get('dosage')
         
-        # Validate inputs
         errors = {}
         if not name:
             errors['name'] = 'Nama obat tidak boleh kosong'
@@ -149,7 +141,6 @@ def update_medicine(request, med_code):
             errors['dosage'] = 'Dosis tidak boleh kosong'
         
         if errors:
-            # Get user role from session or set a default
             user_role = request.session.get('user_role', 'perawat')
             
             context = {
@@ -160,9 +151,8 @@ def update_medicine(request, med_code):
                 'dosage': dosage,
                 'user_role': user_role,
             }
-            return render(request, 'manajemen_obat/form_medicine.html', context)
+            return render(request, 'manajemen_obat/form_obat.html', context)
         
-        # Update medicine
         with connection.cursor() as cursor:
             cursor.execute("""
             UPDATE PETCLINIC.OBAT
@@ -171,7 +161,7 @@ def update_medicine(request, med_code):
             """, [name, price, dosage, med_code])
         
         messages.success(request, f'Obat {med_code} berhasil diperbarui!')
-        return redirect('obat:list_medicine')
+        return redirect('obat:list_obat')
     
     user_role = request.session.get('user_role', 'perawat')
     
@@ -180,11 +170,10 @@ def update_medicine(request, med_code):
         'is_update': True,
         'user_role': user_role,
     }
-    return render(request, 'manajemen_obat/form_medicine.html', context)
+    return render(request, 'manajemen_obat/form_obat.html', context)
 
 def update_stock(request):
     medicines = []
-    # Get pre-selected medicine from URL parameter
     selected_medicine = request.GET.get('medicine', '')
     
     with connection.cursor() as cursor:
@@ -199,7 +188,6 @@ def update_stock(request):
         med_code = request.POST.get('medicine')
         stock = request.POST.get('stock')
         
-        # Validate inputs
         errors = {}
         if not med_code:
             errors['medicine'] = 'Silakan pilih obat'
@@ -223,7 +211,6 @@ def update_stock(request):
             }
             return render(request, 'manajemen_obat/form_stock.html', context)
         
-        # Update stock
         with connection.cursor() as cursor:
             cursor.execute("""
             UPDATE PETCLINIC.OBAT
@@ -232,9 +219,8 @@ def update_stock(request):
             """, [stock, med_code])
         
         messages.success(request, f'Stok obat berhasil diperbarui!')
-        return redirect('obat:list_medicine')
+        return redirect('obat:list_obat')
     
-    # Get the current stock for the selected medicine
     current_stock = 0
     if selected_medicine:
         with connection.cursor() as cursor:
@@ -245,7 +231,6 @@ def update_stock(request):
             if result:
                 current_stock = result[0]
     
-    # Get user role from session or set a default
     user_role = request.session.get('user_role', 'perawat')
     
     context = {
@@ -256,7 +241,7 @@ def update_stock(request):
     }
     return render(request, 'manajemen_obat/form_stock.html', context)
 
-def delete_medicine(request, med_code):
+def delete_obat(request, med_code):
     medicine = None
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -274,10 +259,9 @@ def delete_medicine(request, med_code):
     
     if not medicine:
         messages.error(request, 'Obat tidak ditemukan!')
-        return redirect('obat:list_medicine')
+        return redirect('obat:list_obat')
     
     if request.method == 'POST':
-        # Delete medicine
         with connection.cursor() as cursor:
             cursor.execute("""
             DELETE FROM PETCLINIC.OBAT
@@ -285,18 +269,17 @@ def delete_medicine(request, med_code):
             """, [med_code])
         
         messages.success(request, f'Obat {med_code} berhasil dihapus!')
-        return redirect('obat:list_medicine')
+        return redirect('obat:list_obat')
     
-    # Get user role from session or set a default
     user_role = request.session.get('user_role', 'perawat')
     
     context = {
         'medicine': medicine,
         'user_role': user_role,
     }
-    return render(request, 'manajemen_obat/confirm_delete.html', context)
+    return render(request, 'manajemen_obat/confirm_delete_obat.html', context)
 
-def list_treatment(request):
+def list_perawatan(request):
     treatments = []
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -312,9 +295,9 @@ def list_treatment(request):
         'treatments': treatments,
         'user_role': user_role,
     }
-    return render(request, 'manajemen_obat/list_treatment.html', context)
+    return render(request, 'manajemen_obat/list_perawatan.html', context)
 
-def create_treatment(request):
+def create_perawatan(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         cost = request.POST.get('cost')
@@ -339,11 +322,10 @@ def create_treatment(request):
                 'cost': cost,
                 'user_role': user_role,
             }
-            return render(request, 'manajemen_obat/form_treatment.html', context)
+            return render(request, 'manajemen_obat/form_perawatan.html', context)
         
         with connection.cursor() as cursor:
         
-            # Get the maximum number
             cursor.execute("""
             SELECT MAX(CAST(SUBSTRING(kode_perawatan, 4) AS INTEGER))
             FROM PETCLINIC.PERAWATAN
@@ -368,16 +350,16 @@ def create_treatment(request):
             """, [treatment_code, name, cost])
             
         messages.success(request, f'Jenis perawatan {treatment_code} berhasil ditambahkan!')
-        return redirect('obat:list_treatment')
+        return redirect('obat:list_perawatan')
     
     user_role = request.session.get('user_role', 'perawat')
     
     context = {
         'user_role': user_role,
     }
-    return render(request, 'manajemen_obat/form_treatment.html', context)
+    return render(request, 'manajemen_obat/form_perawatan.html', context)
 
-def update_treatment(request, treatment_code):
+def update_perawatan(request, treatment_code):
     treatment = None
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -396,7 +378,7 @@ def update_treatment(request, treatment_code):
     
     if not treatment:
         messages.error(request, 'Jenis perawatan tidak ditemukan!')
-        return redirect('obat:list_treatment')
+        return redirect('obat:list_perawatan')
     
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -423,7 +405,7 @@ def update_treatment(request, treatment_code):
                 'cost': cost,
                 'user_role': user_role,
             }
-            return render(request, 'manajemen_obat/form_treatment.html', context)
+            return render(request, 'manajemen_obat/form_perawatan.html', context)
         
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -433,7 +415,7 @@ def update_treatment(request, treatment_code):
             """, [name, cost, treatment_code])
         
         messages.success(request, f'Jenis perawatan {treatment_code} berhasil diperbarui!')
-        return redirect('obat:list_treatment')
+        return redirect('obat:list_perawatan')
     
     user_role = request.session.get('user_role', 'perawat')
     
@@ -442,9 +424,9 @@ def update_treatment(request, treatment_code):
         'is_update': True,
         'user_role': user_role,
     }
-    return render(request, 'manajemen_obat/form_treatment.html', context)
+    return render(request, 'manajemen_obat/form_perawatan.html', context)
 
-def delete_treatment(request, treatment_code):
+def delete_perawatan(request, treatment_code):
     treatment = None
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -462,7 +444,7 @@ def delete_treatment(request, treatment_code):
     
     if not treatment:
         messages.error(request, 'Jenis perawatan tidak ditemukan!')
-        return redirect('obat:list_treatment')
+        return redirect('obat:list_perawatan')
     
     if request.method == 'POST':
         with connection.cursor() as cursor:
@@ -472,7 +454,7 @@ def delete_treatment(request, treatment_code):
             """, [treatment_code])
         
         messages.success(request, f'Jenis perawatan {treatment_code} berhasil dihapus!')
-        return redirect('obat:list_treatment')
+        return redirect('obat:list_perawatan')
     
     user_role = request.session.get('user_role', 'perawat')
     
@@ -480,9 +462,9 @@ def delete_treatment(request, treatment_code):
         'treatment': treatment,
         'user_role': user_role,
     }
-    return render(request, 'manajemen_obat/confirm_delete_treatment.html', context)
+    return render(request, 'manajemen_obat/confirm_delete_perawatan.html', context)
 
-def list_prescriptions(request):
+def list_resep(request):
     prescriptions = []
     
     is_client = request.GET.get('role') == 'client'
@@ -520,9 +502,9 @@ def list_prescriptions(request):
         'is_client': is_client,
         'user_role': user_role,
     }
-    return render(request, 'manajemen_obat/list_prescriptions.html', context)
+    return render(request, 'manajemen_obat/list_resep.html', context)
 
-def create_prescription(request):
+def create_resep(request):
     treatments = []
     medicines = []
     
@@ -547,7 +529,6 @@ def create_prescription(request):
         med_code = request.POST.get('medicine')
         quantity = request.POST.get('quantity')
         
-        # Validate inputs
         errors = {}
         
         if not treatment_code:
@@ -595,7 +576,7 @@ def create_prescription(request):
                 'quantity': quantity,
                 'user_role': user_role,
             }
-            return render(request, 'manajemen_obat/form_prescription.html', context)
+            return render(request, 'manajemen_obat/form_resep.html', context)
         
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -610,7 +591,7 @@ def create_prescription(request):
             """, [quantity, med_code])
         
         messages.success(request, 'Resep obat berhasil ditambahkan!')
-        return redirect('obat:list_prescriptions')
+        return redirect('obat:list_resep')
     
     user_role = request.session.get('user_role', 'perawat')
     
@@ -619,9 +600,9 @@ def create_prescription(request):
         'medicines': medicines,
         'user_role': user_role,
     }
-    return render(request, 'manajemen_obat/form_prescription.html', context)
+    return render(request, 'manajemen_obat/form_resep.html', context)
 
-def delete_prescription(request, treatment_code, med_code):
+def delete_resep(request, treatment_code, med_code):
     prescription = None
     
     with connection.cursor() as cursor:
@@ -645,7 +626,7 @@ def delete_prescription(request, treatment_code, med_code):
     
     if not prescription:
         messages.error(request, 'Resep tidak ditemukan!')
-        return redirect('obat:list_prescriptions')
+        return redirect('obat:list_resep')
     
     if request.method == 'POST':
         quantity = prescription['quantity']
@@ -663,7 +644,7 @@ def delete_prescription(request, treatment_code, med_code):
             """, [quantity, med_code])
         
         messages.success(request, 'Resep obat berhasil dihapus!')
-        return redirect('obat:list_prescriptions')
+        return redirect('obat:list_resep')
     
     user_role = request.session.get('user_role', 'perawat')
     
@@ -671,4 +652,4 @@ def delete_prescription(request, treatment_code, med_code):
         'prescription': prescription,
         'user_role': user_role,
     }
-    return render(request, 'manajemen_obat/confirm_delete_prescription.html', context)
+    return render(request, 'manajemen_obat/confirm_delete_resep.html', context)

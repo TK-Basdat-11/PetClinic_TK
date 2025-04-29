@@ -8,7 +8,7 @@
         <h1 class="text-2xl font-bold">Daftar Pemberian Obat (Resep)</h1>
         {% if not is_client %}
         <div>
-            <a href="{% url 'obat:create_prescription' %}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
+            <a href="{% url 'obat:create_resep' %}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
                 Tambah Resep
             </a>
         </div>
@@ -49,7 +49,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rp {{ prescription.5 }}</td>
                             {% if not is_client %}
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
-                                <a href="{% url 'obat:delete_prescription' prescription.0 prescription.2 %}" class="bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded">Hapus</a>
+                                <a href="{% url 'obat:delete_resep' prescription.0 prescription.2 %}" class="bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded">Hapus</a>
                             </td>
                             {% endif %}
                         </tr>
@@ -65,10 +65,10 @@
     </div>
     
     <div class="mt-6 space-x-4">
-        <a href="{% url 'obat:list_medicine' %}" class="text-blue-600 hover:text-blue-800">
+        <a href="{% url 'obat:list_obat' %}" class="text-blue-600 hover:text-blue-800">
             &larr; Manajemen Obat
         </a>
-        <a href="{% url 'obat:list_treatment' %}" class="text-blue-600 hover:text-blue-800">
+        <a href="{% url 'obat:list_perawatan' %}" class="text-blue-600 hover:text-blue-800">
             &larr; Manajemen Jenis Perawatan
         </a>
     </div>

@@ -7,7 +7,7 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Daftar Jenis Perawatan</h1>
         <div>
-            <a href="{% url 'obat:create_treatment' %}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
+            <a href="{% url 'obat:create_perawatan' %}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
                 Tambah Jenis Perawatan
             </a>
         </div>
@@ -42,8 +42,8 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ treatment.1 }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rp {{ treatment.2 }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
-                                <a href="{% url 'obat:update_treatment' treatment.0 %}" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-3 py-1 rounded mr-1">Edit</a>
-                                <a href="{% url 'obat:delete_treatment' treatment.0 %}" class="bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded">Hapus</a>
+                                <a href="{% url 'obat:update_perawatan' treatment.0 %}" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-3 py-1 rounded mr-1">Edit</a>
+                                <a href="{% url 'obat:delete_perawatan' treatment.0 %}" class="bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded">Hapus</a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -58,7 +58,7 @@
     </div>
     
     <div class="mt-6">
-        <a href="{% url 'obat:list_medicine' %}" class="text-blue-600 hover:text-blue-800">
+        <a href="{% url 'obat:list_obat' %}" class="text-blue-600 hover:text-blue-800">
             &larr; Kembali ke Manajemen Obat
         </a>
     </div>

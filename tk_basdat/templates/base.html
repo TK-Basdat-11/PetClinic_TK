@@ -21,22 +21,22 @@
 <body>
     <!-- Navigation -->
     {% if user_role == 'dokter' %}
-        {% include 'navbar_dokter.html' %}
+        {% include 'components/navbar_dokter.html' %}
     {% elif user_role == 'perawat' %}
-        {% include 'navbar_perawat.html' %}
+        {% include 'components/navbar_perawat.html' %}
     {% elif user_role == 'fdo' %}
-        {% include 'navbar_fdo.html' %}
+        {% include 'components/navbar_fdo.html' %}
     {% elif user_role == 'klien' %}
-        {% include 'navbar_klien.html' %}
+        {% include 'components/navbar_klien.html' %}
     {% else %}
         <!-- Default navbar  -->
         <nav class="navbar" style="background-color: rgb(28, 28, 81); padding: 12px 0;">
             <div class="container" style="display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; padding: 5px 50px;">
                 <div class="menu" style="display: flex; gap: 24px; font-weight: bold;">
                     <a href="/" style="color: white; text-decoration: none; font-size: 16px;">PetClinic</a>
-                    <a href="{% url 'obat:list_medicine' %}" style="color: white; text-decoration: none; font-size: 16px;">Manajemen Obat</a>
-                    <a href="{% url 'obat:list_treatment' %}" style="color: white; text-decoration: none; font-size: 16px;">Manajemen Jenis Perawatan</a>
-                    <a href="{% url 'obat:list_prescriptions' %}" style="color: white; text-decoration: none; font-size: 16px;">Manajemen Pemberian Obat</a>
+                    <a href="{% url 'obat:list_obat' %}" style="color: white; text-decoration: none; font-size: 16px;">Manajemen Obat</a>
+                    <a href="{% url 'obat:list_perawatan' %}" style="color: white; text-decoration: none; font-size: 16px;">Manajemen Jenis Perawatan</a>
+                    <a href="{% url 'obat:list_resep' %}" style="color: white; text-decoration: none; font-size: 16px;">Manajemen Pemberian Obat</a>
                 </div>
                 <div class="menu" style="display: flex;">
                     <a href="#" class="logout" style="background-color: red; border-radius: 100px; width: 100px; align-self: center; padding: 10px; font-weight: bold; display: flex; justify-content: center; align-items: center; color: white; text-decoration: none;">Logout</a>
