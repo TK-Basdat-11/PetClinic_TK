@@ -16,7 +16,7 @@ def dashboard_perawat(request):
     return render(request, "dashboard/dashboard_perawat.html")
 
 def update_password(request):
-    return render(request, "dashboard/update_password.html")
+    return render(request, "update_password.html")
 
 def update_profile_dokter(request):
     return render(request, "dashboard/update_profile_dokter.html")
