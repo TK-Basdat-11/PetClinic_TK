@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+{% include 'components/navbar_dokter.html' %}
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Update Profile Dokter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+    }
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: rgb(28, 28, 81);
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #333;
+    }
+    input[type="text"],
+    input[type="tel"],
+    input[type="date"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    .certificate-container, .schedule-container {
+      margin-bottom: 15px;
+      padding: 15px;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      background-color: #f9f9f9;
+    }
+    .certificate-row, .schedule-row {
+      display: flex;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+    .certificate-row input, .schedule-row input, .schedule-row select {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .add-button {
+      background-color: rgb(28, 28, 81);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .remove-button {
+      background-color: #ff4d4d;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .button-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+    }
+    .submit-button, .cancel-button {
+      padding: 10px 25px;
+      border-radius: 7px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .submit-button {
+      background-color: rgb(28, 28, 81);
+      color: white;
+      border: 1px solid rgb(28, 28, 81);
+    }
+    .cancel-button {
+      background-color: white;
+      color: rgb(28, 28, 81);
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Update Profile Dokter</h1>
+    
+    <form method="post" action="">
+      {% csrf_token %}
+      
+      <div class="form-group">
+        <label for="address">Alamat:</label>
+        <textarea id="address" name="address" rows="3" required>Jl. Melati Indah No.23, Kel. Sukamaju, Kec. Cibinong, Kab. Bogor, Jawa Barat, 16914</textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="phone">Nomor Telepon:</label>
+        <input type="tel" id="phone" name="phone" value="081234567893" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="end_date">Tanggal Akhir Kerja (kosongkan jika tidak ada):</label>
+        <input type="date" id="end_date" name="end_date">
+      </div>
+      
+      <div class="form-group">
+        <label>Sertifikat Kompetensi:</label>
+        <div id="certificates-container">
+          <div class="certificate-container">
+            <div class="certificate-row">
+              <input type="text" name="certificate_number[]" placeholder="Nomor Sertifikat" value="123/DH/456" required>
+              <input type="text" name="certificate_name[]" placeholder="Nama Sertifikat" value="BNSP Dokter Hewan Praktis" required>
+              <button type="button" class="remove-button">Hapus</button>
+            </div>
+          </div>
+          <div class="certificate-container">
+            <div class="certificate-row">
+              <input type="text" name="certificate_number[]" placeholder="Nomor Sertifikat" value="456/DH/456" required>
+              <input type="text" name="certificate_name[]" placeholder="Nama Sertifikat" value="Sertifikat PB PDHI" required>
+              <button type="button" class="remove-button">Hapus</button>
+            </div>
+          </div>
+          <div class="certificate-container">
+            <div class="certificate-row">
+              <input type="text" name="certificate_number[]" placeholder="Nomor Sertifikat" value="789/DH/789" required>
+              <input type="text" name="certificate_name[]" placeholder="Nama Sertifikat" value="Sertifikat Organisasi Profesi" required>
+              <button type="button" class="remove-button">Hapus</button>
+            </div>
+          </div>
+        </div>
+        <button type="button" id="add-certificate" class="add-button">Tambah Sertifikat</button>
+      </div>
+      
+      <div class="form-group">
+        <label>Jadwal Praktik:</label>
+        <div id="schedules-container">
+          <div class="schedule-container">
+            <div class="schedule-row">
+              <select name="day[]" required>
+                <option value="Senin" selected>Senin</option>
+                <option value="Selasa">Selasa</option>
+                <option value="Rabu">Rabu</option>
+                <option value="Kamis">Kamis</option>
+                <option value="Jumat">Jumat</option>
+                <option value="Sabtu">Sabtu</option>
+                <option value="Minggu">Minggu</option>
+              </select>
+              <input type="time" name="start_time[]" value="13:00" required>
+              <input type="time" name="end_time[]" value="15:00" required>
+              <button type="button" class="remove-button">Hapus</button>
+            </div>
+          </div>
+          <div class="schedule-container">
+            <div class="schedule-row">
+              <select name="day[]" required>
+                <option value="Senin">Senin</option>
+                <option value="Selasa">Selasa</option>
+                <option value="Rabu" selected>Rabu</option>
+                <option value="Kamis">Kamis</option>
+                <option value="Jumat">Jumat</option>
+                <option value="Sabtu">Sabtu</option>
+                <option value="Minggu">Minggu</option>
+              </select>
+              <input type="time" name="start_time[]" value="13:00" required>
+              <input type="time" name="end_time[]" value="15:00" required>
+              <button type="button" class="remove-button">Hapus</button>
+            </div>
+          </div>
+          <div class="schedule-container">
+            <div class="schedule-row">
+              <select name="day[]" required>
+                <option value="Senin">Senin</option>
+                <option value="Selasa">Selasa</option>
+                <option value="Rabu">Rabu</option>
+                <option value="Kamis">Kamis</option>
+                <option value="Jumat" selected>Jumat</option>
+                <option value="Sabtu">Sabtu</option>
+                <option value="Minggu">Minggu</option>
+              </select>
+              <input type="time" name="start_time[]" value="14:00" required>
+              <input type="time" name="end_time[]" value="16:00" required>
+              <button type="button" class="remove-button">Hapus</button>
+            </div>
+          </div>
+        </div>
+        <button type="button" id="add-schedule" class="add-button">Tambah Jadwal</button>
+      </div>
+      
+      <div class="button-container">
+        <a href="{% url 'dashboard:dashboard_dokter' %}" class="cancel-button">Batal</a>
+        <button type="submit" class="submit-button">Simpan Perubahan</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('add-certificate').addEventListener('click', function() {
+      const container = document.getElementById('certificates-container');
+      const newCertificate = document.createElement('div');
+      newCertificate.className = 'certificate-container';
+      newCertificate.innerHTML = `
+        <div class="certificate-row">
+          <input type="text" name="certificate_number[]" placeholder="Nomor Sertifikat" required>
+          <input type="text" name="certificate_name[]" placeholder="Nama Sertifikat" required>
+          <button type="button" class="remove-button">Hapus</button>
+        </div>
+      `;
+      container.appendChild(newCertificate);
+      
+      newCertificate.querySelector('.remove-button').addEventListener('click', function() {
+        container.removeChild(newCertificate);
+      });
+    });
+    
+    document.getElementById('add-schedule').addEventListener('click', function() {
+      const container = document.getElementById('schedules-container');
+      const newSchedule = document.createElement('div');
+      newSchedule.className = 'schedule-container';
+      newSchedule.innerHTML = `
+        <div class="schedule-row">
+          <select name="day[]" required>
+            <option value="Senin">Senin</option>
+            <option value="Selasa">Selasa</option>
+            <option value="Rabu">Rabu</option>
+            <option value="Kamis">Kamis</option>
+            <option value="Jumat">Jumat</option>
+            <option value="Sabtu">Sabtu</option>
+            <option value="Minggu">Minggu</option>
+          </select>
+          <input type="time" name="start_time[]" required>
+          <input type="time" name="end_time[]" required>
+          <button type="button" class="remove-button">Hapus</button>
+        </div>
+      `;
+      container.appendChild(newSchedule);
+      
+      newSchedule.querySelector('.remove-button').addEventListener('click', function() {
+        container.removeChild(newSchedule);
+      });
+    });
+    
+    document.querySelectorAll('.remove-button').forEach(button => {
+      button.addEventListener('click', function() {
+        const container = this.closest('.certificate-container, .schedule-container');
+        container.parentNode.removeChild(container);
+      });
+    });
+  </script>
+</body>
+</html> 

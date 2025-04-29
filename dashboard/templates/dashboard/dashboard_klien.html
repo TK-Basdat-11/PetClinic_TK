@@ -59,7 +59,11 @@
     <div class="header">
         <h1 style="margin-left: 100px;">Profile Client</h1>
         <a href="{% url 'dashboard:update_password' %}"  class="button updatepassword">Update Password</a>
-        <a class="button">Update Profile</a>
+        {% if client_type == 'perusahaan' %}
+            <a href="{% url 'dashboard:update_profile_klien_perusahaan' %}" class="button">Update Profile</a>
+        {% else %}
+            <a href="{% url 'dashboard:update_profile_klien_individu' %}" class="button">Update Profile</a>
+        {% endif %}
     </div>
     <div class="profile-client">
         <table>

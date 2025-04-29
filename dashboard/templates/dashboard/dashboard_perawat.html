@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-{% include 'navbar_perawat.html' %}
+{% include 'components/navbar_perawat.html' %}
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
@@ -72,7 +72,7 @@
   <div class="header">
     <h1 style="margin-left: 100px;">Profile Perawat</h1>
     <a href="{% url 'dashboard:update_password' %}" class="button updatepassword">Update Password</a>
-    <a class="button">Update Profile</a>
+    <a href="{% url 'dashboard:update_profile_perawat' %}" class="button">Update Profile</a>
   </div>
 
   <div class="profile-fdo">
