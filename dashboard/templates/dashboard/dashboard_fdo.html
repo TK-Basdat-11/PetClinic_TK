@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+{% include 'components/navbar_fdo.html' %}
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard Front Desk-Officer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .profile-fdo table {
+      border-collapse: separate;
+      border-spacing: 0 8px;
+      margin-top: 16px;
+      margin-left: 100px;
+    }
+
+    .profile-fdo th,
+    .profile-fdo td {
+      text-align: left;
+      padding: 4px 0;
+      vertical-align: top;
+    }
+
+    .profile-fdo th {
+      padding-right: 40px;
+    }
+    .button {
+      border-style: solid;
+      border-color: rgb(28, 28, 81);
+      color: white;
+      background-color: rgb(28, 28, 81);
+      padding: 10px 25px;
+      text-align: center;
+      display: inline-block;
+      font-size: 15px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 7px;
+      font-family: Arial, sans-serif;
+      text-decoration: none;
+    }
+    .updatepassword {
+        background-color: red;
+        border-color: red;
+        margin-left: 500px;
+    }
+    .header {
+      display: flex;
+      align-items: center;     
+      margin-top: 20px;
+      margin-bottom: 0px;
+    }
+
+  </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1 style="margin-left: 100px;">Profile Front Desk-Officer</h1>
+        <a href="{% url 'dashboard:update_password' %}" class="button updatepassword">Update Password</a>
+        <a href="{% url 'dashboard:update_profile_fdo' %}" class="button">Update Profile</a>
+    </div>
+    <div class="profile-fdo">
+        <table>
+            <tr>
+                <th>Nomor Identitas</th>
+                <td>8451fbbf-e73b-4f4b-90cb-2066e1f34685</td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td>amalia_putri@petclinic.com</td>
+            </tr>
+            <tr>
+                <th>Tanggal Diterima</th>
+                <td>25 Januari 2025</td>
+            </tr>
+            <tr>
+                <th>Tanggal Akhir Kerja</th>
+                <td>-</td>
+            </tr>
+            <tr>
+                <th>Alamat</th>
+                <td>Jl. Melati Indah No.25, Kel. Sukamaju, Kec. Cibinong, Kab. Bogor, Jawa Barat, 16914</td>
+            </tr>
+            <tr>
+                <th>No Telepon</th>
+                <td>081234567890</td>
+            </tr>
+        </table>
+      </div>
+</body>

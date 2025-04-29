@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Tambah Pemberian Obat (Resep){% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 max-w-2xl">
+    <h1 class="text-2xl font-bold mb-6">Tambah Pemberian Obat (Resep)</h1>
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            
+            {% if errors.duplicate %}
+            <div class="p-4 bg-red-100 text-red-700 rounded mb-4">
+                {{ errors.duplicate }}
+            </div>
+            {% endif %}
+            
+            <div class="mb-4">
+                <label for="treatment" class="block text-sm font-medium text-gray-700">Jenis Perawatan</label>
+                <select id="treatment" name="treatment" class="mt-1 block w-full p-2 border {% if errors.treatment %}border-red-500{% else %}border-gray-300{% endif %} rounded-md">
+                    <option value="">-- Pilih Jenis Perawatan --</option>
+                    {% for treatment in treatments %}
+                        <option value="{{ treatment.0 }}" {% if selected_treatment == treatment.0 %}selected{% endif %}>
+                            {{ treatment.0 }} - {{ treatment.1 }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if errors.treatment %}
+                    <p class="text-red-500 text-xs mt-1">{{ errors.treatment }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="mb-4">
+                <label for="medicine" class="block text-sm font-medium text-gray-700">Obat</label>
+                <select id="medicine" name="medicine" class="mt-1 block w-full p-2 border {% if errors.medicine %}border-red-500{% else %}border-gray-300{% endif %} rounded-md">
+                    <option value="">-- Pilih Obat --</option>
+                    {% for medicine in medicines %}
+                        <option value="{{ medicine.0 }}" {% if selected_medicine == medicine.0 %}selected{% endif %}>
+                            {{ medicine.0 }} - {{ medicine.1 }} (Stok: {{ medicine.2 }})
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if errors.medicine %}
+                    <p class="text-red-500 text-xs mt-1">{{ errors.medicine }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="mb-4">
+                <label for="quantity" class="block text-sm font-medium text-gray-700">Kuantitas</label>
+                <input type="number" id="quantity" name="quantity" value="{% if quantity %}{{ quantity }}{% endif %}" class="mt-1 block w-full p-2 border {% if errors.quantity %}border-red-500{% else %}border-gray-300{% endif %} rounded-md">
+                {% if errors.quantity %}
+                    <p class="text-red-500 text-xs mt-1">{{ errors.quantity }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="flex justify-between">
+                <a href="{% url 'obat:list_resep' %}" class="py-2 px-4 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                    Kembali
+                </a>
+                <button type="submit" class="py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-md">
+                    Tambah Resep
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

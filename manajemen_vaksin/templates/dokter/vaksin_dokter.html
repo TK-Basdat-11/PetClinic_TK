@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+{% include 'components/navbar_dokter.html' %}
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>List Vaccination</title>
+    <style>
+        .button {
+        border: none;
+        color: white;
+        background-color:rgb(28, 28, 81);
+        padding: 10px 25px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 15px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 7px;
+        }
+
+        .delete {
+            background-color: red;
+        }
+
+        .listvaksin table{
+            border-collapse: collapse;
+            background-color: lightgray;
+            border-spacing: 0px 8px;
+        }
+
+        .listvaksin th,
+        .listvaksin td {
+            border: 1px solid #ddd;
+            background-color: white;
+        }
+
+        body{
+            font-family: Arial;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="margin-left: 100px;">List Vaccination</h1>
+
+    <a href="{% url 'vaksin:create_vaksin_dokter' %}" class="button" align="left" style="margin-left: 1100px; font-family: Arial;">+ Create New Vaccination</a>
+
+    <div class="listvaksin">
+        <table align="center" style="margin-top: 10px;" >
+            <tr bgcolor="white">
+                <th width="100">No</th>
+                <th width="150">Kunjungan</th>
+                <th width="250">Tanggal Kunjungan</th>
+                <th width="300">Vaksin</th>
+                <th width="400">Action</th>
+            </tr>
+            <tr align="center">
+                <td>1</td>
+                <td>KJN001</td>
+                <td>Rabu, 5 Februari 2025</td>
+                <td>VAC001 - Feline Panleukopenia</td>
+                <td>
+                    <button class="button">Update</button>
+                    <a href="{% url 'vaksin:delete_vaksin_dokter' %}" class="button delete">Delete</a>
+                </td>
+            </tr>
+            <tr align="center">
+                <td>2</td>
+                <td>KJN002</td>
+                <td>Jumat, 21 Februari 2025</td>
+                <td>VAC002 - Canine Parvovirus</td>
+                <td>
+                    <button class="button">Update</button>
+                    <button class="button delete">Delete</button>
+                </td>
+            </tr>
+            <tr align="center">
+                <td>3</td>
+                <td>KJN003</td>
+                <td>Selasa, 15 Maret 2025</td>
+                <td>VAC003 - Canine Adenovirus</td>
+                <td>
+                    <button class="button">Update</button>
+                    <button class="button delete">Delete</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>

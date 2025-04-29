@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+{% include 'components/navbar_perawat.html' %}
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard Perawat</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .profile-fdo table {
+      border-collapse: separate;
+      border-spacing: 0 8px;
+      margin-top: 16px;
+      margin-left: 100px;
+    }
+    .profile-fdo th,
+    .profile-fdo td {
+      text-align: left;
+      padding: 4px 0;
+      vertical-align: top;
+    }
+    .profile-fdo th {
+      padding-right: 40px;
+    }
+    .button {
+      border-style: solid;
+      border-color: rgb(28, 28, 81);
+      color: white;
+      background-color: rgb(28, 28, 81);
+      padding: 10px 25px;
+      text-align: center;
+      display: inline-block;
+      font-size: 15px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 7px;
+      font-family: Arial, sans-serif;
+      text-decoration: none;
+    }
+    .updatepassword {
+      background-color: red;
+      border-color: red;
+      margin-left: 700px;
+    }
+    .header {
+      display: flex;
+      align-items: center;     
+      margin-top: 20px;
+      margin-bottom: 0;
+    }
+
+    .table table {
+      border-collapse: collapse;
+      background-color: lightgray;
+      margin-left: 100px;
+    }
+    .table th,
+    .table td {
+      padding: 10px;
+      border: thin solid #ddd;
+      background-color: white;
+    }
+
+    .table + .table {
+      clear: both;
+      margin-top: 24px; 
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 style="margin-left: 100px;">Profile Perawat</h1>
+    <a href="{% url 'dashboard:update_password' %}" class="button updatepassword">Update Password</a>
+    <a href="{% url 'dashboard:update_profile_perawat' %}" class="button">Update Profile</a>
+  </div>
+
+  <div class="profile-fdo">
+    <table>
+        <tr>
+            <th>Nomor Identitas</th>
+            <td>c872f0ce-ffd3-4908-aa27-49974751ebc2</td>
+        </tr>
+        <tr>
+            <th>Nomor Izin Praktik</th>
+            <td>SIP-PERAWAT-12345</td>
+        </tr>
+        <tr>
+            <th>Email</th>
+            <td>sandy.permata@petclinic.com</td>
+        </tr>
+        <tr>
+            <th>Tanggal Diterima</th>
+            <td>25 Januari 2025</td>
+        </tr>
+        <tr>
+            <th>Tanggal Akhir Kerja</th>
+            <td>-</td>
+        </tr>
+        <tr>
+            <th>Alamat</th>
+            <td>Jl. Melati Indah No.24, Kel. Sukamaju, Kec. Cibinong, Kab. Bogor, Jawa Barat, 16914</td>
+        </tr>
+        <tr>
+            <th>No Telepon</th>
+            <td>081234567894</td>
+        </tr>
+    </table>
+  </div>
+
+  <div class="table">
+    <h2 style="margin-left: 100px;">Daftar Sertifikat</h2>
+    <table>
+        <tr>
+            <th width="190">No</th>
+            <th width="500">Nomor Sertifikat</th>
+            <th width="500">Nama Sertifikat</th>
+        </tr>
+        <tr align="center">
+            <td>1</td>
+            <td>123/PH/456</td>
+            <td>Paraprofesional Kedokteran Hewan</td>
+        </tr>
+        <tr align="center">
+            <td>2</td>
+            <td>456/PH/456</td>
+            <td>Keperawatan Hewan Profesional</td>
+        </tr>
+        <tr align="center">
+            <td>3</td>
+            <td>789/PH/789</td>
+            <td>Sertifikat Organisasi Profesi</td>
+        </tr>
+    </table>
+  </div>
+  </div>
+</body>
+</html>

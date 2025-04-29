@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+{% include 'components/navbar_fdo.html' %}
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>List Vaccine</title>
+  <style>
+    .button {
+      border-style: solid;
+      border-color: rgb(28, 28, 81);
+      color: white;
+      background-color: rgb(28, 28, 81);
+      padding: 10px 25px;
+      text-align: center;
+      display: inline-block;
+      font-size: 15px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 7px;
+      font-family: Arial, sans-serif;
+      text-decoration: none;
+    }
+
+    .searchbar {
+      border-style: solid;
+      border-color: rgb(237, 237, 237);
+      color: black;
+      background-color: white;
+      padding: 10px 10px;
+      display: inline-block;
+      font-size: 15px;
+      margin: 4px 2px;
+      border-radius: 7px;
+      font-family: Arial, sans-serif;
+      width: 400px;
+    }
+
+    #listClient {
+      width: 86%;
+      min-width: 600px;
+      table-layout: fixed;
+      margin: 20px auto;
+      background-color: lightgray;
+      border-collapse: collapse;
+      font-family: Arial, sans-serif;
+      margin-left: 100px;
+      margin-right: 100px;
+    }
+    #listClient thead tr {
+      background-color: white;
+    }
+    #listClient th,
+    #listClient td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+      background-color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="margin-left: 100px; font-family: Arial, sans-serif;">
+    List Client
+  </h1>
+
+  <div style="display: flex; align-items: center; margin: 0 100px;">
+    <input
+      id="searchInput"
+      type="text"
+      placeholder="Search Client Name"
+      class="searchbar"
+    />
+    <button id="searchButton" class="button">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        style="height: 15px; width: 15px;"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M21 21l-4.35-4.35m1.4-5.65a7 7 0 11-14 0 7 7 0 0114 0z"
+        />
+      </svg>
+    </button>
+  </div>
+
+  <table id="listClient">
+    <thead>
+      <tr>
+        <th width="50px">No</th>
+        <th width="200px">Email</th>
+        <th width="200px">Nama</th>
+        <th width="150px">Jenis</th>
+        <th width="150px">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>client1@example.com</td>
+        <td>Client 1</td>
+        <td>Individu</td>
+        <td>
+            <a href="{% url 'listklien:detail_individu' %}" class="button">Detail</a>
+        </td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>client2@example.com</td>
+        <td>Client 2</td>
+        <td>Perusahaan</td>
+        <td>
+          <a href="{% url 'listklien:detail_perusahaan' %}" class="button">Detail</a>
+        </td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>client3@example.com</td>
+        <td>Client 3</td>
+        <td>Individu</td>
+        <td>
+          <a href="{% url 'listklien:detail_individu' %}" class="button">Detail</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <script>
+    function filterTable() {
+      const query = document
+        .getElementById("searchInput")
+        .value
+        .trim()
+        .toLowerCase();
+
+      const rows = document.querySelectorAll(
+        "#listClient > tbody > tr"
+      );
+
+      rows.forEach((row) => {
+        const cell = row.cells[2]; 
+        const text = cell.textContent.toLowerCase();
+        row.style.display = text.includes(query) ? "" : "none";
+      });
+    }
+    document
+      .getElementById("searchButton")
+      .addEventListener("click", filterTable);
+  </script>
+</body>
+</html>

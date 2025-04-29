@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Update Vaksin</title>
+    <style>
+        .kunjungan {
+            background-color: lightgray;
+            border-color: rgb(114, 114, 114);
+            padding: 10px 20px;
+            margin: 0px 100px 20px;
+            border-radius: 0.5rem;
+            font-family: Arial;
+        }
+        
+        .dropdown-wrapper {
+            margin-top: 5px;
+            margin-bottom: 15px;
+            margin-left: 100px;
+            width: 1220px;
+            padding: 5px 20px;  
+            font-size: medium;
+            line-height: 1.5;
+            background-color: #fff;   
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;     
+            appearance: none;         
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg fill='%237478aa' height='10' viewBox='0 0 20 20' width='10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 7l3-3 3 3m0 6l-3 3-3-3' stroke='%237478aa' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 0.65rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            cursor: pointer;
+        }
+
+        .button {
+        border-style: solid;
+        border-color: rgb(28, 28, 81);
+        color: white;
+        background-color:rgb(28, 28, 81);
+        padding: 10px 25px;
+        text-align: center;
+        display: inline-block;
+        font-size: 15px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 7px;
+        }
+
+        .cancel {
+            background-color: white;
+            color: rgb(28, 28, 81);
+            border-style: solid;
+            border-color: lightgray;
+            border-width: 1px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="font-family: Arial; margin-left: 100px;">Update Vaccination</h1>
+
+    <div>
+        <p style="font-size: large; font-family: Arial; margin: 0px 100px 10px; font: weight 80%;">Kunjungan</p>
+    </div>
+
+    <div>
+        <p class="kunjungan">KJN001</p>
+    </div>
+
+    <div>
+        <label for="Vaksin" style="margin: top 20px; margin-left: 100px; font-size: large; font-family: Arial;">Vaksin</label>
+    </div>
+
+    <div>
+        <select class="dropdown-wrapper" id="vaksinDropdown" class="dropdown">
+            <option value="" disabled selected hidden>Pilih Vaksin</option>
+            <option value="">VAC001 - Feline Panleukopenia [100]</option>
+            <option value="">VAC002 - Canine Parvovirus [200]</option>
+            <option value="">VAC003 - Canine Adenovirus [300]</option>
+        </select>
+    </div>
+    <div align="right" style="margin-right: 100px;">
+        <button class="button cancel">Cancel</button>
+        <button class="button">Update</button>
+    </div>
+</body>

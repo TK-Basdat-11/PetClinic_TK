@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Update Vaksin</title>
+    <style>
+        .vaccineid {
+            background-color: lightgray;
+            border-color: rgb(114, 114, 114);
+            padding: 10px 20px;
+            margin: 0px 100px 20px;
+            border-radius: 0.5rem;
+            font-family: Arial;
+        }
+        
+        .input {
+            margin-bottom: 15px;
+            margin-left: 100px;
+            width: 1200px;
+            padding: 5px 10px;  
+            font-size: medium;
+            line-height: 1.5;
+            background-color: #fff;   
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;     
+            appearance: none;         
+        }
+
+        .button {
+        border-style: solid;
+        border-color: rgb(28, 28, 81);
+        color: white;
+        background-color:rgb(28, 28, 81);
+        padding: 10px 25px;
+        text-align: center;
+        display: inline-block;
+        font-size: 15px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 7px;
+        font-family: Arial;
+        text-decoration: none;
+        }
+
+        .cancel {
+            background-color: white;
+            color: rgb(28, 28, 81);
+            border-style: solid;
+            border-color: lightgray;
+            border-width: 1px;
+        }
+</style>
+</head>
+
+<body>
+    <h1 style="font-family: Arial; margin-left: 100px;">Update Vaccine</h1>
+
+    <div>
+        <p style="font-size: large; font-family: Arial; margin: 0px 100px 10px; font: weight 80%;">ID Vaksin</p>
+    </div>
+
+    <div>
+        <p class="vaccineid">VAC001</p>
+    </div>
+
+    <div>
+        <p style="font-size: large; font-family: Arial; margin: 0px 100px 10px; font: weight 80%;">Nama Vaksin</p>
+    </div>
+
+    <div>
+        <input class="input" type="text" id="nama" name="nama" placeholder="Nama">
+    </div>
+
+    <div>
+        <p style="font-size: large; font-family: Arial; margin: 0px 100px 10px; font: weight 80%;">Harga</p>
+    </div>
+
+    <div>
+        <input class="input" type="text" id="harga" name="nama" placeholder="Harga">
+    </div>
+
+    <div align="right" style="margin-right: 100px;">
+        <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel">Cancel</a>
+        <button class="button">Update</button>
+    </div>
+</body>

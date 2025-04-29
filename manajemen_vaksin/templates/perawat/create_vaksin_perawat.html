@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Create Vaksin</title>
+    <style>
+        .input {
+            margin-top: 5px;
+            margin-bottom: 15px;
+            width: 1200px;
+            padding: 5px 10px;  
+            font-size: medium;
+            line-height: 1.5;
+            background-color: #fff;   
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;     
+            appearance: none;         
+        }
+    
+        .button {
+          border-style: solid;
+          border-color: rgb(28, 28, 81);
+          color: white;
+          background-color:rgb(28, 28, 81);
+          padding: 10px 25px;
+          text-align: center;
+          display: inline-block;
+          font-size: 15px;
+          margin: 4px 2px;
+          cursor: pointer;
+          border-radius: 7px;
+          font-family: Arial;
+          text-decoration: none;
+          }
+    
+        .cancel {
+            background-color: white;
+            color: rgb(28, 28, 81);
+            border-style: solid;
+            border-color: lightgray;
+            border-width: 1px;
+        }
+    </style>    
+</head>
+
+<body>
+    <h1 style="font-family: Arial; margin-left: 100px;">Create New Vaccine</h1>
+
+    <form action="" style="margin-left: 100px; font-family: Arial; font-size: large;">
+        <div>
+            <label for="nama">Nama</label>
+        </div>
+        <div>
+            <input class="input" type="text" id="nama" name="nama" placeholder="Nama">
+        </div>
+        <div>
+            <label for="harga">Harga</label>
+        </div>
+        <div>
+            <input class="input" type="text" id="harga" name="harga" placeholder="Harga">
+        </div>
+        <div>
+            <label for="stok">Stok Awal</label>
+        </div>
+        <div>
+            <input class="input" type="text" id="stok" name="stok" placeholder="Stok Awal">
+        </div>
+    </form>
+
+    <div align="right" style="margin-right: 100px;">
+        <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel" type="button" value="Cancel">Cancel</a>
+        <input class="button" type="submit" value="Create">
+    </div>
+</body>
