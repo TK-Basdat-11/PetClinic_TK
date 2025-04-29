@@ -8,7 +8,5 @@ urlpatterns = [
     path('create', create_hewan, name='create-hewan'),
     path('update', update_hewan, name='update-hewan'),
     path("delete", delete_hewan, name="delete-hewan"),
-    
-    # akan dihapus
-    path("client", show_hewan_client, name="client"),
+    path("client/", show_hewan_client, name="client"),
 ]
