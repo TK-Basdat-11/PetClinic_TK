@@ -53,14 +53,14 @@
     <div class="container">
       <div class="menu">
         <a href="{% url 'dashboard:dashboard_fdo' %}">Dashboard</a>
-        <a href="#">Kelola Jenis Hewan</a>
-        <a href="#">Kelola Hewan Peliharaan</a>
-        <a href="#">Kelola Kunjungan</a>
+        <a href="{% url 'jenis_hewan:jenis-hewan' %}">Kelola Jenis Hewan</a>
+        <a href="{% url 'hewan:hewan' %}">Kelola Hewan Peliharaan</a>
+        <a href="arjnflwrjb">Kelola Kunjungan</a>
         <a href="{% url 'listklien:list_klien' %}">Daftar Klien</a>
 
       </div>
       <div class="menu">
-        <a href="#" class="logout">Logout</a>
+        <a href="{% url 'authentication:logout' %}" class="logout">Logout</a>
       </div>
     </div>
   </nav>
