@@ -46,6 +46,9 @@ INSTALLED_APPS = [
     'dashboard',
     'manajemen_obat',
     'perawatan_hewan',
+    "jenis_hewan",
+    "hewan",
+    "authentication",
 ]
 
 MIDDLEWARE = [
