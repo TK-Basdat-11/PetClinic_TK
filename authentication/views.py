@@ -31,3 +31,21 @@ def hero_section(request):
 def user_logout(request):
    
    return redirect("authentication:hero")
+
+def register(request):
+    return render(request,"register.html")
+
+def register_individu(request):
+    return render(request,"register_individu.html")
+
+def register_perusahaan(request):
+    return render(request,"register_perusahaan.html")
+
+def register_fdo(request):
+    return render(request,"register_fdo.html")
+
+def register_dokter(request):
+    return render(request,"register_dokter.html")
+
+def register_perawat(request):
+    return render(request,"register_perawat.html")
