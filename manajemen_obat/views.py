@@ -1,0 +1,674 @@
+from django.shortcuts import render, redirect, get_object_or_404
+from django.db import connection
+from django.contrib import messages
+from django.template import TemplateDoesNotExist
+from django.http import HttpResponse
+
+def list_medicine(request):
+    medicines = []
+    with connection.cursor() as cursor:
+        cursor.execute("""
+        SELECT kode, nama, harga, stok, dosis
+        FROM PETCLINIC.OBAT
+        ORDER BY kode
+        """)
+        medicines = cursor.fetchall()
+    
+    user_role = request.session.get('user_role', 'perawat')
+    print(request.session)
+    context = {
+        'medicines': medicines,
+        'user_role': user_role,
+    }
+    return render(request, 'manajemen_obat/list_medicine.html', context)
+
+def create_medicine(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        price = request.POST.get('price')
+        dosage = request.POST.get('dosage')
+        stock = request.POST.get('stock')
+        
+        # Validate input
+        errors = {}
+        if not name:
+            errors['name'] = 'Nama obat tidak boleh kosong'
+        
+        try:
+            price = int(price)
+            if price <= 0:
+                errors['price'] = 'Harga harus lebih dari 0'
+        except ValueError:
+            errors['price'] = 'Harga harus berupa angka'
+        
+        if not dosage:
+            errors['dosage'] = 'Dosis tidak boleh kosong'
+        
+        try:
+            stock = int(stock)
+            if stock < 0:
+                errors['stock'] = 'Stok tidak boleh negatif'
+        except ValueError:
+            errors['stock'] = 'Stok harus berupa angka'
+        
+        if errors:
+            user_role = request.session.get('user_role', 'perawat')
+            
+            context = {
+                'errors': errors,
+                'name': name,
+                'price': price,
+                'dosage': dosage,
+                'stock': stock,
+                'user_role': user_role,
+            }
+            return render(request, 'manajemen_obat/form_medicine.html', context)
+        
+        with connection.cursor() as cursor:
+            # Debug: Print the current codes in the database
+            cursor.execute("SELECT kode FROM PETCLINIC.OBAT ORDER BY kode")
+            current_codes = cursor.fetchall()
+            print("Current medicine codes:", current_codes)
+            
+            # Get the maximum number
+            cursor.execute("""
+            SELECT MAX(CAST(SUBSTRING(kode, 4) AS INTEGER))
+            FROM PETCLINIC.OBAT
+            WHERE kode LIKE 'MED%'
+            """)
+            result = cursor.fetchone()[0]
+            print("Max medicine number result:", result)
+            
+            next_num = 1
+            if result is not None:
+                try:
+                    next_num = int(result) + 1
+                except ValueError:
+                    next_num = 1
+            
+            med_code = f'MED{next_num:03d}'
+            print("Generated medicine code:", med_code)
+            
+            cursor.execute("""
+            INSERT INTO PETCLINIC.OBAT (kode, nama, harga, dosis, stok)
+            VALUES (%s, %s, %s, %s, %s)
+            """, [med_code, name, price, dosage, stock])
+            
+        messages.success(request, f'Obat {med_code} berhasil ditambahkan!')
+        return redirect('obat:list_medicine')
+    
+    # Get user role from session or set a default
+    user_role = request.session.get('user_role', 'perawat')
+    
+    context = {
+        'user_role': user_role,
+    }
+    return render(request, 'manajemen_obat/form_medicine.html', context)
+
+def update_medicine(request, med_code):
+    medicine = None
+    with connection.cursor() as cursor:
+        cursor.execute("""
+        SELECT kode, nama, harga, dosis, stok
+        FROM PETCLINIC.OBAT
+        WHERE kode = %s
+        """, [med_code])
+        result = cursor.fetchone()
+        
+        if result:
+            medicine = {
+                'code': result[0],
+                'name': result[1],
+                'price': result[2],
+                'dosage': result[3],
+                'stock': result[4]
+            }
+    
+    if not medicine:
+        messages.error(request, 'Obat tidak ditemukan!')
+        return redirect('obat:list_medicine')
+    
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        price = request.POST.get('price')
+        dosage = request.POST.get('dosage')
+        
+        # Validate inputs
+        errors = {}
+        if not name:
+            errors['name'] = 'Nama obat tidak boleh kosong'
+        
+        try:
+            price = int(price)
+            if price <= 0:
+                errors['price'] = 'Harga harus lebih dari 0'
+        except ValueError:
+            errors['price'] = 'Harga harus berupa angka'
+        
+        if not dosage:
+            errors['dosage'] = 'Dosis tidak boleh kosong'
+        
+        if errors:
+            # Get user role from session or set a default
+            user_role = request.session.get('user_role', 'perawat')
+            
+            context = {
+                'medicine': medicine,
+                'errors': errors,
+                'name': name,
+                'price': price,
+                'dosage': dosage,
+                'user_role': user_role,
+            }
+            return render(request, 'manajemen_obat/form_medicine.html', context)
+        
+        # Update medicine
+        with connection.cursor() as cursor:
+            cursor.execute("""
+            UPDATE PETCLINIC.OBAT
+            SET nama = %s, harga = %s, dosis = %s
+            WHERE kode = %s
+            """, [name, price, dosage, med_code])
+        
+        messages.success(request, f'Obat {med_code} berhasil diperbarui!')
+        return redirect('obat:list_medicine')
+    
+    user_role = request.session.get('user_role', 'perawat')
+    
+    context = {
+        'medicine': medicine,
+        'is_update': True,
+        'user_role': user_role,
+    }
+    return render(request, 'manajemen_obat/form_medicine.html', context)
+
+def update_stock(request):
+    medicines = []
+    # Get pre-selected medicine from URL parameter
+    selected_medicine = request.GET.get('medicine', '')
+    
+    with connection.cursor() as cursor:
+        cursor.execute("""
+        SELECT kode, nama
+        FROM PETCLINIC.OBAT
+        ORDER BY kode
+        """)
+        medicines = cursor.fetchall()
+    
+    if request.method == 'POST':
+        med_code = request.POST.get('medicine')
+        stock = request.POST.get('stock')
+        
+        # Validate inputs
+        errors = {}
+        if not med_code:
+            errors['medicine'] = 'Silakan pilih obat'
+        
+        try:
+            stock = int(stock)
+            if stock < 0:
+                errors['stock'] = 'Stok tidak boleh negatif'
+        except ValueError:
+            errors['stock'] = 'Stok harus berupa angka'
+        
+        if errors:
+            user_role = request.session.get('user_role', 'perawat')
+            
+            context = {
+                'medicines': medicines,
+                'errors': errors,
+                'selected_medicine': med_code,
+                'stock': stock,
+                'user_role': user_role,
+            }
+            return render(request, 'manajemen_obat/form_stock.html', context)
+        
+        # Update stock
+        with connection.cursor() as cursor:
+            cursor.execute("""
+            UPDATE PETCLINIC.OBAT
+            SET stok = %s
+            WHERE kode = %s
+            """, [stock, med_code])
+        
+        messages.success(request, f'Stok obat berhasil diperbarui!')
+        return redirect('obat:list_medicine')
+    
+    # Get the current stock for the selected medicine
+    current_stock = 0
+    if selected_medicine:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+            SELECT stok FROM PETCLINIC.OBAT WHERE kode = %s
+            """, [selected_medicine])
+            result = cursor.fetchone()
+            if result:
+                current_stock = result[0]
+    
+    # Get user role from session or set a default
+    user_role = request.session.get('user_role', 'perawat')
+    
+    context = {
+        'medicines': medicines,
+        'selected_medicine': selected_medicine,
+        'stock': current_stock,
+        'user_role': user_role,
+    }
+    return render(request, 'manajemen_obat/form_stock.html', context)
+
+def delete_medicine(request, med_code):
+    medicine = None
+    with connection.cursor() as cursor:
+        cursor.execute("""
+        SELECT kode, nama
+        FROM PETCLINIC.OBAT
+        WHERE kode = %s
+        """, [med_code])
+        result = cursor.fetchone()
+        
+        if result:
+            medicine = {
+                'code': result[0],
+                'name': result[1]
+            }
+    
+    if not medicine:
+        messages.error(request, 'Obat tidak ditemukan!')
+        return redirect('obat:list_medicine')
+    
+    if request.method == 'POST':
+        # Delete medicine
+        with connection.cursor() as cursor:
+            cursor.execute("""
+            DELETE FROM PETCLINIC.OBAT
+            WHERE kode = %s
+            """, [med_code])
+        
+        messages.success(request, f'Obat {med_code} berhasil dihapus!')
+        return redirect('obat:list_medicine')
+    
+    # Get user role from session or set a default
+    user_role = request.session.get('user_role', 'perawat')
+    
+    context = {
+        'medicine': medicine,
+        'user_role': user_role,
+    }
+    return render(request, 'manajemen_obat/confirm_delete.html', context)
+
+def list_treatment(request):
+    treatments = []
+    with connection.cursor() as cursor:
+        cursor.execute("""
+        SELECT kode_perawatan, nama_perawatan, biaya_perawatan
+        FROM PETCLINIC.PERAWATAN
+        ORDER BY kode_perawatan
+        """)
+        treatments = cursor.fetchall()
+    
+        user_role = request.session.get('user_role', 'perawat')
+    
+    context = {
+        'treatments': treatments,
+        'user_role': user_role,
+    }
+    return render(request, 'manajemen_obat/list_treatment.html', context)
+
+def create_treatment(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        cost = request.POST.get('cost')
+        
+        errors = {}
+        if not name:
+            errors['name'] = 'Nama jenis perawatan tidak boleh kosong'
+        
+        try:
+            cost = int(cost)
+            if cost <= 0:
+                errors['cost'] = 'Biaya harus lebih dari 0'
+        except ValueError:
+            errors['cost'] = 'Biaya harus berupa angka'
+        
+        if errors:
+            user_role = request.session.get('user_role', 'perawat')
+            
+            context = {
+                'errors': errors,
+                'name': name,
+                'cost': cost,
+                'user_role': user_role,
+            }
+            return render(request, 'manajemen_obat/form_treatment.html', context)
+        
+        with connection.cursor() as cursor:
+        
+            # Get the maximum number
+            cursor.execute("""
+            SELECT MAX(CAST(SUBSTRING(kode_perawatan, 4) AS INTEGER))
+            FROM PETCLINIC.PERAWATAN
+            WHERE kode_perawatan LIKE 'TRM%'
+            """)
+            result = cursor.fetchone()[0]
+            print("Max treatment number result:", result)
+            
+            next_num = 1
+            if result is not None:
+                try:
+                    next_num = int(result) + 1
+                except ValueError:
+                    next_num = 1
+            
+            treatment_code = f'TRM{next_num:03d}'
+            print("Generated treatment code:", treatment_code)
+            
+            cursor.execute("""
+            INSERT INTO PETCLINIC.PERAWATAN (kode_perawatan, nama_perawatan, biaya_perawatan)
+            VALUES (%s, %s, %s)
+            """, [treatment_code, name, cost])
+            
+        messages.success(request, f'Jenis perawatan {treatment_code} berhasil ditambahkan!')
+        return redirect('obat:list_treatment')
+    
+    user_role = request.session.get('user_role', 'perawat')
+    
+    context = {
+        'user_role': user_role,
+    }
+    return render(request, 'manajemen_obat/form_treatment.html', context)
+
+def update_treatment(request, treatment_code):
+    treatment = None
+    with connection.cursor() as cursor:
+        cursor.execute("""
+        SELECT kode_perawatan, nama_perawatan, biaya_perawatan
+        FROM PETCLINIC.PERAWATAN
+        WHERE kode_perawatan = %s
+        """, [treatment_code])
+        result = cursor.fetchone()
+        
+        if result:
+            treatment = {
+                'code': result[0],
+                'name': result[1],
+                'cost': result[2]
+            }
+    
+    if not treatment:
+        messages.error(request, 'Jenis perawatan tidak ditemukan!')
+        return redirect('obat:list_treatment')
+    
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        cost = request.POST.get('cost')
+        
+        errors = {}
+        if not name:
+            errors['name'] = 'Nama jenis perawatan tidak boleh kosong'
+        
+        try:
+            cost = int(cost)
+            if cost <= 0:
+                errors['cost'] = 'Biaya harus lebih dari 0'
+        except ValueError:
+            errors['cost'] = 'Biaya harus berupa angka'
+        
+        if errors:
+            user_role = request.session.get('user_role', 'perawat')
+            
+            context = {
+                'treatment': treatment,
+                'errors': errors,
+                'name': name,
+                'cost': cost,
+                'user_role': user_role,
+            }
+            return render(request, 'manajemen_obat/form_treatment.html', context)
+        
+        with connection.cursor() as cursor:
+            cursor.execute("""
+            UPDATE PETCLINIC.PERAWATAN
+            SET nama_perawatan = %s, biaya_perawatan = %s
+            WHERE kode_perawatan = %s
+            """, [name, cost, treatment_code])
+        
+        messages.success(request, f'Jenis perawatan {treatment_code} berhasil diperbarui!')
+        return redirect('obat:list_treatment')
+    
+    user_role = request.session.get('user_role', 'perawat')
+    
+    context = {
+        'treatment': treatment,
+        'is_update': True,
+        'user_role': user_role,
+    }
+    return render(request, 'manajemen_obat/form_treatment.html', context)
+
+def delete_treatment(request, treatment_code):
+    treatment = None
+    with connection.cursor() as cursor:
+        cursor.execute("""
+        SELECT kode_perawatan, nama_perawatan
+        FROM PETCLINIC.PERAWATAN
+        WHERE kode_perawatan = %s
+        """, [treatment_code])
+        result = cursor.fetchone()
+        
+        if result:
+            treatment = {
+                'code': result[0],
+                'name': result[1]
+            }
+    
+    if not treatment:
+        messages.error(request, 'Jenis perawatan tidak ditemukan!')
+        return redirect('obat:list_treatment')
+    
+    if request.method == 'POST':
+        with connection.cursor() as cursor:
+            cursor.execute("""
+            DELETE FROM PETCLINIC.PERAWATAN
+            WHERE kode_perawatan = %s
+            """, [treatment_code])
+        
+        messages.success(request, f'Jenis perawatan {treatment_code} berhasil dihapus!')
+        return redirect('obat:list_treatment')
+    
+    user_role = request.session.get('user_role', 'perawat')
+    
+    context = {
+        'treatment': treatment,
+        'user_role': user_role,
+    }
+    return render(request, 'manajemen_obat/confirm_delete_treatment.html', context)
+
+def list_prescriptions(request):
+    prescriptions = []
+    
+    is_client = request.GET.get('role') == 'client'
+    client_id = request.GET.get('client_id')
+    
+    with connection.cursor() as cursor:
+        if is_client and client_id:
+            cursor.execute("""
+            SELECT p.kode_perawatan, per.nama_perawatan, p.kode_obat, o.nama, p.kuantitas_obat,
+                   o.harga * p.kuantitas_obat as total_price
+            FROM PETCLINIC.PERAWATAN_OBAT p
+            JOIN PETCLINIC.PERAWATAN per ON p.kode_perawatan = per.kode_perawatan
+            JOIN PETCLINIC.OBAT o ON p.kode_obat = o.kode
+            JOIN PETCLINIC.KUNJUNGAN_KEPERAWATAN kk ON p.kode_perawatan = kk.kode_perawatan
+            JOIN PETCLINIC.KUNJUNGAN k ON kk.id_kunjungan = k.id_kunjungan
+            WHERE k.no_identitas_klien = %s
+            ORDER BY p.kode_perawatan, p.kode_obat
+            """, [client_id])
+        else:
+            cursor.execute("""
+            SELECT p.kode_perawatan, per.nama_perawatan, p.kode_obat, o.nama, p.kuantitas_obat,
+                   o.harga * p.kuantitas_obat as total_price
+            FROM PETCLINIC.PERAWATAN_OBAT p
+            JOIN PETCLINIC.PERAWATAN per ON p.kode_perawatan = per.kode_perawatan
+            JOIN PETCLINIC.OBAT o ON p.kode_obat = o.kode
+            ORDER BY p.kode_perawatan, p.kode_obat
+            """)
+        
+        prescriptions = cursor.fetchall()
+    
+    user_role = request.session.get('user_role', 'perawat')
+    
+    context = {
+        'prescriptions': prescriptions,
+        'is_client': is_client,
+        'user_role': user_role,
+    }
+    return render(request, 'manajemen_obat/list_prescriptions.html', context)
+
+def create_prescription(request):
+    treatments = []
+    medicines = []
+    
+    with connection.cursor() as cursor:
+        cursor.execute("""
+        SELECT kode_perawatan, nama_perawatan
+        FROM PETCLINIC.PERAWATAN
+        ORDER BY kode_perawatan
+        """)
+        treatments = cursor.fetchall()
+        
+        cursor.execute("""
+        SELECT kode, nama, stok
+        FROM PETCLINIC.OBAT
+        WHERE stok > 0
+        ORDER BY kode
+        """)
+        medicines = cursor.fetchall()
+    
+    if request.method == 'POST':
+        treatment_code = request.POST.get('treatment')
+        med_code = request.POST.get('medicine')
+        quantity = request.POST.get('quantity')
+        
+        # Validate inputs
+        errors = {}
+        
+        if not treatment_code:
+            errors['treatment'] = 'Silakan pilih jenis perawatan'
+        
+        if not med_code:
+            errors['medicine'] = 'Silakan pilih obat'
+        
+        med_stock = 0
+        with connection.cursor() as cursor:
+            cursor.execute("""
+            SELECT stok FROM PETCLINIC.OBAT WHERE kode = %s
+            """, [med_code])
+            result = cursor.fetchone()
+            if result:
+                med_stock = result[0]
+        
+        try:
+            quantity = int(quantity)
+            if quantity <= 0:
+                errors['quantity'] = 'Kuantitas harus lebih dari 0'
+            elif quantity > med_stock:
+                errors['quantity'] = f'Stok obat tidak mencukupi (tersedia: {med_stock})'
+        except ValueError:
+            errors['quantity'] = 'Kuantitas harus berupa angka'
+            
+        if not errors:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                SELECT 1 FROM PETCLINIC.PERAWATAN_OBAT 
+                WHERE kode_perawatan = %s AND kode_obat = %s
+                """, [treatment_code, med_code])
+                if cursor.fetchone():
+                    errors['duplicate'] = 'Obat ini sudah terdaftar untuk jenis perawatan tersebut'
+        
+        if errors:
+            user_role = request.session.get('user_role', 'perawat')
+            
+            context = {
+                'treatments': treatments,
+                'medicines': medicines,
+                'errors': errors,
+                'selected_treatment': treatment_code,
+                'selected_medicine': med_code,
+                'quantity': quantity,
+                'user_role': user_role,
+            }
+            return render(request, 'manajemen_obat/form_prescription.html', context)
+        
+        with connection.cursor() as cursor:
+            cursor.execute("""
+            INSERT INTO PETCLINIC.PERAWATAN_OBAT (kode_perawatan, kode_obat, kuantitas_obat)
+            VALUES (%s, %s, %s)
+            """, [treatment_code, med_code, quantity])
+            
+            cursor.execute("""
+            UPDATE PETCLINIC.OBAT
+            SET stok = stok - %s
+            WHERE kode = %s
+            """, [quantity, med_code])
+        
+        messages.success(request, 'Resep obat berhasil ditambahkan!')
+        return redirect('obat:list_prescriptions')
+    
+    user_role = request.session.get('user_role', 'perawat')
+    
+    context = {
+        'treatments': treatments,
+        'medicines': medicines,
+        'user_role': user_role,
+    }
+    return render(request, 'manajemen_obat/form_prescription.html', context)
+
+def delete_prescription(request, treatment_code, med_code):
+    prescription = None
+    
+    with connection.cursor() as cursor:
+        cursor.execute("""
+        SELECT po.kode_perawatan, p.nama_perawatan, po.kode_obat, o.nama, po.kuantitas_obat
+        FROM PETCLINIC.PERAWATAN_OBAT po
+        JOIN PETCLINIC.PERAWATAN p ON po.kode_perawatan = p.kode_perawatan
+        JOIN PETCLINIC.OBAT o ON po.kode_obat = o.kode
+        WHERE po.kode_perawatan = %s AND po.kode_obat = %s
+        """, [treatment_code, med_code])
+        result = cursor.fetchone()
+        
+        if result:
+            prescription = {
+                'treatment_code': result[0],
+                'treatment_name': result[1],
+                'med_code': result[2],
+                'med_name': result[3],
+                'quantity': result[4]
+            }
+    
+    if not prescription:
+        messages.error(request, 'Resep tidak ditemukan!')
+        return redirect('obat:list_prescriptions')
+    
+    if request.method == 'POST':
+        quantity = prescription['quantity']
+        
+        with connection.cursor() as cursor:
+            cursor.execute("""
+            DELETE FROM PETCLINIC.PERAWATAN_OBAT
+            WHERE kode_perawatan = %s AND kode_obat = %s
+            """, [treatment_code, med_code])
+            
+            cursor.execute("""
+            UPDATE PETCLINIC.OBAT
+            SET stok = stok + %s
+            WHERE kode = %s
+            """, [quantity, med_code])
+        
+        messages.success(request, 'Resep obat berhasil dihapus!')
+        return redirect('obat:list_prescriptions')
+    
+    user_role = request.session.get('user_role', 'perawat')
+    
+    context = {
+        'prescription': prescription,
+        'user_role': user_role,
+    }
+    return render(request, 'manajemen_obat/confirm_delete_prescription.html', context)
