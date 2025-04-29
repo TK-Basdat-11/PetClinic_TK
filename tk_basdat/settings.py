@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'data_klien_hewan',
     'dashboard',
     'manajemen_obat',
+    'perawatan_hewan',
     "jenis_hewan",
     "hewan",
     "authentication",
