@@ -118,7 +118,7 @@
             <a href="{% url 'vaksin:update_stok' %}" class="button"
                 style="background-color: #ededed; color: black; border-color: #ededed;"
             >Update Stock</a>
-            <a href="{% url 'vaksin:update_vaksin_perawat' %}" class="button">Update</a>
+            <a href="{% url 'vaksin:update_vaksin_perawat' vaksin.0 %}" class="button">Update</a>
             <a href="{% url 'vaksin:delete_vaksin_perawat' %}" class="button" style="background-color: red; border-color: red;"
             >Delete</a>
         </td>
