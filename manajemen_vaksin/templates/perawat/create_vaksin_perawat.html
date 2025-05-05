@@ -1,12 +1,16 @@
-<!DOCTYPE html>
+{% extends "base.html" %}
 {% include 'components/navbar_perawat.html' %}
+
+{% block title %}Create Vaksin{% endblock %}
+
+{% block content %}
 <head>
     <meta charset="UTF-8" />
     <title>Create Vaksin</title>
     <style>
         .input {
             margin-top: 5px;
-            margin-bottom: 15px;
+            margin-bottom: 0px;
             width: 1200px;
             padding: 5px 10px;  
             font-size: medium;
@@ -15,6 +19,12 @@
             border: 1px solid #d1d5db;
             border-radius: 0.5rem;     
             appearance: none;         
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            margin-top: 10px;
         }
     
         .button {
@@ -40,35 +50,44 @@
             border-color: lightgray;
             border-width: 1px;
         }
+
+        p {
+            margin-bottom: 10px;
+        }
+
     </style>    
 </head>
 
 <body>
-    <h1 style="font-family: Arial; margin-left: 100px;">Create New Vaccine</h1>
+    <h1 style="font-family: Arial; margin-bottom: 10px; margin-left: 100px; font-size: x-large; font-weight: bold;">Create New Vaccine</h1>
 
-    <form action="" style="margin-left: 100px; font-family: Arial; font-size: large;">
+    <form action="" method="POST" style="margin-left: 100px; font-family: Arial; font-size: large;">
+        {% csrf_token %}
         <div>
             <label for="nama">Nama</label>
-        </div>
-        <div>
-            <input class="input" type="text" id="nama" name="nama" placeholder="Nama">
+            <input class="input" type="text" id="name" value="{% if name %}{{ name }}{% endif %}" name="name" placeholder="Nama">
+            {% if errors.name %}
+                <p class="text-red-500 text-xs mt-1">{{ errors.name }}</p>
+            {% endif %}
         </div>
         <div>
             <label for="harga">Harga</label>
-        </div>
-        <div>
-            <input class="input" type="text" id="harga" name="harga" placeholder="Harga">
+            <input class="input" type="text" id="price" value="{% if price %}{{ price }}{% endif %}" name="price" placeholder="Harga">
+            {% if errors.price %}
+                <p class="text-red-500 text-xs mt-1">{{ errors.price }}</p>
+            {% endif %}
         </div>
         <div>
             <label for="stok">Stok Awal</label>
+            <input class="input" type="text" id="stock" value="{% if stock %}{{ stock }}{% endif %}" name="stock" placeholder="Stok Awal">
+            {% if errors.stock %}
+                <p class="text-red-500 text-xs mt-1">{{ errors.stock }}</p>
+            {% endif %}
         </div>
-        <div>
-            <input class="input" type="text" id="stok" name="stok" placeholder="Stok Awal">
+        <div align="right" style="margin-right: 100px;">
+            <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel" type="button" value="Cancel">Cancel</a>
+            <button class="button" type="submit">Create</button>
         </div>
     </form>
-
-    <div align="right" style="margin-right: 100px;">
-        <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel" type="button" value="Cancel">Cancel</a>
-        <input class="button" type="submit" value="Create">
-    </div>
 </body>
+{% endblock %} 

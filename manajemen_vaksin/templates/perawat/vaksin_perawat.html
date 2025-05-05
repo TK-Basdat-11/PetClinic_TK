@@ -1,9 +1,12 @@
-<!DOCTYPE html>
+{% extends "base.html" %}
 {% include 'components/navbar_perawat.html' %}
+{% load humanize %}
+{% block title %}Manajemen Vaksin{% endblock %}
+
+{% block content %}
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>List Vaccine</title>
   <style>
     .button {
       border-style: solid;
@@ -22,10 +25,9 @@
     }
 
     .searchbar {
-      border-style: solid;
-      border-color: rgb(237, 237, 237);
+      border: 1px solid #acacac;
       color: black;
-      background-color: white;
+      background-color: rgb(255, 255, 255);
       padding: 10px 10px;
       display: inline-block;
       font-size: 15px;
@@ -59,7 +61,7 @@
   </style>
 </head>
 <body>
-  <h1 style="margin-left: 100px; font-family: Arial, sans-serif;">
+  <h1 style="margin-left: 100px; font-family: Arial; font-size: x-large; font-weight: bold; margin-bottom: 10px;">
     List Vaccine
   </h1>
 
@@ -105,12 +107,13 @@
       </tr>
     </thead>
     <tbody>
+      {% for vaksin in list_vaksin_perawat %}
       <tr>
-        <td>1</td>
-        <td>VAC001</td>
-        <td>Feline Panleukopenia</td>
-        <td>Rp100.000</td>
-        <td>100</td>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ vaksin.0 }}</td>
+        <td>{{ vaksin.1 }}</td>
+        <td>Rp{{ vaksin.2|intcomma }}</td>
+        <td>{{ vaksin.3 }}</td>
         <td>
             <a href="{% url 'vaksin:update_stok' %}" class="button"
                 style="background-color: #ededed; color: black; border-color: #ededed;"
@@ -120,34 +123,7 @@
             >Delete</a>
         </td>
       </tr>
-      <tr>
-        <td>2</td>
-        <td>VAC002</td>
-        <td>Canine Parvovirus</td>
-        <td>Rp150.000</td>
-        <td>200</td>
-        <td>
-          <a class="button"
-             style="background-color: #ededed; color: black; border-color: #ededed;"
-          >Update Stock</a>
-          <a class="button">Update</a>
-          <a class="button" style="background-color: red; border-color: red;"
-          >Delete</a>
-        </td>
-      </tr>
-      <tr>
-        <td>3</td>
-        <td>VAC003</td>
-        <td>Canine Adenovirus</td>
-        <td>Rp180.000</td>
-        <td>300</td>
-        <td>
-          <a class="button">Update</a>
-          <a class="button"
-             style="background-color: red; border-color: red;"
-          >Delete</a>
-        </td>
-      </tr>
+      {% endfor %}
     </tbody>
   </table>
 
@@ -175,3 +151,4 @@
   </script>
 </body>
 </html>
+{% endblock %} 
