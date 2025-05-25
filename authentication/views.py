@@ -1,7 +1,7 @@
 from django.shortcuts import redirect, render
 
 # Create your views here.
-from django.db import connection
+from django.db import connection, InternalError
 from django.shortcuts import render, redirect
 from django.contrib import messages
 
@@ -118,32 +118,41 @@ def register_individu(request):
         alamat         = request.POST["alamat"]
 
         no_identitas = uuid.uuid4()
+    
+        try:
+            with connection.cursor() as cur:
+                # USERS ----------------------------------------------------------
+                cur.execute(
+                    """INSERT INTO PETCLINIC.USERS
+                       (email, password_user, alamat, nomor_telepon)
+                       VALUES (%s, %s, %s, %s)""",
+                    [email, password, alamat, nomor_telepon]
+                )
+                # KLIEN ----------------------------------------------------------
+                cur.execute(
+                    """INSERT INTO PETCLINIC.KLIEN
+                       (no_identitas, tanggal_registrasi, email)
+                       VALUES (%s, CURRENT_DATE, %s)""",
+                    [no_identitas, email]
+                )
+                # INDIVIDU -------------------------------------------------------
+                cur.execute(
+                    """INSERT INTO PETCLINIC.INDIVIDU
+                       (no_identitas_klien, nama_depan, nama_tengah, nama_belakang)
+                       VALUES (%s, %s, %s, %s)""",
+                    [no_identitas, nama_depan, nama_tengah, nama_belakang]
+                )
 
-        with connection.cursor() as cur:
-            # USERS ----------------------------------------------------------
-            cur.execute(
-                """INSERT INTO PETCLINIC.USERS
-                   (email, password_user, alamat, nomor_telepon)
-                   VALUES (%s, %s, %s, %s)""",
-                [email, password, alamat, nomor_telepon]
-            )
-            # KLIEN ----------------------------------------------------------
-            cur.execute(
-                """INSERT INTO PETCLINIC.KLIEN
-                   (no_identitas, tanggal_registrasi, email)
-                   VALUES (%s, CURRENT_DATE, %s)""",
-                [no_identitas, email]
-            )
-            # INDIVIDU -------------------------------------------------------
-            cur.execute(
-                """INSERT INTO PETCLINIC.INDIVIDU
-                   (no_identitas_klien, nama_depan, nama_tengah, nama_belakang)
-                   VALUES (%s, %s, %s, %s)""",
-                [no_identitas, nama_depan, nama_tengah, nama_belakang]
-            )
-
-        messages.success(request, "Registrasi berhasil! Silakan login.")
-        return redirect("authentication:login")
+            messages.success(request, "Registrasi berhasil! Silakan login.")
+            return redirect("authentication:login")
+        except InternalError as e:
+            error_msg = str(e)
+            if "ERROR:" in error_msg:
+                error_msg = error_msg.split("ERROR:")[1].strip()
+                if "CONTEXT:" in error_msg:
+                    error_msg = error_msg.split("CONTEXT:")[0].strip()
+            messages.error(request, error_msg)
+            return render(request, "register_individu.html")
 
     return render(request, "register_individu.html")
 	
@@ -157,28 +166,37 @@ def register_perusahaan(request):
 
         no_identitas = uuid.uuid4()
 
-        with connection.cursor() as cur:
-            cur.execute(
-                """INSERT INTO PETCLINIC.USERS
-                   (email, password_user, alamat, nomor_telepon)
-                   VALUES (%s, %s, %s, %s)""",
-                [email, password, alamat, nomor_telepon]
-            )
-            cur.execute(
-                """INSERT INTO PETCLINIC.KLIEN
-                   (no_identitas, tanggal_registrasi, email)
-                   VALUES (%s, CURRENT_DATE, %s)""",
-                [no_identitas, email]
-            )
-            cur.execute(
-                """INSERT INTO PETCLINIC.PERUSAHAAN
-                   (no_identitas_klien, nama_perusahaan)
-                   VALUES (%s, %s)""",
-                [no_identitas, nama_perusahaan]
-            )
+        try:
+            with connection.cursor() as cur:
+                cur.execute(
+                    """INSERT INTO PETCLINIC.USERS
+                       (email, password_user, alamat, nomor_telepon)
+                       VALUES (%s, %s, %s, %s)""",
+                    [email, password, alamat, nomor_telepon]
+                )
+                cur.execute(
+                    """INSERT INTO PETCLINIC.KLIEN
+                       (no_identitas, tanggal_registrasi, email)
+                       VALUES (%s, CURRENT_DATE, %s)""",
+                    [no_identitas, email]
+                )
+                cur.execute(
+                    """INSERT INTO PETCLINIC.PERUSAHAAN
+                       (no_identitas_klien, nama_perusahaan)
+                       VALUES (%s, %s)""",
+                    [no_identitas, nama_perusahaan]
+                )
 
-        messages.success(request, "Registrasi berhasil! Silakan login.")
-        return redirect("authentication:login")
+            messages.success(request, "Registrasi berhasil! Silakan login.")
+            return redirect("authentication:login")
+        except InternalError as e:
+            error_msg = str(e)
+            if "ERROR:" in error_msg:
+                error_msg = error_msg.split("ERROR:")[1].strip()
+                if "CONTEXT:" in error_msg:
+                    error_msg = error_msg.split("CONTEXT:")[0].strip()
+            messages.error(request, error_msg)
+            return render(request, "register_perusahaan.html")
 
     return render(request, "register_perusahaan.html")
 
@@ -192,30 +210,39 @@ def register_fdo(request):
 
         no_pegawai = uuid.uuid4()          # juga jadi PK FRONT_DESK
 
-        with connection.cursor() as cur:
-            # USERS
-            cur.execute(
-                """INSERT INTO PETCLINIC.USERS
-                   (email, password_user, alamat, nomor_telepon)
-                   VALUES (%s, %s, %s, %s)""",
-                [email, password, alamat, nomor_telepon]
-            )
-            # PEGAWAI
-            cur.execute(
-                """INSERT INTO PETCLINIC.PEGAWAI
-                   (no_pegawai, tanggal_mulai_kerja, email)
-                   VALUES (%s, %s, %s)""",
-                [no_pegawai, tanggal_diterima, email]
-            )
-            # FRONT_DESK
-            cur.execute(
-                """INSERT INTO PETCLINIC.FRONT_DESK
-                   (no_front_desk) VALUES (%s)""",
-                [no_pegawai]
-            )
+        try:
+            with connection.cursor() as cur:
+                # USERS
+                cur.execute(
+                    """INSERT INTO PETCLINIC.USERS
+                       (email, password_user, alamat, nomor_telepon)
+                       VALUES (%s, %s, %s, %s)""",
+                    [email, password, alamat, nomor_telepon]
+                )
+                # PEGAWAI
+                cur.execute(
+                    """INSERT INTO PETCLINIC.PEGAWAI
+                       (no_pegawai, tanggal_mulai_kerja, email)
+                       VALUES (%s, %s, %s)""",
+                    [no_pegawai, tanggal_diterima, email]
+                )
+                # FRONT_DESK
+                cur.execute(
+                    """INSERT INTO PETCLINIC.FRONT_DESK
+                       (no_front_desk) VALUES (%s)""",
+                    [no_pegawai]
+                )
 
-        messages.success(request, "Registrasi berhasil! Silakan login.")
-        return redirect("authentication:login")
+            messages.success(request, "Registrasi berhasil! Silakan login.")
+            return redirect("authentication:login")
+        except InternalError as e:
+            error_msg = str(e)
+            if "ERROR:" in error_msg:
+                error_msg = error_msg.split("ERROR:")[1].strip()
+                if "CONTEXT:" in error_msg:
+                    error_msg = error_msg.split("CONTEXT:")[0].strip()
+            messages.error(request, error_msg)
+            return render(request, "register_fdo.html")
 
     return render(request, "register_fdo.html")
 
@@ -235,55 +262,64 @@ def register_dokter(request):
 
         no_pegawai = uuid.uuid4()          # PK untuk seluruh rantai
 
-        with connection.cursor() as cur:
-            # USERS
-            cur.execute(
-                """INSERT INTO PETCLINIC.USERS
-                   (email, password_user, alamat, nomor_telepon)
-                   VALUES (%s, %s, %s, %s)""",
-                [email, password, alamat, nomor_telepon]
-            )
-            # PEGAWAI
-            cur.execute(
-                """INSERT INTO PETCLINIC.PEGAWAI
-                   (no_pegawai, tanggal_mulai_kerja, email)
-                   VALUES (%s, %s, %s)""",
-                [no_pegawai, tanggal_diterima, email]
-            )
-            # TENAGA_MEDIS
-            cur.execute(
-                """INSERT INTO PETCLINIC.TENAGA_MEDIS
-                   (no_tenaga_medis, no_izin_praktik)
-                   VALUES (%s, %s)""",
-                [no_pegawai, no_izin_praktik]
-            )
-            # DOKTER_HEWAN
-            cur.execute(
-                """INSERT INTO PETCLINIC.DOKTER_HEWAN
-                   (no_dokter_hewan) VALUES (%s)""",
-                [no_pegawai]
-            )
-            # SERTIFIKAT
-            for no_ser, nm_ser in zip(nomor_sertifikat, nama_sertifikat):
-                if no_ser and nm_ser:
-                    cur.execute(
-                        """INSERT INTO PETCLINIC.SERTIFIKAT_KOMPETENSI
-                           (no_sertifikat_kompetensi, no_tenaga_medis, nama_sertifikat)
-                           VALUES (%s, %s, %s)""",
-                        [no_ser, no_pegawai, nm_ser]
-                    )
-            # JADWAL
-            for hari, jam in zip(hari_list, jam_list):
-                if hari and jam:
-                    cur.execute(
-                        """INSERT INTO PETCLINIC.JADWAL_PRAKTIK
-                           (no_dokter_hewan, hari, jam)
-                           VALUES (%s, %s, %s)""",
-                        [no_pegawai, hari, jam]
-                    )
+        try:
+            with connection.cursor() as cur:
+                # USERS
+                cur.execute(
+                    """INSERT INTO PETCLINIC.USERS
+                       (email, password_user, alamat, nomor_telepon)
+                       VALUES (%s, %s, %s, %s)""",
+                    [email, password, alamat, nomor_telepon]
+                )
+                # PEGAWAI
+                cur.execute(
+                    """INSERT INTO PETCLINIC.PEGAWAI
+                       (no_pegawai, tanggal_mulai_kerja, email)
+                       VALUES (%s, %s, %s)""",
+                    [no_pegawai, tanggal_diterima, email]
+                )
+                # TENAGA_MEDIS
+                cur.execute(
+                    """INSERT INTO PETCLINIC.TENAGA_MEDIS
+                       (no_tenaga_medis, no_izin_praktik)
+                       VALUES (%s, %s)""",
+                    [no_pegawai, no_izin_praktik]
+                )
+                # DOKTER_HEWAN
+                cur.execute(
+                    """INSERT INTO PETCLINIC.DOKTER_HEWAN
+                       (no_dokter_hewan) VALUES (%s)""",
+                    [no_pegawai]
+                )
+                # SERTIFIKAT
+                for no_ser, nm_ser in zip(nomor_sertifikat, nama_sertifikat):
+                    if no_ser and nm_ser:
+                        cur.execute(
+                            """INSERT INTO PETCLINIC.SERTIFIKAT_KOMPETENSI
+                               (no_sertifikat_kompetensi, no_tenaga_medis, nama_sertifikat)
+                               VALUES (%s, %s, %s)""",
+                            [no_ser, no_pegawai, nm_ser]
+                        )
+                # JADWAL
+                for hari, jam in zip(hari_list, jam_list):
+                    if hari and jam:
+                        cur.execute(
+                            """INSERT INTO PETCLINIC.JADWAL_PRAKTIK
+                               (no_dokter_hewan, hari, jam)
+                               VALUES (%s, %s, %s)""",
+                            [no_pegawai, hari, jam]
+                        )
 
-        messages.success(request, "Registrasi berhasil! Silakan login.")
-        return redirect("authentication:login")
+            messages.success(request, "Registrasi berhasil! Silakan login.")
+            return redirect("authentication:login")
+        except InternalError as e:
+            error_msg = str(e)
+            if "ERROR:" in error_msg:
+                error_msg = error_msg.split("ERROR:")[1].strip()
+                if "CONTEXT:" in error_msg:
+                    error_msg = error_msg.split("CONTEXT:")[0].strip()
+            messages.error(request, error_msg)
+            return render(request, "register_dokter.html")
 
     return render(request, "register_dokter.html")
 
@@ -302,45 +338,54 @@ def register_perawat(request):
 
         no_pegawai = uuid.uuid4()
 
-        with connection.cursor() as cur:
-            # USERS
-            cur.execute(
-                """INSERT INTO PETCLINIC.USERS
-                   (email, password_user, alamat, nomor_telepon)
-                   VALUES (%s, %s, %s, %s)""",
-                [email, password, alamat, nomor_telepon]
-            )
-            # PEGAWAI
-            cur.execute(
-                """INSERT INTO PETCLINIC.PEGAWAI
-                   (no_pegawai, tanggal_mulai_kerja, email)
-                   VALUES (%s, %s, %s)""",
-                [no_pegawai, tanggal_diterima, email]
-            )
-            # TENAGA_MEDIS
-            cur.execute(
-                """INSERT INTO PETCLINIC.TENAGA_MEDIS
-                   (no_tenaga_medis, no_izin_praktik)
-                   VALUES (%s, %s)""",
-                [no_pegawai, no_izin_praktik]
-            )
-            # PERAWAT_HEWAN
-            cur.execute(
-                """INSERT INTO PETCLINIC.PERAWAT_HEWAN
-                   (no_perawat_hewan) VALUES (%s)""",
-                [no_pegawai]
-            )
-            # SERTIFIKAT
-            for no_ser, nm_ser in zip(nomor_sertifikat, nama_sertifikat):
-                if no_ser and nm_ser:
-                    cur.execute(
-                        """INSERT INTO PETCLINIC.SERTIFIKAT_KOMPETENSI
-                           (no_sertifikat_kompetensi, no_tenaga_medis, nama_sertifikat)
-                           VALUES (%s, %s, %s)""",
-                        [no_ser, no_pegawai, nm_ser]
-                    )
+        try:
+            with connection.cursor() as cur:
+                # USERS
+                cur.execute(
+                    """INSERT INTO PETCLINIC.USERS
+                       (email, password_user, alamat, nomor_telepon)
+                       VALUES (%s, %s, %s, %s)""",
+                    [email, password, alamat, nomor_telepon]
+                )
+                # PEGAWAI
+                cur.execute(
+                    """INSERT INTO PETCLINIC.PEGAWAI
+                       (no_pegawai, tanggal_mulai_kerja, email)
+                       VALUES (%s, %s, %s)""",
+                    [no_pegawai, tanggal_diterima, email]
+                )
+                # TENAGA_MEDIS
+                cur.execute(
+                    """INSERT INTO PETCLINIC.TENAGA_MEDIS
+                       (no_tenaga_medis, no_izin_praktik)
+                       VALUES (%s, %s)""",
+                    [no_pegawai, no_izin_praktik]
+                )
+                # PERAWAT_HEWAN
+                cur.execute(
+                    """INSERT INTO PETCLINIC.PERAWAT_HEWAN
+                       (no_perawat_hewan) VALUES (%s)""",
+                    [no_pegawai]
+                )
+                # SERTIFIKAT
+                for no_ser, nm_ser in zip(nomor_sertifikat, nama_sertifikat):
+                    if no_ser and nm_ser:
+                        cur.execute(
+                            """INSERT INTO PETCLINIC.SERTIFIKAT_KOMPETENSI
+                               (no_sertifikat_kompetensi, no_tenaga_medis, nama_sertifikat)
+                               VALUES (%s, %s, %s)""",
+                            [no_ser, no_pegawai, nm_ser]
+                        )
 
-        messages.success(request, "Registrasi berhasil! Silakan login.")
-        return redirect("authentication:login")
+            messages.success(request, "Registrasi berhasil! Silakan login.")
+            return redirect("authentication:login")
+        except InternalError as e:
+            error_msg = str(e)
+            if "ERROR:" in error_msg:
+                error_msg = error_msg.split("ERROR:")[1].strip()
+                if "CONTEXT:" in error_msg:
+                    error_msg = error_msg.split("CONTEXT:")[0].strip()
+            messages.error(request, error_msg)
+            return render(request, "register_perawat.html")
 
     return render(request, "register_perawat.html")
