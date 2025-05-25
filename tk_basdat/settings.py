@@ -73,9 +73,18 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-            ],
+            ]
         },
     },
+]
+
+SESSION_ENGINE           = "django.contrib.sessions.backends.signed_cookies"
+SESSION_COOKIE_SECURE    = True
+SESSION_COOKIE_SAMESITE  = "Strict"
+SESSION_COOKIE_HTTPONLY  = True
+
+TEMPLATES[0]["OPTIONS"]["context_processors"] += [
+    "authentication.context_processors.user_role",
 ]
 
 WSGI_APPLICATION = 'tk_basdat.wsgi.application'

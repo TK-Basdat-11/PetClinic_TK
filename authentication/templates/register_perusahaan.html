@@ -75,6 +75,25 @@
         justify-content: center;
         margin-top: 30px;
     }
+    
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+    }
+    
+    .alert-danger {
+        color: #721c24;
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+    }
+    
+    .alert-success {
+        color: #155724;
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+    }
 </style>
 {% endblock %}
 
@@ -84,7 +103,18 @@
     <h2>Klien-Perusahaan</h2>
     <br>
     
-    <form method="post" action="">
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    <br>
+    {% endif %}
+    
+    <form method="post" action="{% url 'authentication:register_perusahaan' %}">
         {% csrf_token %}
         
         <div class="input-field">
