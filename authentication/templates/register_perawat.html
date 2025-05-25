@@ -1,227 +1,210 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register Dokter Hewan - PetClinic</title>
+{% extends "base.html" %}
+
+{% block title %}Register Perawat Hewan - PetClinic{% endblock %}
+
+{% block extra_head %}
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        background-color: white;
+    }
     
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    h1 {
+        font-weight: bold;
+        font-size: 24px;
+        margin-bottom: 5px;
+    }
     
-    <!-- Custom styles -->
-    <style>
-        body {
-            background-color: #f9fafb;
-            min-height: 100vh;
-        }
+    h2 {
+        font-size: 18px;
+        color: #4b5563;
+        margin-bottom: 20px;
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        margin-top: 30px;
+    }
+    
+    .section-header h3 {
+        font-weight: bold;
+        font-size: 18px;
+        margin-bottom: 5px;
+    }
+    
+    .section-divider {
+        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 20px;
+    }
+    
+    .required::after {
+        content: " *";
+        color: red;
+        font-size: 18px;
+    }
+    
+    .input-field {
+        margin-bottom: 20px;
+    }
+    
+    label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 5px;
+    }
+    
+    input, textarea, select {
+        width: 100%;
+        padding: 18px;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 18px;
+    }
+    
+    input[type="date"], input[type="time"] {
+        padding: 16px;
+    }
+    
+    textarea {
+        height: 140px;
+    }
+    
+    .add-button {
+        background-color: #4b5563;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    .add-button:hover {
+        background-color: #374151;
+    }
+    
+    .register-button {
+        background-color: #1f2937;
+        color: white;
+        border: none;
+        padding: 14px 25px;
+        border-radius: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        width: 50%;
+        min-width: 200px;
+    }
+    
+    .register-button:hover {
+        background-color: #111827;
+    }
+    
+    .button-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+    }
+    
+    .row-container {
+        margin-bottom: 25px;
+        position: relative;
+    }
+    
+    .certificate-field {
+        margin-bottom: 12px;
+    }
+    
+    .schedule-field {
+        margin-bottom: 12px;
+    }
+    
+    .certificate-container, .schedule-container {
+        position: relative;
+        padding-bottom: 30px;
+        border-bottom: 1px dashed #e5e7eb;
+        margin-bottom: 20px;
+    }
+    
+    .certificate-container:last-child, .schedule-container:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1 class="text-2xl font-bold mb-6">FORM REGISTER</h1>
+    <h2>Perawat Hewan</h2>
+    <br>
+    
+    <form method="post" action="">
+        {% csrf_token %}
         
-        .form-container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            background-color: white;
-        }
+        <div class="section-header">
+            <h3>Informasi Umum</h3>
+        </div>
+        <div class="section-divider"></div>
         
-        h1 {
-            font-weight: bold;
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
+        <div class="input-field">
+            <label for="izin_praktik" class="required">Nomor Izin Praktik</label>
+            <input type="text" id="izin_praktik" name="izin_praktik" placeholder="Nomor Izin Praktik" required>
+        </div>
         
-        h2 {
-            font-size: 18px;
-            color: #4b5563;
-            margin-bottom: 20px;
-        }
+        <div class="input-field">
+            <label for="email" class="required">Email</label>
+            <input type="email" id="email" name="email" placeholder="Email" required>
+        </div>
         
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            margin-top: 30px;
-        }
+        <div class="input-field">
+            <label for="password" class="required">Password</label>
+            <input type="password" id="password" name="password" placeholder="Password" required>
+        </div>
         
-        .section-header h3 {
-            font-weight: bold;
-            font-size: 18px;
-            margin-bottom: 5px;
-        }
+        <div class="input-field">
+            <label for="nomor_telepon" class="required">Nomor Telepon</label>
+            <input type="tel" id="nomor_telepon" name="nomor_telepon" placeholder="Nomor Telepon" required>
+        </div>
         
-        .section-divider {
-            border-bottom: 1px solid #e5e7eb;
-            margin-bottom: 20px;
-        }
+        <div class="input-field">
+            <label for="tanggal_diterima" class="required">Tanggal Diterima</label>
+            <input type="date" id="tanggal_diterima" name="tanggal_diterima" required>
+        </div>
         
-        .required::after {
-            content: " *";
-            color: red;
-            font-size: 18px;
-        }
+        <div class="input-field">
+            <label for="alamat" class="required">Alamat</label>
+            <textarea id="alamat" name="alamat" placeholder="Alamat" required></textarea>
+        </div>
         
-        .input-field {
-            margin-bottom: 20px;
-        }
+        <div class="section-header">
+            <h3>Kompetensi</h3>
+            <button type="button" class="add-button">Tambah Sertifikat</button>
+        </div>
+        <div class="section-divider"></div>
         
-        label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 5px;
-        }
-        
-        input, textarea, select {
-            width: 100%;
-            padding: 18px;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            font-size: 18px;
-        }
-        
-        input[type="date"], input[type="time"] {
-            padding: 16px;
-        }
-        
-        textarea {
-            height: 140px;
-        }
-        
-        .add-button {
-            background-color: #4b5563;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        
-        .add-button:hover {
-            background-color: #374151;
-        }
-        
-        .register-button {
-            background-color: #1f2937;
-            color: white;
-            border: none;
-            padding: 14px 25px;
-            border-radius: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            width: 50%;
-            min-width: 200px;
-        }
-        
-        .register-button:hover {
-            background-color: #111827;
-        }
-        
-        .button-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 30px;
-        }
-        
-        .row-container {
-            margin-bottom: 25px;
-            position: relative;
-        }
-        
-        .certificate-field {
-            margin-bottom: 12px;
-        }
-        
-        .schedule-field {
-            margin-bottom: 12px;
-        }
-        
-        .certificate-container, .schedule-container {
-            position: relative;
-            padding-bottom: 30px;
-            border-bottom: 1px dashed #e5e7eb;
-            margin-bottom: 20px;
-        }
-        
-        .certificate-container:last-child, .schedule-container:last-child {
-            border-bottom: none;
-        }
-    </style>
-</head>
-<body>
-    <div class="form-container">
-        <h1 class="text-2xl font-bold mb-6">FORM REGISTER</h1>
-        <h2>Dokter Hewan</h2>
-        <br>
-        
-        <form method="post" action="">
-            {% csrf_token %}
-            
-            <div class="section-header">
-                <h3>Informasi Umum</h3>
-            </div>
-            <div class="section-divider"></div>
-            
-            <div class="input-field">
-                <label for="izin_praktik" class="required">Nomor Izin Praktik</label>
-                <input type="text" id="izin_praktik" name="izin_praktik" placeholder="Nomor Izin Praktik" required>
-            </div>
-            
-            <div class="input-field">
-                <label for="email" class="required">Email</label>
-                <input type="email" id="email" name="email" placeholder="Email" required>
-            </div>
-            
-            <div class="input-field">
-                <label for="password" class="required">Password</label>
-                <input type="password" id="password" name="password" placeholder="Password" required>
-            </div>
-            
-            <div class="input-field">
-                <label for="nomor_telepon" class="required">Nomor Telepon</label>
-                <input type="tel" id="nomor_telepon" name="nomor_telepon" placeholder="Nomor Telepon" required>
-            </div>
-            
-            <div class="input-field">
-                <label for="tanggal_diterima" class="required">Tanggal Diterima</label>
-                <input type="date" id="tanggal_diterima" name="tanggal_diterima" required>
-            </div>
-            
-            <div class="input-field">
-                <label for="alamat" class="required">Alamat</label>
-                <textarea id="alamat" name="alamat" placeholder="Alamat" required></textarea>
-            </div>
-            
-            <div class="section-header">
-                <h3>Kompetensi</h3>
-                <button type="button" class="add-button">Tambah Sertifikat</button>
-            </div>
-            <div class="section-divider"></div>
-            
-            <div id="certificates-container">
-                <div class="certificate-container">
-                    <div class="certificate-field">
-                        <label for="nomor_sertifikat_1" class="required">Nomor Sertifikat</label>
-                        <input type="text" id="nomor_sertifikat_1" name="nomor_sertifikat[]" placeholder="Nomor Sertifikat" required>
-                    </div>
-                    <div class="certificate-field">
-                        <label for="nama_sertifikat_1" class="required">Nama Sertifikat</label>
-                        <input type="text" id="nama_sertifikat_1" name="nama_sertifikat[]" placeholder="Nama Sertifikat" required>
-                    </div>
+        <div id="certificates-container">
+            <div class="certificate-container">
+                <div class="certificate-field">
+                    <label for="nomor_sertifikat_1" class="required">Nomor Sertifikat</label>
+                    <input type="text" id="nomor_sertifikat_1" name="nomor_sertifikat[]" placeholder="Nomor Sertifikat" required>
+                </div>
+                <div class="certificate-field">
+                    <label for="nama_sertifikat_1" class="required">Nama Sertifikat</label>
+                    <input type="text" id="nama_sertifikat_1" name="nama_sertifikat[]" placeholder="Nama Sertifikat" required>
                 </div>
             </div>
-            
-            <div class="button-container">
-                <button type="submit" class="register-button">Register</button>
-            </div>
-        </form>
-    </div>
-    
-    <footer class="mt-12 py-4 border-t">
-        <div class="container mx-auto px-4 text-gray-600 text-center text-sm">
-            <p>&copy; Tugas Kelompok 11 - PetClinic</p>
         </div>
-    </footer>
-</body>
-</html>
+        
+        <div class="button-container">
+            <button type="submit" class="register-button">Register</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

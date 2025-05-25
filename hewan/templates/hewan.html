@@ -1,637 +1,453 @@
-<!DOCTYPE html>
-<html lang="id">
-  {% include 'components/navbar_fdo.html' %}
-<head>
-  <meta charset="UTF-8" />
-  <title>List Hewan Peliharaan</title>
-  <style>
+{% extends "base.html" %}
 
-    .button {
-      border-style: solid;
-      border-color: rgb(28, 28, 81);
-      color: white;
-      background-color: rgb(28, 28, 81);
-      padding: 10px 25px;
-      text-align: center;
-      display: inline-block;
-      font-size: 15px;
-      margin: 4px 2px;
-      cursor: pointer;
-      border-radius: 7px;
-      font-family: Arial, sans-serif;
-      text-decoration: none;
-    }
+{% block title %}List Hewan Peliharaan{% endblock %}
 
-    .button-delete {
-      border-style: solid;
-      border-color: #f45b5b;
-      color: white;
-      background-color: #f45b5b;
-      padding: 10px 25px;
-      text-align: center;
-      display: inline-block;
-      font-size: 15px;
-      margin: 4px 2px;
-      cursor: pointer;
-      border-radius: 7px;
-      font-family: Arial, sans-serif;
-      text-decoration: none;
-    }
+{% block extra_head %}
+<style>
+  .button {
+    border-style: solid;
+    border-color: rgb(28, 28, 81);
+    color: white;
+    background-color: rgb(28, 28, 81);
+    padding: 10px 25px;
+    text-align: center;
+    display: inline-block;
+    font-size: 15px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 7px;
+    font-family: Arial, sans-serif;
+    text-decoration: none;
+  }
 
-    .button-secondary {
-      border-style: solid;
-      border-color: #e0e0e0;
-      color: #333;
-      background-color: #f8f8f8;
-      padding: 10px 25px;
-      text-align: center;
-      display: inline-block;
-      font-size: 15px;
-      margin: 4px 2px;
-      cursor: pointer;
-      border-radius: 7px;
-      font-family: Arial, sans-serif;
-      text-decoration: none;
-    }
+  .button-delete {
+    border-style: solid;
+    border-color: #f45b5b;
+    color: white;
+    background-color: #f45b5b;
+    padding: 10px 25px;
+    text-align: center;
+    display: inline-block;
+    font-size: 15px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 7px;
+    font-family: Arial, sans-serif;
+    text-decoration: none;
+  }
 
-    .content {
-      margin: 30px 100px;
-    }
+  .button-secondary {
+    border-style: solid;
+    border-color: #e0e0e0;
+    color: #333;
+    background-color: #f8f8f8;
+    padding: 10px 25px;
+    text-align: center;
+    display: inline-block;
+    font-size: 15px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 7px;
+    font-family: Arial, sans-serif;
+    text-decoration: none;
+  }
 
-    #listHewanPeliharaan {
-      width: 100%;
-      min-width: 600px;
-      table-layout: fixed;
-      margin: 20px 0;
-      background-color: lightgray;
-      border-collapse: collapse;
-      font-family: Arial, sans-serif;
-    }
-    
-    #listHewanPeliharaan thead tr {
-      background-color: white;
-    }
-    
-    #listHewanPeliharaan th,
-    #listHewanPeliharaan td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: center;
-      background-color: white;
-    }
+  .content {
+    margin: 30px 100px;
+  }
 
-    .pet-photo {
-      width: 100px;
-      height: 80px;
-      object-fit: cover;
-      border-radius: 3px;
-    }
+  #listHewanPeliharaan {
+    width: 100%;
+    min-width: 600px;
+    table-layout: fixed;
+    margin: 20px 0;
+    background-color: lightgray;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+  }
+  
+  #listHewanPeliharaan thead tr {
+    background-color: white;
+  }
+  
+  #listHewanPeliharaan th,
+  #listHewanPeliharaan td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+    background-color: white;
+  }
 
-    /* Modal Popup Styles */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.4);
-      overflow: hidden; /* Prevent page scrolling when modal is open */
-    }
+  .pet-photo {
+    width: 100px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 3px;
+  }
 
-    .modal-content {
-      background-color: white;
-      margin: 5% auto; /* Adjusted to position higher */
-      padding: 30px;
-      border-radius: 5px;
-      width: 500px;
-      max-width: 90%;
-      max-height: 90vh;
-      overflow-y: auto; /* Enable scrolling inside modal */
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      font-family: Arial, sans-serif;
-      position: relative;
-    }
+  /* Modal Popup Styles */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    overflow: hidden; /* Prevent page scrolling when modal is open */
+  }
 
-    .modal-content h1 {
-      font-size: 24px;
-      margin-top: 0;
-      margin-bottom: 20px;
-    }
+  .modal-content {
+    background-color: white;
+    margin: 5% auto; /* Adjusted to position higher */
+    padding: 30px;
+    border-radius: 5px;
+    width: 500px;
+    max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto; /* Enable scrolling inside modal */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+    position: relative;
+  }
 
-    .modal-content label {
-      display: block;
-      margin-bottom: 10px;
-      font-weight: bold;
-    }
+  .modal-content h1 {
+    font-size: 24px;
+    margin-top: 0;
+    margin-bottom: 20px;
+  }
 
-    .modal-content input,
-    .modal-content select {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      margin-bottom: 20px;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
+  .modal-content label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
 
-    .readonly-input {
-      background-color: #f0f2f5;
-    }
+  .modal-content input,
+  .modal-content select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
 
-    .dropdown-container {
-      position: relative;
-    }
+  .readonly-input {
+    background-color: #f0f2f5;
+  }
 
-    .dropdown {
-      display: none;
-      position: absolute;
-      width: 100%;
-      background-color: white;
-      border: 1px solid #ddd;
-      border-radius: 0 0 5px 5px;
-      z-index: 1001;
-      max-height: 200px;
-      overflow-y: auto;
-    }
+  .dropdown-container {
+    position: relative;
+  }
 
-    .dropdown-option {
-      padding: 12px;
-      cursor: pointer;
-    }
+  .dropdown {
+    display: none;
+    position: absolute;
+    width: 100%;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 0 0 5px 5px;
+    z-index: 1001;
+    max-height: 200px;
+    overflow-y: auto;
+  }
 
-    .dropdown-option:hover {
-      background-color: #f8f8f8;
-    }
+  .dropdown-option {
+    padding: 12px;
+    cursor: pointer;
+  }
 
-    .select-field {
-      cursor: pointer;
-      background-image: url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
-      background-repeat: no-repeat;
-      background-position: right 10px center;
-    }
+  .dropdown-option:hover {
+    background-color: #f8f8f8;
+  }
 
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 20px;
-    }
+  .select-field {
+    cursor: pointer;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
 
-    .red-text {
-      color: #f45b5b;
-      font-weight: bold;
-    }
-    
-    /* Alert message styles */
-    .alert {
-      padding: 15px;
-      margin-bottom: 20px;
-      border: 1px solid transparent;
-      border-radius: 4px;
-    }
-    
-    .alert-success {
-      color: #3c763d;
-      background-color: #dff0d8;
-      border-color: #d6e9c6;
-    }
-    
-    .alert-danger {
-      color: #a94442;
-      background-color: #f2dede;
-      border-color: #ebccd1;
-    }
-  </style>
-</head>
-<body>
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+  }
 
-  <div class="content">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <h1>List Hewan Peliharaan</h1>
-      <button id="createNewButton" class="button" style="display: flex; align-items: center; gap: 5px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-        </svg>
-        Create New Pet
-      </button>
-    </div>
-    
-    <!-- Success and Error Messages -->
-    {% if success %}
-    <div class="alert alert-success">
-      {{ success }}
-    </div>
-    {% endif %}
-    
-    {% if error %}
-    <div class="alert alert-danger">
-      {{ error }}
-    </div>
-    {% endif %}
+  .red-text {
+    color: #f45b5b;
+    font-weight: bold;
+  }
+  
+  /* Alert message styles */
+  .alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+  }
+  
+  .alert-success {
+    color: #3c763d;
+    background-color: #dff0d8;
+    border-color: #d6e9c6;
+  }
+  
+  .alert-danger {
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: #ebccd1;
+  }
+</style>
+{% endblock %}
 
-    <table id="listHewanPeliharaan">
-      <thead>
+{% block content %}
+<div class="content">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>List Hewan Peliharaan</h1>
+    <button id="createNewButton" class="button" style="display: flex; align-items: center; gap: 5px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+      </svg>
+      Create New Pet
+    </button>
+  </div>
+  
+  <!-- Success and Error Messages -->
+  {% if success %}
+  <div class="alert alert-success">
+    {{ success }}
+  </div>
+  {% endif %}
+  
+  {% if error %}
+  <div class="alert alert-danger">
+    {{ error }}
+  </div>
+  {% endif %}
+
+  <table id="listHewanPeliharaan">
+    <thead>
+      <tr>
+        <th width="50px">No</th>
+        <th width="180px">Pemilik</th>
+        <th width="150px">Jenis Hewan</th>
+        <th width="180px">Nama Hewan</th>
+        <th width="150px">Tanggal Lahir</th>
+        <th width="120px">Foto</th>
+        <th width="150px">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if hewan_list %}
+        {% for hewan in hewan_list %}
         <tr>
-          <th width="50px">No</th>
-          <th width="180px">Pemilik</th>
-          <th width="150px">Jenis Hewan</th>
-          <th width="180px">Nama Hewan</th>
-          <th width="150px">Tanggal Lahir</th>
-          <th width="120px">Foto</th>
-          <th width="150px">Action</th>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ hewan.id_klien }}</td>
+          <td>{{ hewan.jenis_hewan }}</td>
+          <td>{{ hewan.nama }}</td>
+          <td>{{ hewan.tanggal_lahir }}</td>
+          <td>
+            {% if hewan.foto %}
+              <img src="{{ hewan.foto }}" alt="Pet Photo" class="pet-photo">
+            {% else %}
+              <span>No Photo</span>
+            {% endif %}
+          </td>
+          <td>
+            <button class="button edit-button" data-id="{{ hewan.id }}">Edit</button>
+            <button class="button-delete delete-button" data-id="{{ hewan.id }}">Delete</button>
+          </td>
         </tr>
-      </thead>
-      <tbody>
-        {% if hewan_list %}
-          {% for hewan in hewan_list %}
-          <tr>
-            <td>{{ forloop.counter }}</td>
-            <td>{{ hewan.pemilik }}</td>
-            <td>{{ hewan.jenis }}</td>
-            <td>{{ hewan.nama }}</td>
-            <td>{{ hewan.tanggal_lahir|date:"d F Y" }}</td>
-            <td><img src="{{ hewan.url_foto }}" alt="{{ hewan.nama }}" class="pet-photo"></td>
-            <td>
-              <button class="button update-button" 
-                     data-id="{{ forloop.counter }}" 
-                     data-pemilik="{{ hewan.pemilik }}" 
-                     data-jenis="{{ hewan.jenis }}" 
-                     data-nama="{{ hewan.nama }}" 
-                     data-tanggal="{{ hewan.tanggal_lahir|date:'d-m-Y' }}" 
-                     data-foto="{{ hewan.url_foto }}">Update</button>
-              <button class="button-delete delete-button" 
-                     data-id="{{ forloop.counter }}" 
-                     data-pemilik="{{ hewan.pemilik }}" 
-                     data-nama="{{ hewan.nama }}">Delete</button>
-            </td>
-          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="7" style="text-align: center; padding: 20px;">No pets found</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Create/Edit Modal -->
+<div id="petModal" class="modal">
+  <div class="modal-content">
+    <h1 id="modalTitle">Add New Pet</h1>
+    <form id="petForm" method="post" action="{% url 'hewan:hewan' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="hidden" id="petId" name="pet_id">
+      
+      <label for="idKlien">Pemilik <span class="red-text">*</span></label>
+      <div class="dropdown-container">
+        <input type="text" id="idKlien" name="id_klien" class="select-field" required readonly>
+        <input type="hidden" id="hiddenIdKlien" name="hidden_id_klien">
+        <div id="klienDropdown" class="dropdown">
+          {% for klien in klien_list %}
+            <div class="dropdown-option" data-id="{{ klien.id }}">{{ klien.id }} - {{ klien.nama }}</div>
           {% endfor %}
-        {% else %}
-          <!-- Hardcoded data as fallback if hewan_list is empty -->
-          <tr>
-            <td>1</td>
-            <td>John Doe</td>
-            <td>Kucing</td>
-            <td>Snowy</td>
-            <td>9 Februari 2020</td>
-            <td><img src="https://awsimages.detik.net.id/community/media/visual/2023/09/02/kucing-ragdoll_169.jpeg?w=1200" alt="Snowy" class="pet-photo"></td>
-            <td>
-              <button class="button update-button" 
-                     data-id="1" 
-                     data-pemilik="John Doe" 
-                     data-jenis="Kucing" 
-                     data-nama="Snowy" 
-                     data-tanggal="09-02-2020" 
-                     data-foto="https://awsimages.detik.net.id/community/media/visual/2023/09/02/kucing-ragdoll_169.jpeg?w=1200">Update</button>
-              <button class="button-delete delete-button" 
-                     data-id="1" 
-                     data-pemilik="John Doe" 
-                     data-nama="Snowy">Delete</button>
-            </td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>PT Aku Sayang Hewan</td>
-            <td>Anjing</td>
-            <td>Blacky</td>
-            <td>15 November 2019</td>
-            <td><img src="https://cdn.pixabay.com/photo/2016/02/11/17/00/dog-1194087_1280.jpg" alt="Blacky" class="pet-photo"></td>
-            <td>
-              <button class="button update-button" 
-                     data-id="2" 
-                     data-pemilik="PT Aku Sayang Hewan" 
-                     data-jenis="Anjing" 
-                     data-nama="Blacky" 
-                     data-tanggal="15-11-2019" 
-                     data-foto="https://cdn.pixabay.com/photo/2016/02/11/17/00/dog-1194087_1280.jpg">Update</button>
-              <button class="button-delete delete-button" 
-                     data-id="2" 
-                     data-pemilik="PT Aku Sayang Hewan" 
-                     data-nama="Blacky">Delete</button>
-            </td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td>PT Pecinta Kucing</td>
-            <td>Hamster</td>
-            <td>Hamseung</td>
-            <td>15 Oktober 2024</td>
-            <td><img src="https://thumb.viva.id/vivapurwasuka/665x374/2025/01/22/6790b62d412bd-hamster-peliharaan_purwasuka.jpg" alt="Hamseung" class="pet-photo"></td>
-            <td>
-              <button class="button update-button" 
-                     data-id="3" 
-                     data-pemilik="PT Pecinta Kucing" 
-                     data-jenis="Hamster" 
-                     data-nama="Hamseung" 
-                     data-tanggal="15-10-2024" 
-                     data-foto="https://thumb.viva.id/vivapurwasuka/665x374/2025/01/22/6790b62d412bd-hamster-peliharaan_purwasuka.jpg">Update</button>
-              <button class="button-delete delete-button" 
-                     data-id="3" 
-                     data-pemilik="PT Pecinta Kucing" 
-                     data-nama="Hamseung">Delete</button>
-            </td>
-          </tr>
-        {% endif %}
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Create Pet Modal Popup -->
-  <div id="createPetModal" class="modal">
-    <div class="modal-content">
-      <h1>Create New Pet</h1>
-      <form id="createPetForm" method="POST" action="{% url 'hewan:create-hewan' %}">
-        {% csrf_token %}
-        
-        <label for="pemilikCreate">Pemilik</label>
-        <div class="dropdown-container">
-          <input type="text" id="pemilikCreateDisplay" class="select-field" placeholder="Pilih pemilik" readonly>
-          <input type="hidden" id="pemilikCreate" name="pemilik_id">
-          <div id="pemilikDropdownCreate" class="dropdown">
-            {% if pemilik_list %}
-              {% for pemilik in pemilik_list %}
-                <div class="dropdown-option" data-value="{{ pemilik.id }}">{{ pemilik.nama }}</div>
-              {% endfor %}
-            {% else %}
-              <!-- Hardcoded options if pemilik_list is empty -->
-              <div class="dropdown-option" data-value="1">John Doe</div>
-              <div class="dropdown-option" data-value="2">PT Pecinta Kucing</div>
-              <div class="dropdown-option" data-value="3">PT Aku Sayang Hewan</div>
-            {% endif %}
-          </div>
         </div>
-        
-        <label for="jenisCreate">Jenis Hewan</label>
-        <div class="dropdown-container">
-          <input type="text" id="jenisCreateDisplay" class="select-field" placeholder="Pilih jenis hewan" readonly>
-          <input type="hidden" id="jenisCreate" name="jenis_id">
-          <div id="jenisDropdownCreate" class="dropdown">
-            {% if jenis_list %}
-              {% for jenis in jenis_list %}
-                <div class="dropdown-option" data-value="{{ jenis.id }}">{{ jenis.nama }}</div>
-              {% endfor %}
-            {% else %}
-              <!-- Hardcoded options if jenis_list is empty -->
-              <div class="dropdown-option" data-value="1">Kucing</div>
-              <div class="dropdown-option" data-value="2">Anjing</div>
-              <div class="dropdown-option" data-value="3">Hamster</div>
-            {% endif %}
-          </div>
-        </div>
-        
-        <label for="namaCreate">Nama Hewan Peliharaan</label>
-        <input type="text" id="namaCreate" name="nama" placeholder="Nama Hewan" required>
-        
-        <label for="tanggalCreate">Tanggal Lahir Hewan</label>
-        <input type="text" id="tanggalCreate" name="tanggal_lahir" placeholder="DD-MM-YYYY" required>
-        
-        <label for="fotoCreate">URL Foto Hewan</label>
-        <input type="text" id="fotoCreate" name="foto_url" placeholder="https://example.com" required>
-        
-        <div class="modal-actions">
-          <button type="button" id="cancelCreateButton" class="button-secondary">Cancel</button>
-          <button type="submit" class="button">Create</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Update Pet Modal Popup -->
-  <div id="updatePetModal" class="modal">
-    <div class="modal-content">
-      <h1>Update Pet</h1>
-      <form id="updatePetForm" method="POST" action="#">
-        {% csrf_token %}
-        <input type="hidden" id="petIdUpdate" name="pet_id">
-        
-        <label for="pemilikUpdate">Pemilik</label>
-        <div class="dropdown-container">
-          <input type="text" id="pemilikUpdateDisplay" class="select-field readonly-input" readonly>
-          <input type="hidden" id="pemilikUpdate" name="pemilik_id">
-        </div>
-        
-        <label for="jenisUpdate">Jenis Hewan</label>
-        <div class="dropdown-container">
-          <input type="text" id="jenisUpdateDisplay" class="select-field readonly-input" readonly>
-          <input type="hidden" id="jenisUpdate" name="jenis_id">
-        </div>
-        
-        <label for="namaUpdate">Nama Hewan</label>
-        <input type="text" id="namaUpdate" name="nama" required>
-        
-        <label for="tanggalUpdate">Tanggal Lahir Hewan</label>
-        <input type="text" id="tanggalUpdate" name="tanggal_lahir" required>
-        
-        <label for="fotoUpdate">URL Foto Hewan</label>
-        <input type="text" id="fotoUpdate" name="foto_url" required>
-        
-        <div class="modal-actions">
-          <button type="button" id="cancelUpdateButton" class="button-secondary">Cancel</button>
-          <button type="submit" class="button">Update</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Delete Pet Modal -->
-  <div id="deletePetModal" class="modal">
-    <div class="modal-content">
-      <h1 style="color: #f45b5b;">Delete Pet</h1>
-      <p>Apakah kamu yakin untuk menghapus Hewan Peliharaan <span id="deletePetName" class="red-text"></span> milik <span id="deletePetOwner" class="red-text"></span>?</p>
+      </div>
       
-      <form id="deletePetForm" method="POST" action="#">
-        {% csrf_token %}
-        <input type="hidden" id="petIdDelete" name="pet_id">
-        
-        <div class="modal-actions">
-          <button type="button" id="cancelDeleteButton" class="button-secondary">Cancel</button>
-          <button type="submit" class="button-delete">Confirm Deletion</button>
+      <label for="jenisHewan">Jenis Hewan <span class="red-text">*</span></label>
+      <div class="dropdown-container">
+        <input type="text" id="jenisHewan" name="jenis_hewan" class="select-field" required readonly>
+        <input type="hidden" id="hiddenJenisHewan" name="hidden_jenis_hewan">
+        <div id="jenisHewanDropdown" class="dropdown">
+          {% for jenis in jenis_hewan_list %}
+            <div class="dropdown-option" data-id="{{ jenis.id }}">{{ jenis.id }} - {{ jenis.nama }}</div>
+          {% endfor %}
         </div>
-      </form>
-    </div>
-    {% if error and request.method == 'POST' %}
-      createModal.style.display = "block";
-      disableBodyScroll();
+      </div>
       
-      // Try to restore form values
-      if ("{{ request.POST.nama }}") {
-        document.getElementById("namaCreate").value = "{{ request.POST.nama }}";
-      }
-      if ("{{ request.POST.tanggal_lahir }}") {
-        document.getElementById("tanggalCreate").value = "{{ request.POST.tanggal_lahir }}";
-      }
-      if ("{{ request.POST.foto_url }}") {
-        document.getElementById("fotoCreate").value = "{{ request.POST.foto_url }}";
-      }
-    {% endif %}
+      <label for="namaHewan">Nama Hewan <span class="red-text">*</span></label>
+      <input type="text" id="namaHewan" name="nama" required>
+      
+      <label for="tanggalLahir">Tanggal Lahir <span class="red-text">*</span></label>
+      <input type="date" id="tanggalLahir" name="tanggal_lahir" required>
+      
+      <label for="fotoHewan">Foto Hewan</label>
+      <input type="file" id="fotoHewan" name="foto" accept="image/*">
+      
+      <div class="modal-actions">
+        <button type="button" id="cancelButton" class="button-secondary">Cancel</button>
+        <button type="submit" id="saveButton" class="button">Save</button>
+      </div>
+    </form>
   </div>
+</div>
 
-  <script>
-    // Get the modals
-    const createModal = document.getElementById("createPetModal");
-    const updateModal = document.getElementById("updatePetModal");
-    const deleteModal = document.getElementById("deletePetModal");
-    
-    // Get the buttons that open the modals
-    const createBtn = document.getElementById("createNewButton");
-    const updateButtons = document.querySelectorAll(".update-button");
-    const deleteButtons = document.querySelectorAll(".delete-button");
-    
-    // Get the buttons that close the modals
-    const cancelCreateBtn = document.getElementById("cancelCreateButton");
-    const cancelUpdateBtn = document.getElementById("cancelUpdateButton");
-    const cancelDeleteBtn = document.getElementById("cancelDeleteButton");
-    
-    // Get the forms
-    const createForm = document.getElementById("createPetForm");
-    const updateForm = document.getElementById("updatePetForm");
-    const deleteForm = document.getElementById("deletePetForm");
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+  <div class="modal-content" style="max-width: 400px;">
+    <h1>Confirm Delete</h1>
+    <p>Are you sure you want to delete this pet? This action cannot be undone.</p>
+    <form id="deleteForm" method="post" action="{% url 'hewan:delete_hewan' %}">
+      {% csrf_token %}
+      <input type="hidden" id="deleteId" name="pet_id">
+      <div class="modal-actions">
+        <button type="button" id="cancelDeleteButton" class="button-secondary">Cancel</button>
+        <button type="submit" class="button-delete">Delete</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
 
-    // Prevent body scrolling when modal is open
-    function disableBodyScroll() {
-      document.body.style.overflow = 'hidden';
-    }
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Modal elements
+    const petModal = document.getElementById('petModal');
+    const deleteModal = document.getElementById('deleteModal');
+    const createNewButton = document.getElementById('createNewButton');
+    const cancelButton = document.getElementById('cancelButton');
+    const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+    const modalTitle = document.getElementById('modalTitle');
+    const petForm = document.getElementById('petForm');
+    const petId = document.getElementById('petId');
     
-    function enableBodyScroll() {
-      document.body.style.overflow = '';
-    }
-
-    // Dropdown functionality for create form
-    const pemilikCreateDisplay = document.getElementById("pemilikCreateDisplay");
-    const jenisCreateDisplay = document.getElementById("jenisCreateDisplay");
-    const pemilikDropdownCreate = document.getElementById("pemilikDropdownCreate");
-    const jenisDropdownCreate = document.getElementById("jenisDropdownCreate");
+    // Client dropdown functionality
+    const idKlien = document.getElementById('idKlien');
+    const hiddenIdKlien = document.getElementById('hiddenIdKlien');
+    const klienDropdown = document.getElementById('klienDropdown');
     
-    // Toggle dropdowns for create form
-    pemilikCreateDisplay.onclick = function(event) {
-      pemilikDropdownCreate.style.display = pemilikDropdownCreate.style.display === "block" ? "none" : "block";
-      jenisDropdownCreate.style.display = "none";
-      event.stopPropagation();
-    }
-    
-    jenisCreateDisplay.onclick = function(event) {
-      jenisDropdownCreate.style.display = jenisDropdownCreate.style.display === "block" ? "none" : "block";
-      pemilikDropdownCreate.style.display = "none";
-      event.stopPropagation();
-    }
-    
-    // Handle dropdown selection
-    document.querySelectorAll("#pemilikDropdownCreate .dropdown-option").forEach(option => {
-      option.onclick = function(event) {
-        pemilikCreateDisplay.value = this.textContent;
-        document.getElementById("pemilikCreate").value = this.getAttribute("data-value");
-        pemilikDropdownCreate.style.display = "none";
-        event.stopPropagation();
-      }
+    idKlien.addEventListener('click', function() {
+      klienDropdown.style.display = 'block';
     });
     
-    document.querySelectorAll("#jenisDropdownCreate .dropdown-option").forEach(option => {
-      option.onclick = function(event) {
-        jenisCreateDisplay.value = this.textContent;
-        document.getElementById("jenisCreate").value = this.getAttribute("data-value");
-        jenisDropdownCreate.style.display = "none";
-        event.stopPropagation();
-      }
-    });
-
-    // Create Modal
-    createBtn.onclick = function() {
-      createModal.style.display = "block";
-      disableBodyScroll();
-    }
-    
-    cancelCreateBtn.onclick = function() {
-      createModal.style.display = "none";
-      createForm.reset();
-      pemilikCreateDisplay.value = "";
-      jenisCreateDisplay.value = "";
-      enableBodyScroll();
-    }
-
-    // Update Modal
-    updateButtons.forEach(button => {
-      button.onclick = function() {
-        const petId = this.getAttribute("data-id");
-        const pemilik = this.getAttribute("data-pemilik");
-        const jenis = this.getAttribute("data-jenis");
-        const nama = this.getAttribute("data-nama");
-        const tanggal = this.getAttribute("data-tanggal");
-        const foto = this.getAttribute("data-foto");
-        
-        document.getElementById("petIdUpdate").value = petId;
-        document.getElementById("pemilikUpdateDisplay").value = pemilik;
-        document.getElementById("jenisUpdateDisplay").value = jenis;
-        document.getElementById("namaUpdate").value = nama;
-        document.getElementById("tanggalUpdate").value = tanggal;
-        document.getElementById("fotoUpdate").value = foto;
-        
-        updateModal.style.display = "block";
-        disableBodyScroll();
-      }
-    });
-    
-    cancelUpdateBtn.onclick = function() {
-      updateModal.style.display = "none";
-      updateForm.reset();
-      enableBodyScroll();
-    }
-
-    // Delete Modal
-    deleteButtons.forEach(button => {
-      button.onclick = function() {
-        const petId = this.getAttribute("data-id");
-        const petName = this.getAttribute("data-nama");
-        const petOwner = this.getAttribute("data-pemilik");
-        
-        document.getElementById("petIdDelete").value = petId;
-        document.getElementById("deletePetName").textContent = petName;
-        document.getElementById("deletePetOwner").textContent = petOwner;
-        
-        deleteModal.style.display = "block";
-        disableBodyScroll();
-      }
-    });
-    
-    cancelDeleteBtn.onclick = function() {
-      deleteModal.style.display = "none";
-      enableBodyScroll();
-    }
-
-    // Close any modal when clicking outside of it
-    window.onclick = function(event) {
-      if (event.target == createModal) {
-        createModal.style.display = "none";
-        createForm.reset();
-        pemilikCreateDisplay.value = "";
-        jenisCreateDisplay.value = "";
-        enableBodyScroll();
-      } else if (event.target == updateModal) {
-        updateModal.style.display = "none";
-        updateForm.reset();
-        enableBodyScroll();
-      } else if (event.target == deleteModal) {
-        deleteModal.style.display = "none";
-        enableBodyScroll();
-      } else if (!event.target.matches('.select-field') && 
-                !event.target.matches('.dropdown') && 
-                !event.target.matches('.dropdown-option')) {
-        // Close all dropdowns when clicking elsewhere
-        pemilikDropdownCreate.style.display = "none";
-        jenisDropdownCreate.style.display = "none";
-      }
-    }
-
-    // Prevent modal content click from closing modal
-    document.querySelectorAll('.modal-content').forEach(content => {
-      content.addEventListener('click', function(event) {
-        event.stopPropagation();
+    document.querySelectorAll('#klienDropdown .dropdown-option').forEach(option => {
+      option.addEventListener('click', function() {
+        const selectedId = this.getAttribute('data-id');
+        idKlien.value = this.textContent;
+        hiddenIdKlien.value = selectedId;
+        klienDropdown.style.display = 'none';
       });
     });
     
-    // Automatically show the create modal if there was an error during creation
-  </script>
-</body>
-</html>
+    // Pet type dropdown functionality
+    const jenisHewan = document.getElementById('jenisHewan');
+    const hiddenJenisHewan = document.getElementById('hiddenJenisHewan');
+    const jenisHewanDropdown = document.getElementById('jenisHewanDropdown');
+    
+    jenisHewan.addEventListener('click', function() {
+      jenisHewanDropdown.style.display = 'block';
+    });
+    
+    document.querySelectorAll('#jenisHewanDropdown .dropdown-option').forEach(option => {
+      option.addEventListener('click', function() {
+        const selectedId = this.getAttribute('data-id');
+        jenisHewan.value = this.textContent;
+        hiddenJenisHewan.value = selectedId;
+        jenisHewanDropdown.style.display = 'none';
+      });
+    });
+    
+    // Hide dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+      if (!idKlien.contains(event.target) && !klienDropdown.contains(event.target)) {
+        klienDropdown.style.display = 'none';
+      }
+      
+      if (!jenisHewan.contains(event.target) && !jenisHewanDropdown.contains(event.target)) {
+        jenisHewanDropdown.style.display = 'none';
+      }
+    });
+    
+    // Open modal for creating a new pet
+    createNewButton.addEventListener('click', function() {
+      modalTitle.textContent = 'Add New Pet';
+      petForm.reset();
+      petId.value = '';
+      petModal.style.display = 'block';
+    });
+    
+    // Edit button functionality
+    document.querySelectorAll('.edit-button').forEach(button => {
+      button.addEventListener('click', function() {
+        const id = this.getAttribute('data-id');
+        modalTitle.textContent = 'Edit Pet';
+        
+        // In a real application, you would fetch the pet data from the server
+        // For this example, we'll just set the ID and leave other fields empty
+        petId.value = id;
+        
+        // Show the modal
+        petModal.style.display = 'block';
+      });
+    });
+    
+    // Delete button functionality
+    document.querySelectorAll('.delete-button').forEach(button => {
+      button.addEventListener('click', function() {
+        const id = this.getAttribute('data-id');
+        document.getElementById('deleteId').value = id;
+        deleteModal.style.display = 'block';
+      });
+    });
+    
+    // Close modals
+    cancelButton.addEventListener('click', function() {
+      petModal.style.display = 'none';
+    });
+    
+    cancelDeleteButton.addEventListener('click', function() {
+      deleteModal.style.display = 'none';
+    });
+    
+    // Close modals when clicking outside
+    window.addEventListener('click', function(event) {
+      if (event.target === petModal) {
+        petModal.style.display = 'none';
+      }
+      
+      if (event.target === deleteModal) {
+        deleteModal.style.display = 'none';
+      }
+    });
+  });
+</script>
+{% endblock %}

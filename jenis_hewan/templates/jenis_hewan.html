@@ -1,324 +1,324 @@
-<!DOCTYPE html>
-<html lang="id">
-  {% include 'components/navbar_fdo.html' %}
+{% extends "base.html" %}
 
-<head>
-  <meta charset="UTF-8" />
-  <title>List Jenis Hewan</title>
-  <style>
-    .button {
-      border-style: solid;
-      border-color: rgb(28, 28, 81);
-      color: white;
-      background-color: rgb(28, 28, 81);
-      padding: 10px 25px;
-      text-align: center;
-      display: inline-block;
-      font-size: 15px;
-      margin: 4px 2px;
-      cursor: pointer;
-      border-radius: 7px;
-      font-family: Arial, sans-serif;
-      text-decoration: none;
-    }
+{% block title %}List Jenis Hewan{% endblock %}
 
-    .button-delete {
-      border-style: solid;
-      border-color: #f45b5b;
-      color: white;
-      background-color: #f45b5b;
-      padding: 10px 25px;
-      text-align: center;
-      display: inline-block;
-      font-size: 15px;
-      margin: 4px 2px;
-      cursor: pointer;
-      border-radius: 7px;
-      font-family: Arial, sans-serif;
-      text-decoration: none;
-    }
+{% block extra_head %}
+<style>
+  .button {
+    border-style: solid;
+    border-color: rgb(28, 28, 81);
+    color: white;
+    background-color: rgb(28, 28, 81);
+    padding: 10px 25px;
+    text-align: center;
+    display: inline-block;
+    font-size: 15px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 7px;
+    font-family: Arial, sans-serif;
+    text-decoration: none;
+  }
 
-    .button-secondary {
-      border-style: solid;
-      border-color: #e0e0e0;
-      color: #333;
-      background-color: #f8f8f8;
-      padding: 10px 25px;
-      text-align: center;
-      display: inline-block;
-      font-size: 15px;
-      margin: 4px 2px;
-      cursor: pointer;
-      border-radius: 7px;
-      font-family: Arial, sans-serif;
-      text-decoration: none;
-    }
+  .button-delete {
+    border-style: solid;
+    border-color: #f45b5b;
+    color: white;
+    background-color: #f45b5b;
+    padding: 10px 25px;
+    text-align: center;
+    display: inline-block;
+    font-size: 15px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 7px;
+    font-family: Arial, sans-serif;
+    text-decoration: none;
+  }
 
-    #listJenisHewan {
-      width: 86%;
-      min-width: 600px;
-      table-layout: fixed;
-      margin: 20px auto;
-      background-color: lightgray;
-      border-collapse: collapse;
-      font-family: Arial, sans-serif;
-      margin-left: 100px;
-      margin-right: 100px;
-    }
-    #listJenisHewan thead tr {
-      background-color: white;
-    }
-    #listJenisHewan th,
-    #listJenisHewan td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: center;
-      background-color: white;
-    }
+  .button-secondary {
+    border-style: solid;
+    border-color: #e0e0e0;
+    color: #333;
+    background-color: #f8f8f8;
+    padding: 10px 25px;
+    text-align: center;
+    display: inline-block;
+    font-size: 15px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 7px;
+    font-family: Arial, sans-serif;
+    text-decoration: none;
+  }
 
-    /* Modal Popup Styles */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.4);
-    }
+  #listJenisHewan {
+    width: 86%;
+    min-width: 600px;
+    table-layout: fixed;
+    margin: 20px auto;
+    background-color: lightgray;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+    margin-left: 100px;
+    margin-right: 100px;
+  }
+  #listJenisHewan thead tr {
+    background-color: white;
+  }
+  #listJenisHewan th,
+  #listJenisHewan td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+    background-color: white;
+  }
 
-    .modal-content {
-      background-color: white;
-      margin: 15% auto;
-      padding: 30px;
-      border-radius: 5px;
-      width: 500px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      font-family: Arial, sans-serif;
-    }
+  /* Modal Popup Styles */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+  }
 
-    .modal-content h1 {
-      font-size: 24px;
-      margin-top: 0;
-      margin-bottom: 20px;
-    }
+  .modal-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 30px;
+    border-radius: 5px;
+    width: 500px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+  }
 
-    .modal-content label {
-      display: block;
-      margin-bottom: 10px;
-      font-weight: bold;
-    }
+  .modal-content h1 {
+    font-size: 24px;
+    margin-top: 0;
+    margin-bottom: 20px;
+  }
 
-    .modal-content input {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      margin-bottom: 20px;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
+  .modal-content label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
 
-    .readonly-input {
-      background-color: #f0f2f5;
-    }
+  .modal-content input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
 
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-  </style>
-</head>
-<body>
-  <h1 style="margin-left: 100px; font-family: Arial, sans-serif;">
-    List Jenis Hewan
-  </h1>
+  .readonly-input {
+    background-color: #f0f2f5;
+  }
 
-  <div style="display: flex; justify-content: flex-end; margin: 0 100px;">
-    <button id="createNewButton" class="button" style="display: flex; align-items: center; gap: 5px;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-      </svg>
-      Create New Animal Type
-    </button>
-  </div>
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+</style>
+{% endblock %}
 
-  <table id="listJenisHewan">
-    <thead>
-      <tr>
-        <th width="50px">No</th>
-        <th width="200px">ID Jenis</th>
-        <th width="200px">Nama Jenis</th>
-        <th width="150px">Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>1</td>
-        <td>HWN001</td>
-        <td>Kucing</td>
-        <td>
-          <button class="button update-button" data-id="HWN001" data-nama="Kucing">Update</button>
-          <button class="button-delete" data-id="HWN001" data-nama="Kucing">Delete</button>
-        </td>
-      </tr>
-      <tr>
-        <td>2</td>
-        <td>HWN002</td>
-        <td>Anjing</td>
-        <td>
-          <button class="button update-button" data-id="HWN002" data-nama="Anjing">Update</button>
-          <button class="button-delete" data-id="HWN002" data-nama="Anjing">Delete</button>
-        </td>
-      </tr>
-      <tr>
-        <td>3</td>
-        <td>HWN003</td>
-        <td>Hamster</td>
-        <td>
-          <button class="button update-button" data-id="HWN003" data-nama="Hamster">Update</button>
-          <button class="button-delete" data-id="HWN003" data-nama="Hamster">Delete</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+{% block content %}
+<h1 style="margin-left: 100px; font-family: Arial, sans-serif;">
+  List Jenis Hewan
+</h1>
 
-  <!-- Create Modal Popup -->
-  <div id="createAnimalTypeModal" class="modal">
-    <div class="modal-content">
-      <h1>Create New Animal Type</h1>
-      <form id="createAnimalTypeForm" method="POST" action="#">
-        {% csrf_token %}
-        <label for="namaJenisCreate">Nama Jenis</label>
-        <input type="text" id="namaJenisCreate" name="nama_jenis" placeholder="Nama Jenis" required>
-        
-        <div class="modal-actions">
-          <button type="button" id="cancelCreateButton" class="button-secondary">Cancel</button>
-          <button type="submit" class="button">Create</button>
-        </div>
-      </form>
-    </div>
-  </div>
+<div style="display: flex; justify-content: flex-end; margin: 0 100px;">
+  <button id="createNewButton" class="button" style="display: flex; align-items: center; gap: 5px;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+    </svg>
+    Create New Animal Type
+  </button>
+</div>
 
-  <!-- Update Modal Popup -->
-  <div id="updateAnimalTypeModal" class="modal">
-    <div class="modal-content">
-      <h1>Update Animal Type</h1>
-      <form id="updateAnimalTypeForm" method="POST" action="#">
-        {% csrf_token %}
-        <label for="idJenisUpdate">ID Jenis Hewan</label>
-        <input type="text" id="idJenisUpdate" name="id_jenis" readonly class="readonly-input">
-        
-        <label for="namaJenisUpdate">Nama Jenis</label>
-        <input type="text" id="namaJenisUpdate" name="nama_jenis" placeholder="Nama Jenis" required>
-        
-        <div class="modal-actions">
-          <button type="button" id="cancelUpdateButton" class="button-secondary">Cancel</button>
-          <button type="submit" class="button">Update</button>
-        </div>
-      </form>
-    </div>
-  </div>
+<table id="listJenisHewan">
+  <thead>
+    <tr>
+      <th width="50px">No</th>
+      <th width="200px">ID Jenis</th>
+      <th width="200px">Nama Jenis</th>
+      <th width="150px">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>HWN001</td>
+      <td>Kucing</td>
+      <td>
+        <button class="button update-button" data-id="HWN001" data-nama="Kucing">Update</button>
+        <button class="button-delete" data-id="HWN001" data-nama="Kucing">Delete</button>
+      </td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>HWN002</td>
+      <td>Anjing</td>
+      <td>
+        <button class="button update-button" data-id="HWN002" data-nama="Anjing">Update</button>
+        <button class="button-delete" data-id="HWN002" data-nama="Anjing">Delete</button>
+      </td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>HWN003</td>
+      <td>Hamster</td>
+      <td>
+        <button class="button update-button" data-id="HWN003" data-nama="Hamster">Update</button>
+        <button class="button-delete" data-id="HWN003" data-nama="Hamster">Delete</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
-  <!-- Delete Confirmation Modal -->
-  <div id="deleteAnimalTypeModal" class="modal">
-    <div class="modal-content">
-      <h1 style="color: #f45b5b;">Delete Animal Type</h1>
-      <p>Apakah kamu yakin untuk menghapus Jenis Hewan <span id="deleteAnimalName" style="font-weight: bold; color: #f45b5b;"></span> dengan kode <span id="deleteAnimalId" style="font-weight: bold; color: #f45b5b;"></span>?</p>
+<!-- Create Modal Popup -->
+<div id="createAnimalTypeModal" class="modal">
+  <div class="modal-content">
+    <h1>Create New Animal Type</h1>
+    <form id="createAnimalTypeForm" method="POST" action="#">
+      {% csrf_token %}
+      <label for="namaJenisCreate">Nama Jenis</label>
+      <input type="text" id="namaJenisCreate" name="nama_jenis" placeholder="Nama Jenis" required>
       
-      <form id="deleteAnimalTypeForm" method="POST" action="#">
-        {% csrf_token %}
-        <input type="hidden" id="idJenisDelete" name="id_jenis">
-        
-        <div class="modal-actions">
-          <button type="button" id="cancelDeleteButton" class="button-secondary">Cancel</button>
-          <button type="submit" class="button-delete">Confirm Deletion</button>
-        </div>
-      </form>
-    </div>
+      <div class="modal-actions">
+        <button type="button" id="cancelCreateButton" class="button-secondary">Cancel</button>
+        <button type="submit" class="button">Create</button>
+      </div>
+    </form>
   </div>
+</div>
 
-  <script>
-    // Get the modals
-    const createModal = document.getElementById("createAnimalTypeModal");
-    const updateModal = document.getElementById("updateAnimalTypeModal");
-    const deleteModal = document.getElementById("deleteAnimalTypeModal");
-    
-    // Get the buttons that open the modals
-    const createBtn = document.getElementById("createNewButton");
-    const updateButtons = document.querySelectorAll(".update-button");
-    const deleteButtons = document.querySelectorAll(".button-delete");
-    
-    // Get the buttons that close the modals
-    const cancelCreateBtn = document.getElementById("cancelCreateButton");
-    const cancelUpdateBtn = document.getElementById("cancelUpdateButton");
-    const cancelDeleteBtn = document.getElementById("cancelDeleteButton");
-    
-    // Get the forms
-    const createForm = document.getElementById("createAnimalTypeForm");
-    const updateForm = document.getElementById("updateAnimalTypeForm");
-    const deleteForm = document.getElementById("deleteAnimalTypeForm");
+<!-- Update Modal Popup -->
+<div id="updateAnimalTypeModal" class="modal">
+  <div class="modal-content">
+    <h1>Update Animal Type</h1>
+    <form id="updateAnimalTypeForm" method="POST" action="#">
+      {% csrf_token %}
+      <label for="idJenisUpdate">ID Jenis Hewan</label>
+      <input type="text" id="idJenisUpdate" name="id_jenis" readonly class="readonly-input">
+      
+      <label for="namaJenisUpdate">Nama Jenis</label>
+      <input type="text" id="namaJenisUpdate" name="nama_jenis" placeholder="Nama Jenis" required>
+      
+      <div class="modal-actions">
+        <button type="button" id="cancelUpdateButton" class="button-secondary">Cancel</button>
+        <button type="submit" class="button">Update</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-    // Create Modal
-    createBtn.onclick = function() {
-      createModal.style.display = "block";
+<!-- Delete Confirmation Modal -->
+<div id="deleteAnimalTypeModal" class="modal">
+  <div class="modal-content">
+    <h1 style="color: #f45b5b;">Delete Animal Type</h1>
+    <p>Apakah kamu yakin untuk menghapus Jenis Hewan <span id="deleteAnimalName" style="font-weight: bold; color: #f45b5b;"></span> dengan kode <span id="deleteAnimalId" style="font-weight: bold; color: #f45b5b;"></span>?</p>
+    
+    <form id="deleteAnimalTypeForm" method="POST" action="#">
+      {% csrf_token %}
+      <input type="hidden" id="idJenisDelete" name="id_jenis">
+      
+      <div class="modal-actions">
+        <button type="button" id="cancelDeleteButton" class="button-secondary">Cancel</button>
+        <button type="submit" class="button-delete">Confirm Deletion</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Get the modals
+  const createModal = document.getElementById("createAnimalTypeModal");
+  const updateModal = document.getElementById("updateAnimalTypeModal");
+  const deleteModal = document.getElementById("deleteAnimalTypeModal");
+  
+  // Get the buttons that open the modals
+  const createBtn = document.getElementById("createNewButton");
+  const updateButtons = document.querySelectorAll(".update-button");
+  const deleteButtons = document.querySelectorAll(".button-delete");
+  
+  // Get the buttons that close the modals
+  const cancelCreateBtn = document.getElementById("cancelCreateButton");
+  const cancelUpdateBtn = document.getElementById("cancelUpdateButton");
+  const cancelDeleteBtn = document.getElementById("cancelDeleteButton");
+  
+  // Get the forms
+  const createForm = document.getElementById("createAnimalTypeForm");
+  const updateForm = document.getElementById("updateAnimalTypeForm");
+  const deleteForm = document.getElementById("deleteAnimalTypeForm");
+
+  // Create Modal
+  createBtn.onclick = function() {
+    createModal.style.display = "block";
+  }
+  
+  cancelCreateBtn.onclick = function() {
+    createModal.style.display = "none";
+    createForm.reset();
+  }
+
+  // Update Modal
+  updateButtons.forEach(button => {
+    button.onclick = function() {
+      const jenisId = this.getAttribute("data-id");
+      const jenisNama = this.getAttribute("data-nama");
+      
+      document.getElementById("idJenisUpdate").value = jenisId;
+      document.getElementById("namaJenisUpdate").value = jenisNama;
+      
+      updateModal.style.display = "block";
     }
-    
-    cancelCreateBtn.onclick = function() {
+  });
+  
+  cancelUpdateBtn.onclick = function() {
+    updateModal.style.display = "none";
+    updateForm.reset();
+  }
+
+  // Delete Modal
+  deleteButtons.forEach(button => {
+    button.onclick = function() {
+      const jenisId = this.getAttribute("data-id");
+      const jenisNama = this.getAttribute("data-nama");
+      
+      document.getElementById("idJenisDelete").value = jenisId;
+      document.getElementById("deleteAnimalId").textContent = jenisId;
+      document.getElementById("deleteAnimalName").textContent = jenisNama;
+      
+      deleteModal.style.display = "block";
+    }
+  });
+  
+  cancelDeleteBtn.onclick = function() {
+    deleteModal.style.display = "none";
+  }
+
+  // Close any modal when clicking outside of it
+  window.onclick = function(event) {
+    if (event.target == createModal) {
       createModal.style.display = "none";
       createForm.reset();
-    }
-
-    // Update Modal
-    updateButtons.forEach(button => {
-      button.onclick = function() {
-        const animalId = this.getAttribute("data-id");
-        const animalName = this.getAttribute("data-nama");
-        
-        document.getElementById("idJenisUpdate").value = animalId;
-        document.getElementById("namaJenisUpdate").value = animalName;
-        
-        updateModal.style.display = "block";
-      }
-    });
-    
-    cancelUpdateBtn.onclick = function() {
+    } else if (event.target == updateModal) {
       updateModal.style.display = "none";
       updateForm.reset();
-    }
-
-    // Delete Modal
-    deleteButtons.forEach(button => {
-      button.onclick = function() {
-        const animalId = this.getAttribute("data-id");
-        const animalName = this.getAttribute("data-nama");
-        
-        document.getElementById("deleteAnimalName").textContent = animalName;
-        document.getElementById("deleteAnimalId").textContent = animalId;
-        document.getElementById("idJenisDelete").value = animalId;
-        
-        deleteModal.style.display = "block";
-      }
-    });
-    
-    cancelDeleteBtn.onclick = function() {
+    } else if (event.target == deleteModal) {
       deleteModal.style.display = "none";
     }
-
-    // Close any modal when clicking outside of it
-    window.onclick = function(event) {
-      if (event.target == createModal) {
-        createModal.style.display = "none";
-        createForm.reset();
-      } else if (event.target == updateModal) {
-        updateModal.style.display = "none";
-        updateForm.reset();
-      } else if (event.target == deleteModal) {
-        deleteModal.style.display = "none";
-      }
-    }
-  </script>
-</body>
-</html>
+  }
+</script>
+{% endblock %}

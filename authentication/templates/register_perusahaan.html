@@ -1,138 +1,121 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register Perusahaan - PetClinic</title>
+{% extends "base.html" %}
+
+{% block title %}Register Perusahaan - PetClinic{% endblock %}
+
+{% block extra_head %}
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        background-color: white;
+    }
     
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    h1 {
+        font-weight: bold;
+        font-size: 24px;
+        margin-bottom: 5px;
+    }
     
-    <!-- Custom styles -->
-    <style>
-        body {
-            background-color: #f9fafb;
-            min-height: 100vh;
-        }
-        
-        .form-container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            background-color: white;
-        }
-        
-        h1 {
-            font-weight: bold;
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-        
-        h2 {
-            font-size: 18px;
-            color: #4b5563;
-            margin-bottom: 20px;
-        }
-        
-        .required::after {
-            content: " *";
-            color: red;
-            font-size: 18px;
-        }
-        
-        .input-field {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 5px;
-        }
-        
-        input, textarea {
-            width: 100%;
-            padding: 18px;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            font-size: 18px;
-        }
-        
-        textarea {
-            height: 140px;
-        }
-        
-        .register-button {
-            background-color: #1f2937;
-            color: white;
-            border: none;
-            padding: 14px 25px;
-            border-radius: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            width: 50%;
-            min-width: 200px;
-        }
-        
-        .register-button:hover {
-            background-color: #111827;
-        }
-        
-        .button-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 30px;
-        }
-    </style>
-</head>
-<body>
-    <div class="form-container">
-        <h1 class="text-2xl font-bold mb-6">FORM REGISTER</h1>
-        <h2>Klien-Perusahaan</h2>
-        <br>
-        
-        <form method="post" action="">
-            {% csrf_token %}
-            
-            <div class="input-field">
-                <label for="email" class="required">Email</label>
-                <input type="email" id="email" name="email" placeholder="Email" required>
-            </div>
-            
-            <div class="input-field">
-                <label for="nama_perusahaan" class="required">Nama Perusahaan</label>
-                <input type="text" id="nama_perusahaan" name="nama_perusahaan" placeholder="Nama Perusahaan" required>
-            </div>
-            
-            <div class="input-field">
-                <label for="password" class="required">Password</label>
-                <input type="password" id="password" name="password" placeholder="Password" required>
-            </div>
-        
-            
-            <div class="input-field">
-                <label for="nomor_telepon" class="required">Nomor Telepon</label>
-                <input type="tel" id="nomor_telepon" name="nomor_telepon" placeholder="Nomor Telepon" required>
-            </div>
-            
-            <div class="input-field">
-                <label for="alamat" class="required">Alamat</label>
-                <textarea id="alamat" name="alamat" placeholder="Alamat" required></textarea>
-            </div>
-            
-            <div class="button-container">
-                <button type="submit" class="register-button">Register</button>
-            </div>
-        </form>
-    </div>
+    h2 {
+        font-size: 18px;
+        color: #4b5563;
+        margin-bottom: 20px;
+    }
     
-    <footer class="mt-12 py-4 border-t">
-        <div class="container mx-auto px-4 text-gray-600 text-center text-sm">
-            <p>&copy; Tugas Kelompok 11 - PetClinic</p>
+    .required::after {
+        content: " *";
+        color: red;
+        font-size: 18px;
+    }
+    
+    .input-field {
+        margin-bottom: 20px;
+    }
+    
+    label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 5px;
+    }
+    
+    input, textarea {
+        width: 100%;
+        padding: 18px;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 18px;
+    }
+    
+    textarea {
+        height: 140px;
+    }
+    
+    .register-button {
+        background-color: #1f2937;
+        color: white;
+        border: none;
+        padding: 14px 25px;
+        border-radius: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        width: 50%;
+        min-width: 200px;
+    }
+    
+    .register-button:hover {
+        background-color: #111827;
+    }
+    
+    .button-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1 class="text-2xl font-bold mb-6">FORM REGISTER</h1>
+    <h2>Klien-Perusahaan</h2>
+    <br>
+    
+    <form method="post" action="">
+        {% csrf_token %}
+        
+        <div class="input-field">
+            <label for="email" class="required">Email</label>
+            <input type="email" id="email" name="email" placeholder="Email" required>
         </div>
-    </footer>
-</body>
-</html>
+        
+        <div class="input-field">
+            <label for="nama_perusahaan" class="required">Nama Perusahaan</label>
+            <input type="text" id="nama_perusahaan" name="nama_perusahaan" placeholder="Nama Perusahaan" required>
+        </div>
+        
+        <div class="input-field">
+            <label for="password" class="required">Password</label>
+            <input type="password" id="password" name="password" placeholder="Password" required>
+        </div>
+    
+        
+        <div class="input-field">
+            <label for="nomor_telepon" class="required">Nomor Telepon</label>
+            <input type="tel" id="nomor_telepon" name="nomor_telepon" placeholder="Nomor Telepon" required>
+        </div>
+        
+        <div class="input-field">
+            <label for="alamat" class="required">Alamat</label>
+            <textarea id="alamat" name="alamat" placeholder="Alamat" required></textarea>
+        </div>
+        
+        <div class="button-container">
+            <button type="submit" class="register-button">Register</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

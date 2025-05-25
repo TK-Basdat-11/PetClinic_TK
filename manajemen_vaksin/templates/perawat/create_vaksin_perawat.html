@@ -1,5 +1,6 @@
-<!DOCTYPE html>
-{% include 'components/navbar_perawat.html' %}
+{% extends "base.html" %}
+{% block title %}Create Vaksin{% endblock %}
+{% block content %}
 <head>
     <meta charset="UTF-8" />
     <title>Create Vaksin</title>
@@ -72,3 +73,4 @@
         <input class="button" type="submit" value="Create">
     </div>
 </body>
+{% endblock %}
