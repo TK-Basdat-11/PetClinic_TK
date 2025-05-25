@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-ix@r=m@jn_48xusv02%ha-39*c6uv$rx8cxgotmved4ivsnm^3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", 'petclinictk-production.up.railway.app']
 
 
 # Application definition
