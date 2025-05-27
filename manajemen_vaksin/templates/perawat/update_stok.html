@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 {% include 'components/navbar_perawat.html' %}
 <head>
     <meta charset="UTF-8" />
@@ -61,4 +61,131 @@
         <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel">Cancel</a>
         <button class="button">Update Stock</button>
     </div>
-</body>
+</body> -->
+
+<!DOCTYPE html>
+{% include 'components/navbar_perawat.html' %}
+<head>
+    <meta charset="UTF-8" />
+    <title>Update Stok Vaksin</title>
+    <style>
+        .form-group {
+            margin-bottom: 15px;
+            margin-left: 100px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-family: Arial;
+            font-size: large;
+        }
+        
+        .form-input {
+            width: 1220px;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: medium;
+        }
+        
+        .form-input-disabled {
+            background-color: #f3f4f6;
+        }
+        
+        .button {
+            border-style: solid;
+            border-color: rgb(28, 28, 81);
+            color: white;
+            background-color:rgb(28, 28, 81);
+            padding: 10px 25px;
+            text-align: center;
+            display: inline-block;
+            font-size: 15px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 7px;
+            font-family: Arial;
+            text-decoration: none;
+        }
+
+        .cancel {
+            background-color: white;
+            color: rgb(28, 28, 81);
+            border-style: solid;
+            border-color: lightgray;
+            border-width: 1px;
+        }
+        
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .message {
+            padding: 10px;
+            margin: 10px 100px;
+            border-radius: 5px;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="margin-left: 100px; font-family: Arial">Update Stok Vaksin</h1>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" action="{% url 'vaksin:update_stok' vaccine_code=vaksin.code %}">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label class="form-label" for="code">Kode Vaksin</label>
+            <input type="text" id="code" name="code" class="form-input form-input-disabled" value="{{ vaksin.code }}" disabled>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label" for="name">Nama Vaksin</label>
+            <input type="text" id="name" name="name" class="form-input form-input-disabled" value="{{ vaksin.name }}" disabled>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label" for="price">Harga (Rp)</label>
+            <input type="text" id="price" name="price" class="form-input form-input-disabled" value="{{ vaksin.price }}" disabled>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label" for="stock">Stok Baru</label>
+            <input type="number" id="stock" name="stock" class="form-input" value="{{ stock|default:vaksin.stock }}" min="0" required>
+            {% if errors.stock %}
+                <div class="error-message">{{ errors.stock }}</div>
+            {% endif %}
+        </div>
+
+        <div align="right" style="margin-right: 100px;">
+            <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel">Cancel</a>
+            <button type="submit" class="button">Update Stok</button>
+            <div align="right" style="margin-right: 100px;">
+                <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel">Cancel</a>
+                <button type="submit" class="button">Update Stok</button>
+            </div>
+        </form>
+    </body>
+    </html>

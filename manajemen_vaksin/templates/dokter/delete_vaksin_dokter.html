@@ -27,21 +27,52 @@
         border-color: lightgray;
         border-width: 1px;
     }
+    
+    .message {
+        padding: 10px;
+        margin: 10px 100px;
+        border-radius: 5px;
+    }
+    
+    .success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .error {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
     </style>
 </head>
 
 <body>
     <h1 style="margin-left: 100px; font-family: Arial; color:red">Delete Vaccination</h1>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
 
-    <p style="font-family: Arial; margin-left: 100px;">
-        Apakah kamu yakin untuk menghapus Vaksinasi untuk Kunjungan 
-        <strong style="color: red;">KJN001</strong> 
-        dengan Vaksin 
-        <strong style="color: red;">VAC001</strong>?
-    </p>
+    <form method="post" action="{% url 'vaksin:delete_vaksin_dokter' kunjungan_id=kunjungan.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="kunjungan_id" value="{{ kunjungan.id }}">
+        <input type="hidden" name="confirm_delete" value="1">
+        
+        <p style="font-family: Arial; margin-left: 100px;">
+            Apakah kamu yakin untuk menghapus Vaksinasi untuk Kunjungan 
+            <strong style="color: red;">{{ kunjungan.id }}</strong> 
+            dengan Vaksin 
+            <strong style="color: red;">{{ kunjungan.kode_vaksin }} - {{ kunjungan.nama_vaksin }}</strong>?
+        </p>
 
-    <div align="right" style="margin-right: 100px;">
-        <a href="{% url 'vaksin:vaksin_dokter' %}" class="button cancel">Cancel</a>
-        <button class="button">Confirm Deletion</button>
-    </div>
+        <div align="right" style="margin-right: 100px;">
+            <a href="{% url 'vaksin:vaksin_dokter' %}" class="button cancel">Cancel</a>
+            <button type="submit" class="button">Confirm Deletion</button>
+        </div>
+    </form>
 </body>
+</html>

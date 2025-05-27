@@ -45,6 +45,8 @@
         margin: 4px 2px;
         cursor: pointer;
         border-radius: 7px;
+        font-family: Arial;
+        text-decoration: none;
         }
 
         .cancel {
@@ -54,34 +56,76 @@
             border-color: lightgray;
             border-width: 1px;
         }
+        
+        .error-message {
+            color: red;
+            margin-left: 100px;
+            font-size: 14px;
+        }
+        
+        .message {
+            padding: 10px;
+            margin: 10px 100px;
+            border-radius: 5px;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
 
 <body>
     <h1 style="font-family: Arial; margin-left: 100px;">Update Vaccination</h1>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
 
-    <div>
-        <p style="font-size: large; font-family: Arial; margin: 0px 100px 10px; font: weight 80%;">Kunjungan</p>
-    </div>
+    <form method="post" action="{% url 'vaksin:update_vaksin_dokter' kunjungan_id=kunjungan.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="kunjungan_id" value="{{ kunjungan.id }}">
+        
+        <div>
+            <p style="font-size: large; font-family: Arial; margin: 0px 100px 10px; font: weight 80%;">Kunjungan</p>
+        </div>
 
-    <div>
-        <p class="kunjungan">KJN001</p>
-    </div>
+        <div>
+            <p class="kunjungan">{{ kunjungan.id }} - {{ kunjungan.nama_hewan }} ({{ kunjungan.tanggal }})</p>
+        </div>
 
-    <div>
-        <label for="Vaksin" style="margin: top 20px; margin-left: 100px; font-size: large; font-family: Arial;">Vaksin</label>
-    </div>
+        <div>
+            <label for="vaksin" style="margin: top 20px; margin-left: 100px; font-size: large; font-family: Arial;">Vaksin</label>
+        </div>
 
-    <div>
-        <select class="dropdown-wrapper" id="vaksinDropdown" class="dropdown">
-            <option value="" disabled selected hidden>Pilih Vaksin</option>
-            <option value="">VAC001 - Feline Panleukopenia [100]</option>
-            <option value="">VAC002 - Canine Parvovirus [200]</option>
-            <option value="">VAC003 - Canine Adenovirus [300]</option>
-        </select>
-    </div>
-    <div align="right" style="margin-right: 100px;">
-        <button class="button cancel">Cancel</button>
-        <button class="button">Update</button>
-    </div>
+        <div>
+            <select class="dropdown-wrapper" name="vaksin" id="vaksin">
+                <option value="" disabled selected hidden>Pilih Vaksin</option>
+                {% for vaksin in vaksin_list %}
+                    <option value="{{ vaksin.0 }}" {% if kunjungan.kode_vaksin == vaksin.0 %}selected{% endif %}>
+                        {{ vaksin.0 }} - {{ vaksin.1 }} [{{ vaksin.2 }}]
+                    </option>
+                {% endfor %}
+            </select>
+            {% if errors.vaksin %}
+                <div class="error-message">{{ errors.vaksin }}</div>
+            {% endif %}
+        </div>
+        
+        <div align="right" style="margin-right: 100px;">
+            <a href="{% url 'vaksin:vaksin_dokter' %}" class="button cancel">Cancel</a>
+            <button type="submit" class="button">Update</button>
+        </div>
+    </form>
 </body>
+</html>

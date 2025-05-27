@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 {% include 'components/navbar_perawat.html' %}
 <head>
     <meta charset="UTF-8" />
@@ -44,4 +44,81 @@
     <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel">Cancel</a>
     <button class="button">Confirm Deletion</button>
 </div>
+</body> -->
+
+<!DOCTYPE html>
+{% include 'components/navbar_perawat.html' %}
+<head>
+    <meta charset="UTF-8" />
+    <title>Hapus Vaksin</title>
+    <style>
+    .button {
+        border-style: solid;
+        border-color: red;
+        color: white;
+        background-color:red;
+        padding: 10px 25px;
+        text-align: center;
+        display: inline-block;
+        font-size: 15px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 7px;
+        text-decoration: none;
+        font-family: Arial;
+        }
+
+    .cancel {
+        background-color: white;
+        color: rgb(28, 28, 81);
+        border-style: solid;
+        border-color: lightgray;
+        border-width: 1px;
+    }
+    
+    .message {
+        padding: 10px;
+        margin: 10px 100px;
+        border-radius: 5px;
+    }
+    
+    .success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .error {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    </style>
+</head>
+
+<body>
+    <h1 style="margin-left: 100px; font-family: Arial; color:red">Hapus Vaksin</h1>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" action="{% url 'vaksin:delete_vaksin_perawat' vaccine_code=vaksin.code %}">
+        {% csrf_token %}
+        <input type="hidden" name="vaccine_code" value="{{ vaksin.code }}">
+        <input type="hidden" name="confirm_delete" value="1">
+        
+        <p style="font-family: Arial; margin-left: 100px;">
+            Apakah kamu yakin untuk menghapus Vaksin 
+            <strong style="color: red;">{{ vaksin.code }} - {{ vaksin.name }}</strong>?
+        </p>
+
+        <div align="right" style="margin-right: 100px;">
+            <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel">Cancel</a>
+            <button type="submit" class="button">Confirm Deletion</button>
+        </div>
+    </form>
 </body>
+</html>

@@ -1,8 +1,5 @@
 from django.shortcuts import redirect, render
 
-# Create your views here.
-
-
 def show_login(request):
 
     if request.POST:

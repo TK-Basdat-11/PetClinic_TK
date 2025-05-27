@@ -38,11 +38,35 @@
         body{
             font-family: Arial;
         }
+        
+        .message {
+            padding: 10px;
+            margin: 10px 100px;
+            border-radius: 5px;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
 
 <body>
     <h1 style="margin-left: 100px;">List Vaccination</h1>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
 
     <a href="{% url 'vaksin:create_vaksin_dokter' %}" class="button" align="left" style="margin-left: 1100px; font-family: Arial;">+ Create New Vaccination</a>
 
@@ -55,36 +79,25 @@
                 <th width="300">Vaksin</th>
                 <th width="400">Action</th>
             </tr>
+            {% if list_vaksin_dokter %}
+                {% for vaksin in list_vaksin_dokter %}
+                <tr align="center">
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ vaksin.0 }}</td>
+                    <td>{{ vaksin.3 }}</td>
+                    <td>{{ vaksin.4 }} - {{ vaksin.5 }}</td>
+                    <td>
+                        <a href="{% url 'vaksin:update_vaksin_dokter' kunjungan_id=vaksin.0 %}" class="button">Update</a>
+                        <a href="{% url 'vaksin:delete_vaksin_dokter' kunjungan_id=vaksin.0 %}" class="button delete">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
             <tr align="center">
-                <td>1</td>
-                <td>KJN001</td>
-                <td>Rabu, 5 Februari 2025</td>
-                <td>VAC001 - Feline Panleukopenia</td>
-                <td>
-                    <a href="{% url 'vaksin:update_vaksin_dokter' %}" class="button">Update</a>
-                    <a href="{% url 'vaksin:delete_vaksin_dokter' %}" class="button delete">Delete</a>
-                </td>
+                <td colspan="5">Tidak ada data vaksinasi.</td>
             </tr>
-            <tr align="center">
-                <td>2</td>
-                <td>KJN002</td>
-                <td>Jumat, 21 Februari 2025</td>
-                <td>VAC002 - Canine Parvovirus</td>
-                <td>
-                    <button class="button">Update</button>
-                    <button class="button delete">Delete</button>
-                </td>
-            </tr>
-            <tr align="center">
-                <td>3</td>
-                <td>KJN003</td>
-                <td>Selasa, 15 Maret 2025</td>
-                <td>VAC003 - Canine Adenovirus</td>
-                <td>
-                    <button class="button">Update</button>
-                    <button class="button delete">Delete</button>
-                </td>
-            </tr>
+            {% endif %}
         </table>
     </div>
 </body>
+</html>

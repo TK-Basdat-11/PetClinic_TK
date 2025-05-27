@@ -48,40 +48,84 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
             cursor: pointer;
         }
+        
+        .error-message {
+            color: red;
+            margin-left: 100px;
+            font-size: 14px;
+        }
+        
+        .message {
+            padding: 10px;
+            margin: 10px 100px;
+            border-radius: 5px;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
 
 <body>
     <h1 style="margin-left: 100px; font-family: Arial">Create New Vaccination</h1>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
 
-    <div>
-    <label for="Kunjungan" style="margin-left: 100px; font-size: large; font-family: Arial;">Kunjungan</label>
-    </div>
+    <form method="post" action="{% url 'vaksin:create_vaksin_dokter' %}">
+        {% csrf_token %}
+        <div>
+            <label for="kunjungan" style="margin-left: 100px; font-size: large; font-family: Arial;">Kunjungan</label>
+        </div>
 
-    <div>
-    <select class="dropdown-wrapper" name="Kunjungan" id="kunjungan">
-        <option value="" disabled selected hidden>Pilih Kunjungan</option>
-        <option value="">KJN001</option>
-        <option value="">KJN002</option>
-        <option value="">KJN003</option>
-    </select>
-    </div>
+        <div>
+            <select class="dropdown-wrapper" name="kunjungan" id="kunjungan">
+                <option value="" disabled selected hidden>Pilih Kunjungan</option>
+                {% for kunjungan in kunjungan_list %}
+                    <option value="{{ kunjungan.0 }}" {% if selected_kunjungan == kunjungan.0 %}selected{% endif %}>
+                        {{ kunjungan.0 }} - {{ kunjungan.1 }} ({{ kunjungan.2 }})
+                    </option>
+                {% endfor %}
+            </select>
+            {% if errors.kunjungan %}
+                <div class="error-message">{{ errors.kunjungan }}</div>
+            {% endif %}
+        </div>
 
-    <div>
-        <label for="Vaksin" style="margin: top 20px; margin-left: 100px; font-size: large; font-family: Arial;">Vaksin</label>
-    </div>
+        <div>
+            <label for="vaksin" style="margin: top 20px; margin-left: 100px; font-size: large; font-family: Arial;">Vaksin</label>
+        </div>
 
-    <div>
-    <select class="dropdown-wrapper" name="Vaksin" id="vaksin">
-        <option value="" disabled selected hidden>Pilih Vaksin</option>
-        <option value="">VAC001 - Feline Panleukopenia [100]</option>
-        <option value="">VAC002 - Canine Parvovirus [200]</option>
-        <option value="">VAC003 - Canine Adenovirus [300]</option>
-    </select>
-    </div>
+        <div>
+            <select class="dropdown-wrapper" name="vaksin" id="vaksin">
+                <option value="" disabled selected hidden>Pilih Vaksin</option>
+                {% for vaksin in vaksin_list %}
+                    <option value="{{ vaksin.0 }}" {% if selected_vaksin == vaksin.0 %}selected{% endif %}>
+                        {{ vaksin.0 }} - {{ vaksin.1 }} [{{ vaksin.2 }}]
+                    </option>
+                {% endfor %}
+            </select>
+            {% if errors.vaksin %}
+                <div class="error-message">{{ errors.vaksin }}</div>
+            {% endif %}
+        </div>
 
-    <div align="right" style="margin-right: 100px;">
-    <a href="{% url 'vaksin:vaksin_dokter' %}" class="button cancel">Cancel</a>
-    <button class="button">Create</button>
-    </div>
+        <div align="right" style="margin-right: 100px;">
+            <a href="{% url 'vaksin:vaksin_dokter' %}" class="button cancel">Cancel</a>
+            <button type="submit" class="button">Create</button>
+        </div>
+    </form>
 </body>
+</html>
