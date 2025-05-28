@@ -4,117 +4,49 @@
 {% block title %}Hapus Vaksin{% endblock %}
 
 {% block content %}
-<div class="delete-wrapper">
-  <h1 class="delete-title">Hapus Vaksin</h1>
+<div class="max-w-xl mx-auto px-4 py-12">
 
-  {% if messages %}
-    {% for message in messages %}
-      <div class="message {% if message.tags == 'success' %}success{% else %}error{% endif %}">
-        {{ message }}
-      </div>
-    {% endfor %}
-  {% endif %}
-
-  <form method="post" action="{% url 'vaksin:delete_vaksin_perawat' vaccine_code=vaksin.code %}">
-    {% csrf_token %}
-    <input type="hidden" name="vaccine_code" value="{{ vaksin.code }}">
-    <input type="hidden" name="confirm_delete" value="1">
-
-    <p class="delete-text">
-      Apakah kamu yakin untuk menghapus Vaksin
-      <strong class="highlight">{{ vaksin.name }}</strong>
-      dengan kode <strong class="highlight">{{ vaksin.code }}</strong>?
-    </p>
-
-    <div class="form-actions">
-      <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel">Cancel</a>
-      <button type="submit" class="button delete">Confirm Deletion</button>
+  {% for message in messages %}
+    <div class="mb-4 text-sm font-medium px-4 py-2 rounded 
+      {% if message.tags == 'success' %}
+        bg-green-100 text-green-800
+      {% elif message.tags == 'error' %}
+        bg-red-100 text-red-800
+      {% endif %}
+    ">
+      {{ message }}
     </div>
-  </form>
+  {% endfor %}
+
+  {% if can_delete %}
+    <h1 class="text-2xl font-semibold text-red-600 mb-6 text-center">Hapus Vaksin</h1>
+    <form method="post" action="{% url 'vaksin:delete_vaksin_perawat' vaccine_code=vaksin.code %}">
+      {% csrf_token %}
+      <input type="hidden" name="vaccine_code" value="{{ vaksin.code }}">
+      <input type="hidden" name="confirm_delete" value="1">
+
+      <p class="text-center text-gray-800 mb-6">
+        Apakah kamu yakin ingin menghapus vaksin
+        <strong class="text-red-600">{{ vaksin.name }}</strong>
+        dengan kode <strong class="text-red-600">{{ vaksin.code }}</strong>?
+      </p>
+
+      <div class="flex justify-center gap-4">
+        <a href="{% url 'vaksin:vaksin_perawat' %}" class="px-4 py-2 text-sm rounded border border-gray-300 hover:bg-gray-100">
+          Batal
+        </a>
+        <button type="submit" class="px-4 py-2 text-sm rounded bg-red-600 text-white hover:bg-red-700">
+          Konfirmasi Hapus
+        </button>
+      </div>
+    </form>
+  {% else %}
+    <div class="text-center space-y-4">
+      <p class="text-l font-semibold text-red-600 mb-6 text-center">{{ error_message }}</p>
+      <a href="{% url 'vaksin:vaksin_perawat' %}" class="px-4 py-2 text-sm rounded border bg-white border-gray-300 hover:bg-gray-100">
+          Kembali
+        </a>
+    </div>
+  {% endif %}
 </div>
-
-<style>
-  .delete-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 20px;
-    font-family: Arial, sans-serif;
-  }
-
-  .delete-title {
-    font-size: 24px;
-    font-weight: bold;
-    color: red;
-    margin-bottom: 16px;
-  }
-
-  .delete-text {
-    font-size: 16px;
-    color: #111827;
-    margin-bottom: 20px;
-    max-width: 600px;
-    text-align: center;
-  }
-
-  .highlight {
-    color: red;
-    font-weight: bold;
-  }
-
-  .form-actions {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 20px;
-  }
-
-  .button {
-    padding: 10px 24px;
-    font-size: 14px;
-    border-radius: 7px;
-    font-family: Arial;
-    text-decoration: none;
-    cursor: pointer;
-  }
-
-  .cancel {
-    background-color: white;
-    color: rgb(28, 28, 81);
-    border: 1px solid lightgray;
-  }
-
-  .cancel:hover {
-    background-color: #f3f4f6;
-  }
-
-  .delete {
-    background-color: red;
-    color: white;
-    border: 1px solid red;
-  }
-
-  .delete:hover {
-    background-color: #b91c1c;
-  }
-
-  .message {
-    padding: 10px 16px;
-    margin-bottom: 1rem;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-  }
-
-  .success {
-    background-color: #d4edda;
-    color: #155724;
-  }
-
-  .error {
-    background-color: #f8d7da;
-    color: #721c24;
-  }
-</style>
 {% endblock %}

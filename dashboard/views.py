@@ -1,4 +1,4 @@
-from pyexpat.errors import messages
+from django.contrib import messages
 from django.db import connection
 from django.shortcuts import render, redirect
 from datetime import datetime
@@ -247,7 +247,6 @@ def dashboard_perawat(request):
         "sertifikat_list": sertifikat_list,
         "user_role": "perawat",
     })
-
 
 def update_password(request):
     return render(request, "update_password.html")
