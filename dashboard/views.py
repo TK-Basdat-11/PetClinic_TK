@@ -2,6 +2,7 @@ from pyexpat.errors import messages
 from django.db import connection
 from django.shortcuts import render, redirect
 from datetime import datetime
+from authentication.decorators import role_required
 
 BULAN_INDONESIA = {
     'January': 'Januari',
@@ -24,6 +25,7 @@ def format_tanggal_indonesia(date_obj):
     year = date_obj.year
     return f"{day} {month} {year}"
 
+@role_required('dokter')
 def dashboard_dokter(request):
     dokter_id = request.session.get("user_id")
     if not dokter_id:
@@ -99,6 +101,7 @@ def dashboard_dokter(request):
         "user_role": "dokter",
     })
 
+@role_required('fdo')
 def dashboard_fdo(request):
     fdo_id = request.session.get("user_id")
     if not fdo_id:
@@ -143,6 +146,7 @@ def dashboard_fdo(request):
         "user_role": "fdo",
     })
 
+@role_required('klien')
 def dashboard_klien(request):
     client_id = request.session.get('user_id')
     if not client_id:
@@ -186,6 +190,7 @@ def dashboard_klien(request):
         'user_role': 'klien',
     })
 
+@role_required('perawat')
 def dashboard_perawat(request):
     perawat_id = request.session.get("user_id")
     if not perawat_id:
@@ -243,20 +248,26 @@ def dashboard_perawat(request):
         "user_role": "perawat",
     })
 
+
 def update_password(request):
     return render(request, "update_password.html")
 
+@role_required('dokter')
 def update_profile_dokter(request):
     return render(request, "dashboard/update_profile_dokter.html")
 
+@role_required('fdo')
 def update_profile_fdo(request):
     return render(request, "dashboard/update_profile_fdo.html")
 
+@role_required('perawat')
 def update_profile_perawat(request):
     return render(request, "dashboard/update_profile_perawat.html")
 
+@role_required('klien')
 def update_profile_klien_individu(request):
     return render(request, "dashboard/update_profile_klien_individu.html")
 
+@role_required('klien')
 def update_profile_klien_perusahaan(request):
     return render(request, "dashboard/update_profile_klien_perusahaan.html")
