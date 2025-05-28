@@ -27,9 +27,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ix@r=m@jn_48xusv02%ha-39*c6uv$rx8cxgotmved4ivsnm^3'
 
 if os.getenv("DEBUG"):
-    DEBUG = True
+    DEBUG = os.getenv("DEBUG")
 else:
-    DEBUG = False
+    DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", 'petclinictk-production.up.railway.app']
 CSRF_TRUSTED_ORIGINS = ['https://petclinictk-production.up.railway.app']
