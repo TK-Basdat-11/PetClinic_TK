@@ -578,20 +578,38 @@ def create_resep(request):
             }
             return render(request, 'manajemen_obat/form_resep.html', context)
         
-        with connection.cursor() as cursor:
-            cursor.execute("""
-            INSERT INTO PETCLINIC.PERAWATAN_OBAT (kode_perawatan, kode_obat, kuantitas_obat)
-            VALUES (%s, %s, %s)
-            """, [treatment_code, med_code, quantity])
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                INSERT INTO PETCLINIC.PERAWATAN_OBAT (kode_perawatan, kode_obat, kuantitas_obat)
+                VALUES (%s, %s, %s)
+                """, [treatment_code, med_code, quantity])
+                
+                cursor.execute("""
+                UPDATE PETCLINIC.OBAT
+                SET stok = stok - %s
+                WHERE kode = %s
+                """, [quantity, med_code])
             
-            cursor.execute("""
-            UPDATE PETCLINIC.OBAT
-            SET stok = stok - %s
-            WHERE kode = %s
-            """, [quantity, med_code])
-        
-        messages.success(request, 'Resep obat berhasil ditambahkan!')
-        return redirect('obat:list_resep')
+            messages.success(request, 'Resep obat berhasil ditambahkan!')
+            return redirect('obat:list_resep')
+        except Exception as e:
+            error_message = str(e)
+            if "CONTEXT:" in error_message:
+                error_message = error_message.split("CONTEXT:")[0].strip()
+            errors['database'] = error_message
+            user_role = request.session.get('user_role', 'perawat')
+            
+            context = {
+                'treatments': treatments,
+                'medicines': medicines,
+                'errors': errors,
+                'selected_treatment': treatment_code,
+                'selected_medicine': med_code,
+                'quantity': quantity,
+                'user_role': user_role,
+            }
+            return render(request, 'manajemen_obat/form_resep.html', context)
     
     user_role = request.session.get('user_role', 'perawat')
     

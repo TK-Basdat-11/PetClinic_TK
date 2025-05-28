@@ -18,6 +18,12 @@ BULAN_INDONESIA = {
     'December': 'Desember'
 }
 
+def format_tanggal_indonesia(date_obj):
+    day = date_obj.day
+    month = BULAN_INDONESIA[date_obj.strftime("%B")]
+    year = date_obj.year
+    return f"{day} {month} {year}"
+
 def dashboard_dokter(request):
     dokter_id = request.session.get("user_id")
     if not dokter_id:
@@ -42,15 +48,13 @@ def dashboard_dokter(request):
             return redirect("authentication:login")
 
         tanggal_diterima = datetime.strptime(row[3], "%Y-%m-%d")
-        bulan_diterima = tanggal_diterima.strftime("%B")
-        tanggal_diterima_fmt = tanggal_diterima.strftime(f"%-d {BULAN_INDONESIA[bulan_diterima]} %Y")
+        tanggal_diterima_fmt = format_tanggal_indonesia(tanggal_diterima)
 
         if row[4] is None:
             tanggal_akhir_fmt = "-"
         else:
             tanggal_akhir = datetime.strptime(row[4], "%Y-%m-%d")
-            bulan_akhir = tanggal_akhir.strftime("%B")
-            tanggal_akhir_fmt = tanggal_akhir.strftime(f"%-d {BULAN_INDONESIA[bulan_akhir]} %Y")
+            tanggal_akhir_fmt = format_tanggal_indonesia(tanggal_akhir)
 
         profile = {
             "id": row[0],
@@ -117,15 +121,13 @@ def dashboard_fdo(request):
             return redirect("authentication:login")
 
         tanggal_diterima = datetime.strptime(row[2], "%Y-%m-%d")
-        bulan_diterima = tanggal_diterima.strftime("%B")
-        tanggal_diterima_fmt = tanggal_diterima.strftime(f"%-d {BULAN_INDONESIA[bulan_diterima]} %Y")
+        tanggal_diterima_fmt = format_tanggal_indonesia(tanggal_diterima)
 
         if row[3] is None:
             tanggal_akhir_fmt = "-"
         else:
             tanggal_akhir = datetime.strptime(row[3], "%Y-%m-%d")
-            bulan_akhir = tanggal_akhir.strftime("%B")
-            tanggal_akhir_fmt = tanggal_akhir.strftime(f"%-d {BULAN_INDONESIA[bulan_akhir]} %Y")
+            tanggal_akhir_fmt = format_tanggal_indonesia(tanggal_akhir)
 
         profile = {
             "id": row[0],
@@ -168,8 +170,7 @@ def dashboard_klien(request):
             return redirect('authentication:login')
 
         tanggal_obj = datetime.strptime(row[3], '%Y-%m-%d')
-        nama_bulan = tanggal_obj.strftime('%B')
-        tanggal_formatted = tanggal_obj.strftime(f"%-d {BULAN_INDONESIA.get(nama_bulan, nama_bulan)} %Y")
+        tanggal_formatted = format_tanggal_indonesia(tanggal_obj)
 
         profile = {
             'id': row[0],
@@ -204,20 +205,19 @@ def dashboard_perawat(request):
             WHERE ph.no_perawat_hewan = %s
         """, [perawat_id])
         row = cursor.fetchone()
-
+        print(row)
+        print(row[3])
         if not row:
             return redirect("authentication:login")
 
         tanggal_diterima = datetime.strptime(row[3], "%Y-%m-%d")
-        bulan_diterima = tanggal_diterima.strftime("%B")
-        tanggal_diterima_fmt = tanggal_diterima.strftime(f"%-d {BULAN_INDONESIA[bulan_diterima]} %Y")
+        tanggal_diterima_fmt = format_tanggal_indonesia(tanggal_diterima)
 
         if row[4] is None:
             tanggal_akhir_fmt = "-"
         else:
             tanggal_akhir = datetime.strptime(row[4], "%Y-%m-%d")
-            bulan_akhir = tanggal_akhir.strftime("%B")
-            tanggal_akhir_fmt = tanggal_akhir.strftime(f"%-d {BULAN_INDONESIA[bulan_akhir]} %Y")
+            tanggal_akhir_fmt = format_tanggal_indonesia(tanggal_akhir)
 
         profile = {
             "id": row[0],

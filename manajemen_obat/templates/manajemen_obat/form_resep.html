@@ -16,6 +16,12 @@
             </div>
             {% endif %}
             
+            {% if errors.database %}
+            <div class="p-4 bg-red-100 text-red-700 rounded mb-4">
+                <p>{{ errors.database }}</p>
+            </div>
+            {% endif %}
+            
             <div class="mb-4">
                 <label for="treatment" class="block text-sm font-medium text-gray-700">Jenis Perawatan</label>
                 <select id="treatment" name="treatment" class="mt-1 block w-full p-2 border {% if errors.treatment %}border-red-500{% else %}border-gray-300{% endif %} rounded-md">
