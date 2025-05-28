@@ -445,13 +445,22 @@ def list_kunjungan(request):
             k.nama_hewan,
             k.tipe_kunjungan as metode_kunjungan,
             TO_CHAR(k.timestamp_awal, 'DD-MM-YYYY HH24:MI:SS') as waktu_mulai,
-            TO_CHAR(k.timestamp_akhir, 'DD-MM-YYYY HH24:MI:SS') as waktu_selesai
+            TO_CHAR(k.timestamp_akhir, 'DD-MM-YYYY HH24:MI:SS') as waktu_selesai,
+            CASE 
+                WHEN i.nama_depan IS NOT NULL 
+                THEN CONCAT(i.nama_depan, ' ', COALESCE(i.nama_tengah || ' ', ''), i.nama_belakang)
+                WHEN p.nama_perusahaan IS NOT NULL 
+                THEN p.nama_perusahaan
+                ELSE 'N/A'
+            END as nama_klien
         FROM PETCLINIC.KUNJUNGAN k
+        LEFT JOIN PETCLINIC.KLIEN kl ON k.no_identitas_klien = kl.no_identitas
+        LEFT JOIN PETCLINIC.INDIVIDU i ON kl.no_identitas = i.no_identitas_klien
+        LEFT JOIN PETCLINIC.PERUSAHAAN p ON kl.no_identitas = p.no_identitas_klien
         """
         
         if user_role == 'klien':
             cursor.execute(base_query + """
-            JOIN PETCLINIC.KLIEN kl ON k.no_identitas_klien = kl.no_identitas
             WHERE kl.email = %s
             ORDER BY k.timestamp_awal DESC
             """, [user_email])
