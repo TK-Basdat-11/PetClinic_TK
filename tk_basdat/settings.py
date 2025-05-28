@@ -26,7 +26,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-ix@r=m@jn_48xusv02%ha-39*c6uv$rx8cxgotmved4ivsnm^3'
 
-DEBUG = os.getenv("DEBUG") or True
+if os.getenv("DEBUG"):
+    DEBUG = True
+else:
+    DEBUG = False
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", 'petclinictk-production.up.railway.app']
 CSRF_TRUSTED_ORIGINS = ['https://petclinictk-production.up.railway.app']
