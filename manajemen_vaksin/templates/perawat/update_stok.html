@@ -1,66 +1,150 @@
 {% extends "base.html" %}
-{% block title %}Update Stok{% endblock %}
+{% include 'components/navbar_perawat.html' %}
+
+{% block title %}Update Stok Vaksin{% endblock %}
+
 {% block content %}
-<head>
-    <meta charset="UTF-8" />
-    <title>Update Stok</title>
-    <style>
-        .input {
-            margin-bottom: 15px;
-            margin-left: 100px;
-            width: 1200px;
-            padding: 5px 10px;  
-            font-size: medium;
-            line-height: 1.5;
-            background-color: #fff;   
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;     
-            appearance: none;         
-        }
+<div class="form-container">
+  <div class="form-card">
+    <h1 class="form-title">Update Vaccine Stock</h1>
+    <p class="form-subtitle">{{ vaksin.code }} - {{ vaksin.name }}</p>
 
-        .button {
-        border-style: solid;
-        border-color: rgb(28, 28, 81);
-        color: white;
-        background-color:rgb(28, 28, 81);
-        padding: 10px 25px;
-        text-align: center;
-        display: inline-block;
-        font-size: 15px;
-        margin: 4px 2px;
-        cursor: pointer;
-        border-radius: 7px;
-        font-family: Arial;
-        text-decoration: none;
-        }
+    {% if messages %}
+      {% for message in messages %}
+        <div class="message {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
 
-        .cancel {
-            background-color: white;
-            color: rgb(28, 28, 81);
-            border-style: solid;
-            border-color: lightgray;
-            border-width: 1px;
-        }
-    </style>
-</head>
+    <form method="post" action="{% url 'vaksin:update_stok' vaccine_code=vaksin.code %}">
+      {% csrf_token %}
+      
+      <div class="form-group">
+        <label class="form-label" for="stock">Stok</label>
+        <input type="number" id="stock" name="stock" class="form-input" value="{{ stock|default:vaksin.stock }}" min="0" required>
+        {% if errors.stock %}
+          <div class="error-message">{{ errors.stock }}</div>
+        {% endif %}
+      </div>
 
-<body>
-    <h1 style="font-family: Arial; margin-left: 100px; margin-bottom: 5px;">Update Vaccine Stock</h1>
-    <div>
-        <p style="font-size: large; font-family: Arial; margin: 0px 100px 20px; font: weight 80%;">VAC001 - Feline Panleukopenia</p>
-    </div>
-
-    <div>
-        <p style="font-size: large; font-family: Arial; margin: 0px 100px 10px; font: weight 80%;">Stok</p>
-    </div>
-
-    <div>
-        <input class="input" type="text" id="stok" name="stok" placeholder="Stok">
-    </div>
-
-    <div align="right" style="margin-right: 100px;">
+      <div class="form-actions">
         <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel">Cancel</a>
-        <button class="button">Update Stock</button>
-    </div>
-</body>
+        <button type="submit" class="button">Update Stock</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+  .form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    background-color: #f9fafb;
+  }
+
+  .form-card {
+    background-color: white;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 1px solid #e5e7eb;
+    width: 100%;
+    max-width: 400px;
+    font-family: Arial, sans-serif;
+  }
+
+  .form-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: #111827;
+  }
+
+  .form-subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    margin-bottom: 20px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+    font-size: 14px;
+    color: #374151;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .button {
+    border-style: solid;
+    border-color: rgb(28, 28, 81);
+    color: white;
+    background-color: rgb(28, 28, 81);
+    padding: 8px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 6px;
+    text-decoration: none;
+    font-family: Arial;
+  }
+
+  .button:hover {
+    background-color: rgb(38, 38, 100);
+  }
+
+  .cancel {
+    background-color: white;
+    color: rgb(28, 28, 81);
+    border: 1px solid lightgray;
+  }
+
+  .cancel:hover {
+    background-color: #f3f4f6;
+  }
+
+  .error-message {
+    color: red;
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  .message {
+    padding: 10px;
+    margin-bottom: 1rem;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .success {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  .error {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+</style>
 {% endblock %}

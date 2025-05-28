@@ -1,94 +1,69 @@
 {% extends "base.html" %}
-{% block title %}Dashboard Front Desk-Officer{% endblock %}
+{% block title %}Dashboard FDO{% endblock %}
 {% block content %}
-<html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <title>Dashboard Front Desk-Officer</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-    }
-    .profile-fdo table {
-      border-collapse: separate;
-      border-spacing: 0 8px;
-      margin-top: 16px;
-      margin-left: 100px;
-    }
-
-    .profile-fdo th,
-    .profile-fdo td {
-      text-align: left;
-      padding: 4px 0;
-      vertical-align: top;
-    }
-
-    .profile-fdo th {
-      padding-right: 40px;
-    }
-    .button {
-      border-style: solid;
-      border-color: rgb(28, 28, 81);
-      color: white;
-      background-color: rgb(28, 28, 81);
-      padding: 10px 25px;
-      text-align: center;
-      display: inline-block;
-      font-size: 15px;
-      margin: 4px 2px;
-      cursor: pointer;
-      border-radius: 7px;
-      font-family: Arial, sans-serif;
-      text-decoration: none;
-    }
-    .updatepassword {
-        background-color: red;
-        border-color: red;
-        margin-left: 500px;
-    }
-    .header {
-      display: flex;
-      align-items: center;     
-      margin-top: 20px;
-      margin-bottom: 0px;
-    }
-
-  </style>
-</head>
-
-<body>
-    <div class="header">
-        <h1 style="margin-left: 100px;">Profile Front Desk-Officer</h1>
-        <a href="{% url 'dashboard:update_password' %}" class="button updatepassword">Update Password</a>
-        <a href="{% url 'dashboard:update_profile_fdo' %}" class="button">Update Profile</a>
-    </div>
-    <div class="profile-fdo">
-        <table>
-            <tr>
-                <th>Nomor Identitas</th>
-                <td>8451fbbf-e73b-4f4b-90cb-2066e1f34685</td>
-            </tr>
-            <tr>
-                <th>Email</th>
-                <td>amalia_putri@petclinic.com</td>
-            </tr>
-            <tr>
-                <th>Tanggal Diterima</th>
-                <td>25 Januari 2025</td>
-            </tr>
-            <tr>
-                <th>Tanggal Akhir Kerja</th>
-                <td>-</td>
-            </tr>
-            <tr>
-                <th>Alamat</th>
-                <td>Jl. Melati Indah No.25, Kel. Sukamaju, Kec. Cibinong, Kab. Bogor, Jawa Barat, 16914</td>
-            </tr>
-            <tr>
-                <th>No Telepon</th>
-                <td>081234567890</td>
-            </tr>
-        </table>
+<div class="bg-gray-50 min-h-screen py-10">
+  <div class="max-w-4xl mx-auto px-6">
+    {% if messages %}
+          <div class="mb-6">
+            {% for message in messages %}
+            <div class="px-4 py-3 rounded relative
+              {% if message.tags == 'success' %}
+                bg-green-100 text-green-800 border border-green-300
+              {% elif message.tags == 'error' %}
+                bg-red-100 text-red-800 border border-red-300
+              {% elif message.tags == 'warning' %}
+                bg-yellow-100 text-yellow-800 border border-yellow-300
+              {% else %}
+                bg-blue-100 text-blue-800 border border-blue-300
+              {% endif %}
+            ">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800">Profile Front-Desk Officer</h1>
       </div>
-</body>
+      <div class="flex space-x-3">
+        <a href="{% url 'dashboard:update_password' %}" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Update Password</a>
+        <a href="{% url 'dashboard:update_profile_fdo' %}" class="px-4 py-2 bg-indigo-800 text-white rounded-lg hover:bg-indigo-700 transition">Update Profile</a>
+      </div>
+    </div>
+
+    <!-- Informasi Profil -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+      <table class="w-full text-sm text-left text-gray-800">
+        <tbody>
+          <tr class="border-b">
+            <th class="px-6 py-4 font-medium w-1/3">Nomor Identitas</th>
+            <td class="px-6 py-4">{{ profile.id }}</td>
+          </tr>
+          <tr class="border-b">
+            <th class="px-6 py-4 font-medium">Email</th>
+            <td class="px-6 py-4">{{ profile.email }}</td>
+          </tr>
+          <tr class="border-b">
+            <th class="px-6 py-4 font-medium">Tanggal Diterima</th>
+            <td class="px-6 py-4">{{ profile.diterima }}</td>
+          </tr>
+          <tr class="border-b">
+            <th class="px-6 py-4 font-medium">Tanggal Akhir Kerja</th>
+            <td class="px-6 py-4">{{ profile.akhir }}</td>
+          </tr>
+          <tr class="border-b">
+            <th class="px-6 py-4 font-medium">Alamat</th>
+            <td class="px-6 py-4">{{ profile.alamat }}</td>
+          </tr>
+          <tr>
+            <th class="px-6 py-4 font-medium">Nomor Telepon</th>
+            <td class="px-6 py-4">{{ profile.telepon }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 {% endblock %}

@@ -1,5 +1,3 @@
-from django.shortcuts import redirect, render
-
 # Create your views here.
 from django.db import connection, InternalError
 from django.shortcuts import render, redirect
@@ -30,31 +28,31 @@ def login(request):
 
         cur.execute(
             """
-            SELECT role
+            SELECT role, id_user
             FROM (
                 /* — Dokter — */
-                SELECT 'dokter' AS role
+                SELECT 'dokter' AS role, d.no_dokter_hewan AS id_user
                 FROM   PETCLINIC.DOKTER_HEWAN d
                 JOIN   PETCLINIC.PEGAWAI      p ON p.no_pegawai = d.no_dokter_hewan
                 WHERE  p.email = %s
 
                 UNION ALL
                 /* — Perawat — */
-                SELECT 'perawat'
+                SELECT 'perawat' AS role, ph.no_perawat_hewan AS id_user
                 FROM   PETCLINIC.PERAWAT_HEWAN ph
                 JOIN   PETCLINIC.PEGAWAI       p ON p.no_pegawai = ph.no_perawat_hewan
                 WHERE  p.email = %s
 
                 UNION ALL
                 /* — FDO — */
-                SELECT 'fdo'
+                SELECT 'fdo' AS role, fd.no_front_desk AS id_user
                 FROM   PETCLINIC.FRONT_DESK fd
                 JOIN   PETCLINIC.PEGAWAI    p ON p.no_pegawai = fd.no_front_desk
                 WHERE  p.email = %s
 
                 UNION ALL
                 /* — Klien — */
-                SELECT 'klien'
+                SELECT 'klien' AS role, KLIEN.no_identitas AS id_user
                 FROM   PETCLINIC.KLIEN
                 WHERE  email = %s
             ) AS roles
@@ -63,15 +61,18 @@ def login(request):
             [email, email, email, email]
         )
         role_row = cur.fetchone()
-        role = role_row[0] if role_row else "guest"
+        if role_row:
+            role, user_id = role_row
+        else:
+            role, user_id = "guest", None
 
     request.session["is_auth"]   = True
     request.session["email"]     = email
     request.session["user_role"] = role
+    request.session["user_id"] = str(user_id) if user_id else None
 
     messages.success(request, f"Selamat datang, {email}!")
     
-    # Redirect based on user role
     if role == "dokter":
         return redirect('dashboard:dashboard_dokter')
     elif role == "fdo":
@@ -84,7 +85,6 @@ def login(request):
         return redirect("authentication:hero")
 
 def show_login(request):
-    # Use the actual login function instead of dummy approach
     if request.method == "POST":
         return login(request)
     return render(request, "login.html")
@@ -93,7 +93,6 @@ def hero_section(request):
     return render(request,"hero.html")
 
 def user_logout(request):
-   # Clear session data
    if "is_auth" in request.session:
        del request.session["is_auth"]
    if "email" in request.session:
@@ -389,3 +388,61 @@ def register_perawat(request):
             return render(request, "register_perawat.html")
 
     return render(request, "register_perawat.html")
+
+def hero_section(request):
+
+    return render(request,"hero.html")
+
+def user_logout(request):
+   
+    request.session['user_type'] = "empty"
+    request.session['user_id'] = "empty"
+   
+    return redirect("authentication:hero")
+
+def get_klien_joined_with_users_data_from_id(id):
+
+    dto_klien = dict()
+
+    with connection.cursor() as cursor:
+
+        cursor.execute(
+        "SELECT * FROM USERS u " \
+        "JOIN KLIEN k " \
+        "ON u.email = k.email " \
+        "WHERE k.no_identitas = %s", (id,))
+
+        klien_raw = cursor.fetchone()
+
+        dto_klien = {
+            "email": klien_raw[0],
+            # "password_user": klien_raw[1],
+            "alamat": klien_raw[2],
+            "nomor_telepon": klien_raw[3],
+            # "no_identitas": klien_raw[4],
+            "tanggal_registrasi": klien_raw[5]
+        }
+
+    return dto_klien
+
+def get_nama_klien_from_individu(id):
+
+    nama = ""
+
+    with connection.cursor() as cursor:
+
+        cursor.execute("SELECT * FROM PETCLINIC.INDIVIDU WHERE no_identitas_klien=%s",(id,))
+
+        klien_raw = cursor.fetchone()
+
+        if klien_raw:
+            nama = f"{klien_raw[1]} {klien_raw[2]} {klien_raw[3]}"
+
+        else:
+            cursor.execute("SELECT nama_perusahaan FROM PETCLINIC.PERUSAHAAN WHERE no_identitas_klien=%s",(id,))
+            klien_raw = cursor.fetchone()
+
+            nama = klien_raw[0]
+
+
+    return nama

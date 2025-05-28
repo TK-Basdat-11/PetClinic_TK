@@ -1,49 +1,85 @@
 {% extends "base.html" %}
 {% block title %}Delete Vaksin{% endblock %}
 {% block content %}
-<head>
-    <meta charset="UTF-8" />
-    <title>Delete Vaksin</title>
-    <style>
-    .button {
-        border-style: solid;
-        border-color: red;
-        color: white;
-        background-color:red;
-        padding: 10px 25px;
-        text-align: center;
-        display: inline-block;
-        font-size: 15px;
-        margin: 4px 2px;
-        cursor: pointer;
-        border-radius: 7px;
-        text-decoration: none;
-        font-family: Arial;
-        }
+<div class="max-w-2xl mx-auto py-10 font-sans">
+    <h1 class="text-3xl font-bold text-red-700 mb-6">Hapus Vaksinasi</h1>
 
-    .cancel {
-        background-color: white;
-        color: rgb(28, 28, 81);
-        border-style: solid;
-        border-color: lightgray;
-        border-width: 1px;
-    }
-    </style>
-</head>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message {{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
 
-<body>
-    <h1 style="margin-left: 100px; font-family: Arial; color:red">Delete Vaccination</h1>
+    <div class="bg-white p-6 rounded-lg shadow border border-red-200">
+        <p class="text-lg text-gray-700 leading-relaxed mb-6">
+            Apakah kamu yakin ingin menghapus vaksinasi untuk kunjungan
+            <strong class="text-red-700">{{ kunjungan.id }}</strong>
+            dengan vaksin
+            <strong class="text-red-700">{{ kunjungan.kode_vaksin }} - {{ kunjungan.nama_vaksin }}</strong>?
+        </p>
 
-    <p style="font-family: Arial; margin-left: 100px;">
-        Apakah kamu yakin untuk menghapus Vaksinasi untuk Kunjungan 
-        <strong style="color: red;">KJN001</strong> 
-        dengan Vaksin 
-        <strong style="color: red;">VAC001</strong>?
-    </p>
+        <form method="post" action="{% url 'vaksin:delete_vaksin_dokter' kunjungan_id=kunjungan.id %}" class="flex justify-end gap-4">
+            {% csrf_token %}
+            <input type="hidden" name="kunjungan_id" value="{{ kunjungan.id }}">
+            <input type="hidden" name="confirm_delete" value="1">
 
-    <div align="right" style="margin-right: 100px;">
-        <a href="{% url 'vaksin:vaksin_dokter' %}" class="button cancel">Cancel</a>
-        <button class="button">Confirm Deletion</button>
+            <a href="{% url 'vaksin:vaksin_dokter' %}" class="btn-cancel">Cancel</a>
+            <button type="submit" class="btn-delete">Hapus</button>
+        </form>
     </div>
-</body>
+</div>
+
+<style>
+    .btn-delete {
+        background-color: #dc2626;
+        color: white;
+        padding: 10px 24px;
+        border-radius: 8px;
+        border: none;
+        font-size: 14px;
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+        transition: background-color 0.2s;
+    }
+
+    .btn-delete:hover {
+        background-color: #b91c1c;
+    }
+
+    .btn-cancel {
+        background-color: #f8fafc;
+        color: #1c1c51;
+        padding: 10px 24px;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        text-decoration: none;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+        transition: background-color 0.2s;
+    }
+
+    .btn-cancel:hover {
+        background-color: #e2e8f0;
+    }
+
+    .message {
+        padding: 12px;
+        margin-bottom: 1rem;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .error {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+</style>
 {% endblock %}

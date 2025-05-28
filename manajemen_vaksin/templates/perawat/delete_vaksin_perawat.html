@@ -1,49 +1,52 @@
 {% extends "base.html" %}
-{% block title %}Delete Vaksin{% endblock %}
+{% include 'components/navbar_perawat.html' %}
+
+{% block title %}Hapus Vaksin{% endblock %}
+
 {% block content %}
-<head>
-    <meta charset="UTF-8" />
-    <title>Delete Vaksin</title>
-    <style>
-    .button {
-        border-style: solid;
-        border-color: red;
-        color: white;
-        background-color:red;
-        padding: 10px 25px;
-        text-align: center;
-        display: inline-block;
-        font-size: 15px;
-        margin: 4px 2px;
-        cursor: pointer;
-        border-radius: 7px;
-        font-family: Arial;
-        text-decoration: none;
-        }
+<div class="max-w-xl mx-auto px-4 py-12">
 
-    .cancel {
-        background-color: white;
-        color: rgb(28, 28, 81);
-        border-style: solid;
-        border-color: lightgray;
-        border-width: 1px;
-    }
-    </style>
-</head>
+  {% for message in messages %}
+    <div class="mb-4 text-sm font-medium px-4 py-2 rounded 
+      {% if message.tags == 'success' %}
+        bg-green-100 text-green-800
+      {% elif message.tags == 'error' %}
+        bg-red-100 text-red-800
+      {% endif %}
+    ">
+      {{ message }}
+    </div>
+  {% endfor %}
 
-<body>
-<h1 style="margin-left: 100px; font-family: Arial; color:red">Delete Vaccine</h1>
+  {% if can_delete %}
+    <h1 class="text-2xl font-semibold text-red-600 mb-6 text-center">Hapus Vaksin</h1>
+    <form method="post" action="{% url 'vaksin:delete_vaksin_perawat' vaccine_code=vaksin.code %}">
+      {% csrf_token %}
+      <input type="hidden" name="vaccine_code" value="{{ vaksin.code }}">
+      <input type="hidden" name="confirm_delete" value="1">
 
-<p style="font-family: Arial; margin-left: 100px;">
-    Apakah kamu yakin untuk menghapus Vaksinasi untuk Kunjungan 
-    <strong style="color: red;">Feline Panleukopenia</strong> 
-    dengan ID 
-    <strong style="color: red;">VAC001</strong>?
-</p>
+      <p class="text-center text-gray-800 mb-6">
+        Apakah kamu yakin ingin menghapus vaksin
+        <strong class="text-red-600">{{ vaksin.name }}</strong>
+        dengan kode <strong class="text-red-600">{{ vaksin.code }}</strong>?
+      </p>
 
-<div align="right" style="margin-right: 100px;">
-    <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel">Cancel</a>
-    <button class="button">Confirm Deletion</button>
+      <div class="flex justify-center gap-4">
+        <a href="{% url 'vaksin:vaksin_perawat' %}" class="px-4 py-2 text-sm rounded border border-gray-300 hover:bg-gray-100">
+          Batal
+        </a>
+        <button type="submit" class="px-4 py-2 text-sm rounded bg-red-600 text-white hover:bg-red-700">
+          Konfirmasi Hapus
+        </button>
+      </div>
+    </form>
+  {% else %}
+    <div class="text-center space-y-4">
+      <p class="text-l font-semibold text-red-600 mb-6 text-center">{{ error_message }}</p>
+      <a href="{% url 'vaksin:vaksin_perawat' %}" class="px-4 py-2 text-sm rounded border bg-white border-gray-300 hover:bg-gray-100">
+          Kembali
+        </a>
+    </div>
+  {% endif %}
 </div>
-</body>
 {% endblock %}
