@@ -53,9 +53,9 @@
     <div class="container">
       <div class="menu">
         <a href="{% url 'dashboard:dashboard_fdo' %}">Dashboard</a>
-        <a href="#">Kelola Jenis Hewan</a>
-        <a href="#">Kelola Hewan Peliharaan</a>
-        <a href="#">Kelola Kunjungan</a>
+        <a href="{% url 'jenis_hewan:jenis-hewan' %}">Kelola Jenis Hewan</a>
+        <a href="{% url 'hewan:hewan' %}">Kelola Hewan Peliharaan</a>
+        <a href="{% url 'perawatan_hewan:list_kunjungan' %}">Kelola Kunjungan</a>
         <a href="{% url 'listklien:list_klien' %}">Daftar Klien</a>
 
       </div>

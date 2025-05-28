@@ -47,20 +47,20 @@ def create_hewan(request):
             # Save to database using cursor
             with connection.cursor() as cursor:
                 # Check if pemilik exists
-                cursor.execute("SELECT no_identitas FROM KLIEN WHERE no_identitas = %s", [pemilik_uuid])
+                cursor.execute("SELECT no_identitas FROM PETCLINIC.KLIEN WHERE no_identitas = %s", [pemilik_uuid])
                 if not cursor.fetchone():
                     context['error'] = 'Pemilik tidak ditemukan'
                     return render(request, 'hewan.html', context)
                 
                 # Check if jenis_hewan exists
-                cursor.execute("SELECT id FROM JENIS_HEWAN WHERE id = %s", [jenis_uuid])
+                cursor.execute("SELECT id FROM PETCLINIC.JENIS_HEWAN WHERE id = %s", [jenis_uuid])
                 if not cursor.fetchone():
                     context['error'] = 'Jenis hewan tidak ditemukan'
                     return render(request, 'hewan.html', context)
                 
                 # Check if hewan with same name already exists for this owner
                 cursor.execute(
-                    "SELECT nama FROM HEWAN WHERE nama = %s AND no_identitas_klien = %s", 
+                    "SELECT nama FROM PETCLINIC.HEWAN WHERE nama = %s AND no_identitas_klien = %s", 
                     [nama, pemilik_uuid]
                 )
                 if cursor.fetchone():
@@ -70,7 +70,7 @@ def create_hewan(request):
                 # Insert new hewan
                 cursor.execute(
                     """
-                    INSERT INTO HEWAN (nama, no_identitas_klien, tanggal_lahir, id_jenis, url_foto)
+                    INSERT INTO PETCLINIC.HEWAN (nama, no_identitas_klien, tanggal_lahir, id_jenis, url_foto)
                     VALUES (%s, %s, %s, %s, %s)
                     """,
                     [nama, pemilik_uuid, tanggal_lahir_formatted, jenis_uuid, foto_url]
@@ -83,9 +83,9 @@ def create_hewan(request):
             with connection.cursor() as cursor:
                 cursor.execute("""
                     SELECT h.nama, k.nama as pemilik, jh.nama as jenis, h.tanggal_lahir, h.url_foto 
-                    FROM HEWAN h
-                    JOIN KLIEN k ON h.no_identitas_klien = k.no_identitas
-                    JOIN JENIS_HEWAN jh ON h.id_jenis = jh.id
+                    FROM PETCLINIC.HEWAN h
+                    JOIN PETCLINIC.KLIEN k ON h.no_identitas_klien = k.no_identitas
+                    JOIN PETCLINIC.JENIS_HEWAN jh ON h.id_jenis = jh.id
                     ORDER BY h.nama
                 """)
                 columns = [col[0] for col in cursor.description]
@@ -94,12 +94,12 @@ def create_hewan(request):
                 
             # Also fetch pemilik and jenis data for the dropdowns
             with connection.cursor() as cursor:
-                cursor.execute("SELECT no_identitas as id, nama FROM KLIEN ORDER BY nama")
+                cursor.execute("SELECT no_identitas as id, nama FROM PETCLINIC.KLIEN ORDER BY nama")
                 columns = [col[0] for col in cursor.description]
                 pemilik_list = [dict(zip(columns, row)) for row in cursor.fetchall()]
                 context['pemilik_list'] = pemilik_list
                 
-                cursor.execute("SELECT id, nama FROM JENIS_HEWAN ORDER BY nama")
+                cursor.execute("SELECT id, nama FROM PETCLINIC.JENIS_HEWAN ORDER BY nama")
                 columns = [col[0] for col in cursor.description]
                 jenis_list = [dict(zip(columns, row)) for row in cursor.fetchall()]
                 context['jenis_list'] = jenis_list
@@ -117,9 +117,9 @@ def create_hewan(request):
         # Get all hewan for display
         cursor.execute("""
             SELECT h.nama, k.nama as pemilik, jh.nama as jenis, h.tanggal_lahir, h.url_foto 
-            FROM HEWAN h
-            JOIN KLIEN k ON h.no_identitas_klien = k.no_identitas
-            JOIN JENIS_HEWAN jh ON h.id_jenis = jh.id
+            FROM PETCLINIC.HEWAN h
+            JOIN PETCLINIC.KLIEN k ON h.no_identitas_klien = k.no_identitas
+            JOIN PETCLINIC.JENIS_HEWAN jh ON h.id_jenis = jh.id
             ORDER BY h.nama
         """)
         columns = [col[0] for col in cursor.description]
@@ -127,12 +127,12 @@ def create_hewan(request):
         context['hewan_list'] = hewan_list
         
         # Get pemilik and jenis data for the dropdowns
-        cursor.execute("SELECT no_identitas as id, nama FROM KLIEN ORDER BY nama")
+        cursor.execute("SELECT no_identitas as id, nama FROM PETCLINIC.KLIEN ORDER BY nama")
         columns = [col[0] for col in cursor.description]
         pemilik_list = [dict(zip(columns, row)) for row in cursor.fetchall()]
         context['pemilik_list'] = pemilik_list
         
-        cursor.execute("SELECT id, nama FROM JENIS_HEWAN ORDER BY nama")
+        cursor.execute("SELECT id, nama FROM PETCLINIC.JENIS_HEWAN ORDER BY nama")
         columns = [col[0] for col in cursor.description]
         jenis_list = [dict(zip(columns, row)) for row in cursor.fetchall()]
         context['jenis_list'] = jenis_list
@@ -145,7 +145,6 @@ def update_hewan(request):
     return render(request,"hewan.html")
 
 def delete_hewan(request):
-
     return render(request, "hewan.html")
 
 def show_hewan_client(request):

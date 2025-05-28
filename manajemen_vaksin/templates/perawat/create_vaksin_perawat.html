@@ -4,90 +4,71 @@
 {% block title %}Create Vaksin{% endblock %}
 
 {% block content %}
-<head>
-    <meta charset="UTF-8" />
-    <title>Create Vaksin</title>
-    <style>
-        .input {
-            margin-top: 5px;
-            margin-bottom: 0px;
-            width: 1200px;
-            padding: 5px 10px;  
-            font-size: medium;
-            line-height: 1.5;
-            background-color: #fff;   
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;     
-            appearance: none;         
-        }
+<div class="max-w-3xl mx-auto py-10 font-sans">
+  <h1 class="text-3xl font-bold text-gray-800 mb-8">Tambah Vaksin Baru</h1>
 
-        label {
-            display: block;
-            margin-bottom: 5px;
-            margin-top: 10px;
-        }
-    
-        .button {
-          border-style: solid;
-          border-color: rgb(28, 28, 81);
-          color: white;
-          background-color:rgb(28, 28, 81);
-          padding: 10px 25px;
-          text-align: center;
-          display: inline-block;
-          font-size: 15px;
-          margin: 4px 2px;
-          cursor: pointer;
-          border-radius: 7px;
-          font-family: Arial;
-          text-decoration: none;
-          }
-    
-        .cancel {
-            background-color: white;
-            color: rgb(28, 28, 81);
-            border-style: solid;
-            border-color: lightgray;
-            border-width: 1px;
-        }
+  <form action="" method="POST" class="space-y-6">
+    {% csrf_token %}
 
-        p {
-            margin-bottom: 10px;
-        }
+    <div>
+      <label for="name" class="block text-sm font-medium text-gray-700">Nama Vaksin</label>
+      <input
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500"
+        type="text"
+        id="name"
+        name="name"
+        value="{{ name|default_if_none:'' }}"
+        placeholder="Masukkan nama vaksin"
+      />
+      {% if errors.name %}
+        <p class="text-red-600 text-sm mt-1">{{ errors.name }}</p>
+      {% endif %}
+    </div>
 
-    </style>    
-</head>
+    <div>
+      <label for="price" class="block text-sm font-medium text-gray-700">Harga</label>
+      <input
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500"
+        type="text"
+        id="price"
+        name="price"
+        value="{{ price|default_if_none:'' }}"
+        placeholder="Masukkan harga vaksin (Rp)"
+      />
+      {% if errors.price %}
+        <p class="text-red-600 text-sm mt-1">{{ errors.price }}</p>
+      {% endif %}
+    </div>
 
-<body>
-    <h1 style="font-family: Arial; margin-bottom: 10px; margin-left: 100px; font-size: x-large; font-weight: bold;">Create New Vaccine</h1>
+    <div>
+      <label for="stock" class="block text-sm font-medium text-gray-700">Stok Awal</label>
+      <input
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500"
+        type="text"
+        id="stock"
+        name="stock"
+        value="{{ stock|default_if_none:'' }}"
+        placeholder="Masukkan jumlah stok awal"
+      />
+      {% if errors.stock %}
+        <p class="text-red-600 text-sm mt-1">{{ errors.stock }}</p>
+      {% endif %}
+    </div>
 
-    <form action="" method="POST" style="margin-left: 100px; font-family: Arial; font-size: large;">
-        {% csrf_token %}
-        <div>
-            <label for="nama">Nama</label>
-            <input class="input" type="text" id="name" value="{% if name %}{{ name }}{% endif %}" name="name" placeholder="Nama">
-            {% if errors.name %}
-                <p class="text-red-500 text-xs mt-1">{{ errors.name }}</p>
-            {% endif %}
-        </div>
-        <div>
-            <label for="harga">Harga</label>
-            <input class="input" type="text" id="price" value="{% if price %}{{ price }}{% endif %}" name="price" placeholder="Harga">
-            {% if errors.price %}
-                <p class="text-red-500 text-xs mt-1">{{ errors.price }}</p>
-            {% endif %}
-        </div>
-        <div>
-            <label for="stok">Stok Awal</label>
-            <input class="input" type="text" id="stock" value="{% if stock %}{{ stock }}{% endif %}" name="stock" placeholder="Stok Awal">
-            {% if errors.stock %}
-                <p class="text-red-500 text-xs mt-1">{{ errors.stock }}</p>
-            {% endif %}
-        </div>
-        <div align="right" style="margin-right: 100px;">
-            <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel" type="button" value="Cancel">Cancel</a>
-            <button class="button" type="submit">Create</button>
-        </div>
-    </form>
-</body>
-{% endblock %} 
+    <div class="flex justify-end gap-4">
+      <a
+        href="{% url 'vaksin:vaksin_perawat' %}"
+        class="px-4 py-2 border border-gray-300 text-gray-800 rounded-lg text-sm hover:bg-gray-100"
+      >
+        Batal
+      </a>
+      <button
+        type="submit"
+        class="px-5 py-2 bg-indigo-800 text-white rounded-lg text-sm hover:bg-indigo-700"
+      >
+        Simpan
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

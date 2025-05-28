@@ -1,97 +1,23 @@
-<!DOCTYPE html>
-{% include 'components/navbar_dokter.html' %}
-<head>
-    <meta charset="UTF-8" />
-    <title>Create Vaksin</title>
-    <style>
-        .button {
-        border-style: solid;
-        border-color: rgb(28, 28, 81);
-        color: white;
-        background-color:rgb(28, 28, 81);
-        padding: 10px 25px;
-        text-align: center;
-        display: inline-block;
-        font-size: 15px;
-        margin: 4px 2px;
-        cursor: pointer;
-        border-radius: 7px;
-        font-family: Arial;
-        text-decoration: none;
-        }
+{% extends "base.html" %}
+{% block title %}Create Vaksin{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto py-10 font-sans">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Create New Vaccination</h1>
 
-        .cancel {
-            background-color: white;
-            color: rgb(28, 28, 81);
-            border-style: solid;
-            border-color: lightgray;
-            border-width: 1px;
-        }
-
-        .dropdown-wrapper {
-            margin-top: 5px;
-            margin-bottom: 15px;
-            margin-left: 100px;
-            margin-right: 100px;
-            width: 1220px;
-            padding: 5px 20px;  
-            font-size: medium;
-            line-height: 1.5;
-            background-color: #fff;   
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;     
-            appearance: none;         
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg fill='%237478aa' height='10' viewBox='0 0 20 20' width='10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 7l3-3 3 3m0 6l-3 3-3-3' stroke='%237478aa' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 0.65rem;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            cursor: pointer;
-        }
-        
-        .error-message {
-            color: red;
-            margin-left: 100px;
-            font-size: 14px;
-        }
-        
-        .message {
-            padding: 10px;
-            margin: 10px 100px;
-            border-radius: 5px;
-        }
-        
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-    </style>
-</head>
-
-<body>
-    <h1 style="margin-left: 100px; font-family: Arial">Create New Vaccination</h1>
-    
     {% if messages %}
         {% for message in messages %}
-            <div class="message {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+            <div class="message {{ message.tags }}">
                 {{ message }}
             </div>
         {% endfor %}
     {% endif %}
 
-    <form method="post" action="{% url 'vaksin:create_vaksin_dokter' %}">
+    <form method="post" action="{% url 'vaksin:create_vaksin_dokter' %}" class="space-y-6">
         {% csrf_token %}
-        <div>
-            <label for="kunjungan" style="margin-left: 100px; font-size: large; font-family: Arial;">Kunjungan</label>
-        </div>
 
         <div>
-            <select class="dropdown-wrapper" name="kunjungan" id="kunjungan">
+            <label for="kunjungan" class="block text-lg text-gray-700 mb-1">Kunjungan</label>
+            <select class="dropdown-wrapper w-full" name="kunjungan" id="kunjungan">
                 <option value="" disabled selected hidden>Pilih Kunjungan</option>
                 {% for kunjungan in kunjungan_list %}
                     <option value="{{ kunjungan.0 }}" {% if selected_kunjungan == kunjungan.0 %}selected{% endif %}>
@@ -105,11 +31,8 @@
         </div>
 
         <div>
-            <label for="vaksin" style="margin: top 20px; margin-left: 100px; font-size: large; font-family: Arial;">Vaksin</label>
-        </div>
-
-        <div>
-            <select class="dropdown-wrapper" name="vaksin" id="vaksin">
+            <label for="vaksin" class="block text-lg text-gray-700 mb-1">Vaksin</label>
+            <select class="dropdown-wrapper w-full" name="vaksin" id="vaksin">
                 <option value="" disabled selected hidden>Pilih Vaksin</option>
                 {% for vaksin in vaksin_list %}
                     <option value="{{ vaksin.0 }}" {% if selected_vaksin == vaksin.0 %}selected{% endif %}>
@@ -122,10 +45,78 @@
             {% endif %}
         </div>
 
-        <div align="right" style="margin-right: 100px;">
+        <div class="flex justify-end gap-4">
             <a href="{% url 'vaksin:vaksin_dokter' %}" class="button cancel">Cancel</a>
             <button type="submit" class="button">Create</button>
         </div>
     </form>
-</body>
-</html>
+</div>
+
+<style>
+    .button {
+        border: none;
+        color: white;
+        background-color: rgb(28, 28, 81);
+        padding: 10px 25px;
+        font-size: 15px;
+        cursor: pointer;
+        border-radius: 7px;
+        font-family: Arial, sans-serif;
+        text-decoration: none;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+    .button:hover {
+        background-color: rgb(38, 38, 110);
+    }
+
+    .cancel {
+        background-color: white;
+        color: rgb(28, 28, 81);
+        border: 1px solid lightgray;
+    }
+
+    .cancel:hover {
+        background-color: #f2f2f2;
+    }
+
+    .dropdown-wrapper {
+        margin-top: 5px;
+        padding: 10px 15px;
+        font-size: 15px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background-color: #fff;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg fill='%23444' height='10' viewBox='0 0 20 20' width='10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 7l3-3 3 3m0 6l-3 3-3-3' stroke='%23444' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 0.65rem;
+    }
+
+    .message {
+        padding: 12px;
+        margin-bottom: 1rem;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .error {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .error-message {
+        color: red;
+        font-size: 13px;
+        margin-top: 4px;
+    }
+</style>
+{% endblock %}

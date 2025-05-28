@@ -53,16 +53,16 @@
     <div class="container">
       <div class="menu">
         <a href="{% url 'dashboard:dashboard_dokter' %}">Dashboard</a>
-        <a href="#">Daftar Jenis Hewan</a>
-        <a href="#">Perawatan Hewan</a>
-        <a href="#">Daftar Kunjungan</a>
+        <a href="{% url 'jenis_hewan:jenis-hewan' %}">Daftar Jenis Hewan</a>
+        <a href="{% url 'perawatan_hewan:list_kunjungan' %}">Perawatan Hewan</a>
+        <a href="{% url 'perawatan_hewan:list_kunjungan' %}">Daftar Kunjungan</a>
         <a href="{% url 'obat:list_obat' %}">Manajemen Obat</a>
         <a href="{% url 'obat:list_perawatan' %}">Manajemen Jenis Perawatan</a>
         <a href="{% url 'obat:list_resep' %}">Manajemen Pemberian Obat</a>
         <a href="{% url 'vaksin:vaksin_dokter' %}">Manajemen Vaksinasi Hewan</a>
       </div>
       <div class="menu">
-        <a href="#" class="logout">Logout</a>
+        <a href="{% url 'authentication:logout' %}" class="logout">Logout</a>
       </div>
     </div>
   </nav>

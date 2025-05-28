@@ -1,124 +1,120 @@
-<!-- <!DOCTYPE html>
+{% extends "base.html" %}
 {% include 'components/navbar_perawat.html' %}
-<head>
-    <meta charset="UTF-8" />
-    <title>Delete Vaksin</title>
-    <style>
-    .button {
-        border-style: solid;
-        border-color: red;
-        color: white;
-        background-color:red;
-        padding: 10px 25px;
-        text-align: center;
-        display: inline-block;
-        font-size: 15px;
-        margin: 4px 2px;
-        cursor: pointer;
-        border-radius: 7px;
-        font-family: Arial;
-        text-decoration: none;
-        }
 
-    .cancel {
-        background-color: white;
-        color: rgb(28, 28, 81);
-        border-style: solid;
-        border-color: lightgray;
-        border-width: 1px;
-    }
-    </style>
-</head>
+{% block title %}Hapus Vaksin{% endblock %}
 
-<body>
-<h1 style="margin-left: 100px; font-family: Arial; color:red">Delete Vaccine</h1>
+{% block content %}
+<div class="delete-wrapper">
+  <h1 class="delete-title">Hapus Vaksin</h1>
 
-<p style="font-family: Arial; margin-left: 100px;">
-    Apakah kamu yakin untuk menghapus Vaksinasi untuk Kunjungan 
-    <strong style="color: red;">Feline Panleukopenia</strong> 
-    dengan ID 
-    <strong style="color: red;">VAC001</strong>?
-</p>
+  {% if messages %}
+    {% for message in messages %}
+      <div class="message {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
 
-<div align="right" style="margin-right: 100px;">
-    <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel">Cancel</a>
-    <button class="button">Confirm Deletion</button>
+  <form method="post" action="{% url 'vaksin:delete_vaksin_perawat' vaccine_code=vaksin.code %}">
+    {% csrf_token %}
+    <input type="hidden" name="vaccine_code" value="{{ vaksin.code }}">
+    <input type="hidden" name="confirm_delete" value="1">
+
+    <p class="delete-text">
+      Apakah kamu yakin untuk menghapus Vaksin
+      <strong class="highlight">{{ vaksin.name }}</strong>
+      dengan kode <strong class="highlight">{{ vaksin.code }}</strong>?
+    </p>
+
+    <div class="form-actions">
+      <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel">Cancel</a>
+      <button type="submit" class="button delete">Confirm Deletion</button>
+    </div>
+  </form>
 </div>
-</body> -->
 
-<!DOCTYPE html>
-{% include 'components/navbar_perawat.html' %}
-<head>
-    <meta charset="UTF-8" />
-    <title>Hapus Vaksin</title>
-    <style>
-    .button {
-        border-style: solid;
-        border-color: red;
-        color: white;
-        background-color:red;
-        padding: 10px 25px;
-        text-align: center;
-        display: inline-block;
-        font-size: 15px;
-        margin: 4px 2px;
-        cursor: pointer;
-        border-radius: 7px;
-        text-decoration: none;
-        font-family: Arial;
-        }
+<style>
+  .delete-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    font-family: Arial, sans-serif;
+  }
 
-    .cancel {
-        background-color: white;
-        color: rgb(28, 28, 81);
-        border-style: solid;
-        border-color: lightgray;
-        border-width: 1px;
-    }
-    
-    .message {
-        padding: 10px;
-        margin: 10px 100px;
-        border-radius: 5px;
-    }
-    
-    .success {
-        background-color: #d4edda;
-        color: #155724;
-    }
-    
-    .error {
-        background-color: #f8d7da;
-        color: #721c24;
-    }
-    </style>
-</head>
+  .delete-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: red;
+    margin-bottom: 16px;
+  }
 
-<body>
-    <h1 style="margin-left: 100px; font-family: Arial; color:red">Hapus Vaksin</h1>
-    
-    {% if messages %}
-        {% for message in messages %}
-            <div class="message {% if message.tags == 'success' %}success{% else %}error{% endif %}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
+  .delete-text {
+    font-size: 16px;
+    color: #111827;
+    margin-bottom: 20px;
+    max-width: 600px;
+    text-align: center;
+  }
 
-    <form method="post" action="{% url 'vaksin:delete_vaksin_perawat' vaccine_code=vaksin.code %}">
-        {% csrf_token %}
-        <input type="hidden" name="vaccine_code" value="{{ vaksin.code }}">
-        <input type="hidden" name="confirm_delete" value="1">
-        
-        <p style="font-family: Arial; margin-left: 100px;">
-            Apakah kamu yakin untuk menghapus Vaksin 
-            <strong style="color: red;">{{ vaksin.code }} - {{ vaksin.name }}</strong>?
-        </p>
+  .highlight {
+    color: red;
+    font-weight: bold;
+  }
 
-        <div align="right" style="margin-right: 100px;">
-            <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel">Cancel</a>
-            <button type="submit" class="button">Confirm Deletion</button>
-        </div>
-    </form>
-</body>
-</html>
+  .form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+  }
+
+  .button {
+    padding: 10px 24px;
+    font-size: 14px;
+    border-radius: 7px;
+    font-family: Arial;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .cancel {
+    background-color: white;
+    color: rgb(28, 28, 81);
+    border: 1px solid lightgray;
+  }
+
+  .cancel:hover {
+    background-color: #f3f4f6;
+  }
+
+  .delete {
+    background-color: red;
+    color: white;
+    border: 1px solid red;
+  }
+
+  .delete:hover {
+    background-color: #b91c1c;
+  }
+
+  .message {
+    padding: 10px 16px;
+    margin-bottom: 1rem;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .success {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  .error {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+</style>
+{% endblock %}

@@ -53,10 +53,11 @@
     <div class="container">
       <div class="menu">
         <a href="{% url 'dashboard:dashboard_klien' %}">Dashboard</a>
-        <a href="#">Kelola Hewan Peliharaan</a>
+        <a href="{% url 'hewan:hewan' %}">Kelola Hewan Peliharaan</a>
+        <a href="{% url 'vaksin:vaksinasi_klien' %}">Vaksinasi Hewan</a>
       </div>
       <div class="menu">
-        <a href="#" class="logout">Logout</a>
+        <a href="{% url 'authentication:logout' %}" class="logout">Logout</a>
       </div>
     </div>
   </nav>

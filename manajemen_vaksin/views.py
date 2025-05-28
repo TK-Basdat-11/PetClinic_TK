@@ -4,11 +4,11 @@ from django.contrib import messages
 from datetime import datetime
 
 def vaksin_dokter(request):
-    # Pastikan dokter sudah login
-    dokter_id = request.session.get('dokter_id')
-    if not dokter_id:
+    dokter_id = request.session.get('user_id')
+
+    if request.session.get('user_role') != 'dokter':
         messages.error(request, 'Anda harus login sebagai dokter!')
-        return redirect('login')  # Sesuaikan dengan URL login Anda
+        return redirect('authentication:login')
     
     list_vaksin_dokter = []
     with connection.cursor() as cursor:
@@ -30,11 +30,13 @@ def vaksin_dokter(request):
     return render(request, "dokter/vaksin_dokter.html", context)
 
 def create_vaksin_dokter(request):
-    dokter_id = request.session.get('dokter_id')
-    if not dokter_id:
+    dokter_id = request.session.get('user_id')
+    print(dokter_id)
+
+    if request.session.get('user_role') != 'dokter':
         messages.error(request, 'Anda harus login sebagai dokter!')
-        return redirect('login')
-    
+        return redirect('authentication:login')   
+     
     if request.method == 'POST':
         kunjungan_id = request.POST.get('kunjungan')
         vaksin_kode = request.POST.get('vaksin')
@@ -45,9 +47,7 @@ def create_vaksin_dokter(request):
         if not vaksin_kode:
             errors['vaksin'] = 'Vaksin harus dipilih'
         
-        # Jika ada error, tampilkan kembali form dengan pesan error
         if errors:
-            # Ambil daftar kunjungan untuk dropdown
             kunjungan_list = []
             with connection.cursor() as cursor:
                 cursor.execute("""
@@ -58,9 +58,9 @@ def create_vaksin_dokter(request):
                   AND k.kode_vaksin IS NULL
                 ORDER BY k.timestamp_awal DESC
                 """, [dokter_id])
+                print(kunjungan_list)
                 kunjungan_list = cursor.fetchall()
             
-            # Ambil daftar vaksin untuk dropdown
             vaksin_list = []
             with connection.cursor() as cursor:
                 cursor.execute("""
@@ -140,12 +140,12 @@ def create_vaksin_dokter(request):
     return render(request, "dokter/create_vaksin_dokter.html", context)
 
 def update_vaksin_dokter(request, kunjungan_id=None):
-    dokter_id = request.session.get('dokter_id')
+    dokter_id = request.session.get('user_id')
+
     if not dokter_id:
         messages.error(request, 'Anda harus login sebagai dokter!')
         return redirect('login')
     
-    # Jika tidak ada kunjungan_id, ambil dari POST
     if not kunjungan_id and request.method == 'POST':
         kunjungan_id = request.POST.get('kunjungan_id')
     
@@ -153,7 +153,6 @@ def update_vaksin_dokter(request, kunjungan_id=None):
         messages.error(request, 'Kunjungan ID tidak valid!')
         return redirect('vaksin:vaksin_dokter')
     
-    # Cek apakah kunjungan tersebut milik dokter yang login
     kunjungan_detail = None
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -161,7 +160,7 @@ def update_vaksin_dokter(request, kunjungan_id=None):
                k.kode_vaksin, v.nama, v.stok
         FROM PETCLINIC.KUNJUNGAN k
         LEFT JOIN PETCLINIC.VAKSIN v ON k.kode_vaksin = v.kode
-        WHERE k.id_kunjungan = %s AND k.no_dokter_hewan = %s
+        WHERE k.id_kunjungan = %s AND k.no_dokter_hewan = %s AND k.timestamp_akhir IS NULL
         """, [kunjungan_id, dokter_id])
         result = cursor.fetchone()
         
@@ -176,7 +175,7 @@ def update_vaksin_dokter(request, kunjungan_id=None):
             }
     
     if not kunjungan_detail:
-        messages.error(request, 'Kunjungan tidak ditemukan atau bukan milik dokter ini!')
+        messages.error(request, 'Kunjungan tidak ditemukan, sudah selesai, atau bukan milik dokter ini!')
         return redirect('vaksin:vaksin_dokter')
     
     if request.method == 'POST':
@@ -187,25 +186,20 @@ def update_vaksin_dokter(request, kunjungan_id=None):
             messages.error(request, 'Vaksin harus dipilih!')
             return redirect('vaksin:update_vaksin_dokter', kunjungan_id=kunjungan_id)
         
-        # Validasi stok vaksin baru
         with connection.cursor() as cursor:
-            cursor.execute("""
-            SELECT stok FROM PETCLINIC.VAKSIN WHERE kode = %s
-            """, [vaksin_kode_baru])
+            cursor.execute("SELECT stok FROM PETCLINIC.VAKSIN WHERE kode = %s", [vaksin_kode_baru])
             result = cursor.fetchone()
             
             if not result or result[0] <= 0:
                 messages.error(request, 'Stok Vaksin yang dipilih sudah habis!')
                 return redirect('vaksin:update_vaksin_dokter', kunjungan_id=kunjungan_id)
             
-            # Update kunjungan dengan vaksin baru
             cursor.execute("""
             UPDATE PETCLINIC.KUNJUNGAN
             SET kode_vaksin = %s
-            WHERE id_kunjungan = %s AND no_dokter_hewan = %s
+            WHERE id_kunjungan = %s AND no_dokter_hewan = %s AND timestamp_akhir IS NULL
             """, [vaksin_kode_baru, kunjungan_id, dokter_id])
             
-            # Kembalikan stok vaksin lama jika ada
             if vaksin_kode_lama:
                 cursor.execute("""
                 UPDATE PETCLINIC.VAKSIN
@@ -213,7 +207,6 @@ def update_vaksin_dokter(request, kunjungan_id=None):
                 WHERE kode = %s
                 """, [vaksin_kode_lama])
             
-            # Kurangi stok vaksin baru
             cursor.execute("""
             UPDATE PETCLINIC.VAKSIN
             SET stok = stok - 1
@@ -223,7 +216,6 @@ def update_vaksin_dokter(request, kunjungan_id=None):
         messages.success(request, 'Vaksinasi berhasil diperbarui!')
         return redirect('vaksin:vaksin_dokter')
     
-    # Ambil daftar vaksin untuk dropdown
     vaksin_list = []
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -242,12 +234,11 @@ def update_vaksin_dokter(request, kunjungan_id=None):
     return render(request, "dokter/update_vaksin_dokter.html", context)
 
 def delete_vaksin_dokter(request, kunjungan_id=None):
-    dokter_id = request.session.get('dokter_id')
+    dokter_id = request.session.get('user_id')
     if not dokter_id:
         messages.error(request, 'Anda harus login sebagai dokter!')
-        return redirect('login')
+        return redirect('authentication:login')
     
-    # Jika tidak ada kunjungan_id, ambil dari POST
     if not kunjungan_id and request.method == 'POST':
         kunjungan_id = request.POST.get('kunjungan_id')
         
@@ -255,7 +246,6 @@ def delete_vaksin_dokter(request, kunjungan_id=None):
         messages.error(request, 'Kunjungan ID tidak valid!')
         return redirect('vaksin:vaksin_dokter')
     
-    # Cek apakah kunjungan tersebut milik dokter yang login dan ada vaksinnya
     kunjungan_detail = None
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -284,14 +274,12 @@ def delete_vaksin_dokter(request, kunjungan_id=None):
         vaksin_kode = kunjungan_detail['kode_vaksin']
         
         with connection.cursor() as cursor:
-            # Set kode_vaksin menjadi NULL di tabel KUNJUNGAN
             cursor.execute("""
             UPDATE PETCLINIC.KUNJUNGAN
             SET kode_vaksin = NULL
             WHERE id_kunjungan = %s AND no_dokter_hewan = %s
             """, [kunjungan_id, dokter_id])
             
-            # Kembalikan stok vaksin
             cursor.execute("""
             UPDATE PETCLINIC.VAKSIN
             SET stok = stok + 1
@@ -308,18 +296,21 @@ def delete_vaksin_dokter(request, kunjungan_id=None):
     return render(request, "dokter/delete_vaksin_dokter.html", context)
 
 def vaksin_perawat(request):
-    # Pastikan perawat sudah login
-    perawat_id = request.session.get('perawat_id')
+    perawat_id = request.session.get('user_id')
     if not perawat_id:
         messages.error(request, 'Anda harus login sebagai perawat!')
-        return redirect('login')  # Sesuaikan dengan URL login Anda
+        return redirect('authentication:login')  
     
     list_vaksin_perawat = []
     with connection.cursor() as cursor:
         cursor.execute("""
-        SELECT kode, nama, harga, stok
-        FROM PETCLINIC.VAKSIN
-        ORDER BY kode
+        SELECT v.kode, v.nama, v.harga, v.stok,
+            EXISTS (
+                SELECT 1 FROM PETCLINIC.KUNJUNGAN k
+                WHERE k.kode_vaksin = v.kode
+            ) AS is_used
+        FROM PETCLINIC.VAKSIN v
+        ORDER BY v.kode
         """)
         list_vaksin_perawat = cursor.fetchall()
     
@@ -330,8 +321,7 @@ def vaksin_perawat(request):
     return render(request, "perawat/vaksin_perawat.html", context)
 
 def create_vaksin_perawat(request):
-    # Pastikan perawat sudah login
-    perawat_id = request.session.get('perawat_id')
+    perawat_id = request.session.get('user_id')
     if not perawat_id:
         messages.error(request, 'Anda harus login sebagai perawat!')
         return redirect('login')
@@ -370,7 +360,6 @@ def create_vaksin_perawat(request):
             return render(request, "perawat/create_vaksin_perawat.html", context)
     
         with connection.cursor() as cursor:
-            # Generate kode vaksin baru
             cursor.execute("""
             SELECT MAX(CAST(SUBSTRING(kode FROM 4) AS INTEGER))
             FROM PETCLINIC.VAKSIN
@@ -384,7 +373,6 @@ def create_vaksin_perawat(request):
             
             vaccine_code = f'VAC{next_num:03d}'
             
-            # Insert vaksin baru
             cursor.execute("""
             INSERT INTO PETCLINIC.VAKSIN (kode, nama, harga, stok)
             VALUES (%s, %s, %s, %s)
@@ -399,13 +387,11 @@ def create_vaksin_perawat(request):
     return render(request, "perawat/create_vaksin_perawat.html", context)
 
 def update_vaksin_perawat(request, vaccine_code):
-    # Pastikan perawat sudah login
-    perawat_id = request.session.get('perawat_id')
+    perawat_id = request.session.get('user_id')
     if not perawat_id:
         messages.error(request, 'Anda harus login sebagai perawat!')
-        return redirect('login')
+        return redirect('authentication:login')
     
-    # Cek apakah vaksin ada
     vaksin = None
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -469,13 +455,11 @@ def update_vaksin_perawat(request, vaccine_code):
     return render(request, "perawat/update_vaksin_perawat.html", context)
 
 def update_stok(request, vaccine_code):
-    # Pastikan perawat sudah login
-    perawat_id = request.session.get('perawat_id')
+    perawat_id = request.session.get('user_id')
     if not perawat_id:
         messages.error(request, 'Anda harus login sebagai perawat!')
-        return redirect('login')
+        return redirect('authentication:login')
     
-    # Cek apakah vaksin ada
     vaksin = None
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -534,13 +518,11 @@ def update_stok(request, vaccine_code):
     return render(request, "perawat/update_stok.html", context)
 
 def delete_vaksin_perawat(request, vaccine_code=None):
-    # Pastikan perawat sudah login
-    perawat_id = request.session.get('perawat_id')
+    perawat_id = request.session.get('user_id')
     if not perawat_id:
         messages.error(request, 'Anda harus login sebagai perawat!')
-        return redirect('login')
+        return redirect('authentication:login')
     
-    # Jika tidak ada vaccine_code, ambil dari POST
     if not vaccine_code and request.method == 'POST':
         vaccine_code = request.POST.get('vaccine_code')
     
@@ -548,7 +530,6 @@ def delete_vaksin_perawat(request, vaccine_code=None):
         messages.error(request, 'Kode vaksin tidak valid!')
         return redirect('vaksin:vaksin_perawat')
     
-    # Cek apakah vaksin ada
     vaksin = None
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -570,7 +551,6 @@ def delete_vaksin_perawat(request, vaccine_code=None):
         messages.error(request, 'Vaksin tidak ditemukan!')
         return redirect('vaksin:vaksin_perawat')
     
-    # Cek apakah vaksin sudah digunakan dalam kunjungan
     with connection.cursor() as cursor:
         cursor.execute("""
         SELECT COUNT(*)
@@ -598,3 +578,65 @@ def delete_vaksin_perawat(request, vaccine_code=None):
         'user_role': 'perawat',
     }
     return render(request, "perawat/delete_vaksin_perawat.html", context)
+
+def vaksinasi_klien(request):
+    client_id = request.session.get('user_id')
+    if not client_id:
+        return redirect('authentication:login')
+
+    selected_pet = request.GET.get('pet')
+    selected_vaccine = request.GET.get('vaccine')
+
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT DISTINCT nama_hewan FROM PETCLINIC.KUNJUNGAN WHERE no_identitas_klien = %s", [client_id])
+        pet_names = [row[0] for row in cursor.fetchall()]
+
+        cursor.execute("""
+            SELECT DISTINCT v.nama 
+            FROM PETCLINIC.KUNJUNGAN k 
+            JOIN PETCLINIC.VAKSIN v ON k.kode_vaksin = v.kode
+            WHERE k.no_identitas_klien = %s AND k.kode_vaksin IS NOT NULL
+        """, [client_id])
+        vaccine_names = [row[0] for row in cursor.fetchall()]
+
+        query = """
+            SELECT k.nama_hewan, v.nama, v.kode, v.harga, TO_CHAR(k.timestamp_awal, 'DD-MM-YYYY HH24:MI')
+            FROM PETCLINIC.KUNJUNGAN k
+            JOIN PETCLINIC.VAKSIN v ON k.kode_vaksin = v.kode
+            WHERE k.no_identitas_klien = %s
+        """
+        params = [client_id]
+
+        if selected_pet:
+            query += " AND k.nama_hewan = %s"
+            params.append(selected_pet)
+
+        if selected_vaccine:
+            query += " AND v.nama = %s"
+            params.append(selected_vaccine)
+
+        query += " ORDER BY k.timestamp_awal DESC"
+
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+
+        vaksinasi_list = [
+            {
+                'pet_name': r[0],
+                'vaccine_name': r[1],
+                'vaccine_code': r[2],
+                'price': r[3],
+                'datetime': r[4],
+            }
+            for r in rows
+        ]
+
+    context = {
+        'vaksinasi_list': vaksinasi_list,
+        'pet_names': pet_names,
+        'vaccine_names': vaccine_names,
+        'selected_pet': selected_pet,
+        'selected_vaccine': selected_vaccine,
+        'user_role': 'klien',
+    }
+    return render(request, "klien/list_vaksin.html", context)

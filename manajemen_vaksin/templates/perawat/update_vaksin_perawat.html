@@ -1,238 +1,128 @@
-<!-- <!DOCTYPE html>
+{% extends "base.html" %}
 {% include 'components/navbar_perawat.html' %}
-<html lang="id">
-<head>
-    <meta charset="UTF-8" />
-    <title>Update Vaksin</title>
-    <style>
-        .form-container {
-            width: 1200px;
-            margin-left: 100px;
-            font-family: Arial, sans-serif;
-        }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+{% block title %}Update Vaksin{% endblock %}
 
-        label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
+{% block content %}
+<div class="max-w-4xl mx-auto py-10 font-sans">
+  <h1 class="text-3xl font-bold text-gray-800 mb-6">Update Vaksin</h1>
 
-        .vaccineid {
-            background-color: lightgray;
-            padding: 10px 20px;
-            border-radius: 0.5rem;
-            width: 100%;
-            box-sizing: border-box;
-        }
+  {% if messages %}
+    {% for message in messages %}
+      <div class="message {{ message.tags }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
 
-        .input {
-            width: 100%;
-            padding: 10px;
-            font-size: medium;
-            background-color: #fff;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            box-sizing: border-box;
-        }
+  <form method="post" action="{% url 'vaksin:update_vaksin_perawat' vaccine_code=vaksin.code %}" class="space-y-6">
+    {% csrf_token %}
 
-        .error-text {
-            color: red;
-            font-size: small;
-            margin-top: 5px;
-            margin-left: 2px;
-        }
+    <div>
+      <label for="code" class="form-label">Kode Vaksin</label>
+      <input type="text" id="code" class="form-input form-input-disabled" value="{{ vaksin.code }}" disabled>
+    </div>
 
-        .button {
-            border: 1px solid rgb(28, 28, 81);
-            color: white;
-            background-color: rgb(28, 28, 81);
-            padding: 10px 25px;
-            font-size: 15px;
-            border-radius: 7px;
-            font-family: Arial, sans-serif;
-            text-decoration: none;
-            cursor: pointer;
-            margin-left: 10px;
-        }
+    <div>
+      <label for="name" class="form-label">Nama Vaksin</label>
+      <input type="text" id="name" name="name" class="form-input" value="{{ name|default:vaksin.name }}" required>
+      {% if errors.name %}
+        <div class="error-message">{{ errors.name }}</div>
+      {% endif %}
+    </div>
 
-        .cancel {
-            background-color: white;
-            color: rgb(28, 28, 81);
-            border: 1px solid lightgray;
-        }
+    <div>
+      <label for="price" class="form-label">Harga (Rp)</label>
+      <input type="number" id="price" name="price" class="form-input" value="{{ price|default:vaksin.price }}" min="1" required>
+      {% if errors.price %}
+        <div class="error-message">{{ errors.price }}</div>
+      {% endif %}
+    </div>
 
-        .form-actions {
-            text-align: right;
-            margin-top: 30px;
-        }
-    </style>
-</head>
+    <div>
+      <label for="stock" class="form-label">Stok</label>
+      <input type="text" id="stock" class="form-input form-input-disabled" value="{{ vaksin.stock }}" disabled>
+      <p class="text-sm text-gray-500 mt-1">Gunakan tombol <strong>Update Stok</strong> di halaman daftar vaksin untuk mengubah stok.</p>
+    </div>
 
-<body>
-    <h1 style="font-family: Arial; margin-left: 100px;">Update Vaccine</h1>
+    <div class="flex justify-end gap-4">
+      <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel">Batal</a>
+      <button type="submit" class="button">Update</button>
+    </div>
+  </form>
+</div>
 
-    <form action="" method="POST" class="form-container">
-        {% csrf_token %}
+<style>
+  .form-label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #374151;
+  }
 
-        <div class="form-group">
-            <label>ID Vaksin</label>
-            <p class="vaccineid">{{ vaksin.code }}</p>
-        </div>
+  .form-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    background-color: white;
+  }
 
-        <div class="form-group">
-            <label for="name">Nama Vaksin</label>
-            <input class="input" type="text" id="name" name="name"
-                value="{% if name %}{{ name }}{% elif vaksin %}{{ vaksin.name }}{% endif %}">
-            {% if errors.name %}
-                <p class="error-text">{{ errors.name }}</p>
-            {% endif %}
-        </div>
+  .form-input-disabled {
+    background-color: #f3f4f6;
+    color: #6b7280;
+  }
 
-        <div class="form-group">
-            <label for="price">Harga</label>
-            <input class="input" type="text" id="price" name="price"
-                value="{% if price %}{{ price }}{% elif vaksin %}{{ vaksin.price }}{% endif %}">
-            {% if errors.price %}
-                <p class="error-text">{{ errors.price }}</p>
-            {% endif %}
-        </div>
+  .button {
+    border: none;
+    background-color: rgb(28, 28, 81);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s;
+  }
 
-        <div class="form-actions">
-            <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel">Cancel</a>
-            <button type="submit" class="button">Update</button>
-        </div>
-    </form>
-</body>
-</html> -->
+  .button:hover {
+    background-color: rgb(38, 38, 100);
+  }
 
-<!DOCTYPE html>
-{% include 'components/navbar_perawat.html' %}
-<head>
-    <meta charset="UTF-8" />
-    <title>Update Vaksin</title>
-    <style>
-        .form-group {
-            margin-bottom: 15px;
-            margin-left: 100px;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            font-family: Arial;
-            font-size: large;
-        }
-        
-        .form-input {
-            width: 1220px;
-            padding: 8px;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            font-size: medium;
-        }
-        
-        .form-input-disabled {
-            background-color: #f3f4f6;
-        }
-        
-        .button {
-            border-style: solid;
-            border-color: rgb(28, 28, 81);
-            color: white;
-            background-color:rgb(28, 28, 81);
-            padding: 10px 25px;
-            text-align: center;
-            display: inline-block;
-            font-size: 15px;
-            margin: 4px 2px;
-            cursor: pointer;
-            border-radius: 7px;
-            font-family: Arial;
-            text-decoration: none;
-        }
+  .cancel {
+    background-color: white;
+    color: rgb(28, 28, 81);
+    border: 1px solid lightgray;
+  }
 
-        .cancel {
-            background-color: white;
-            color: rgb(28, 28, 81);
-            border-style: solid;
-            border-color: lightgray;
-            border-width: 1px;
-        }
-        
-        .error-message {
-            color: red;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-        
-        .message {
-            padding: 10px;
-            margin: 10px 100px;
-            border-radius: 5px;
-        }
-        
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-    </style>
-</head>
+  .cancel:hover {
+    background-color: #f3f4f6;
+  }
 
-<body>
-    <h1 style="margin-left: 100px; font-family: Arial">Update Vaksin</h1>
-    
-    {% if messages %}
-        {% for message in messages %}
-            <div class="message {% if message.tags == 'success' %}success{% else %}error{% endif %}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
+  .error-message {
+    color: red;
+    font-size: 13px;
+    margin-top: 4px;
+  }
 
-    <form method="post" action="{% url 'vaksin:update_vaksin_perawat' vaccine_code=vaksin.code %}">
-        {% csrf_token %}
-        
-        <div class="form-group">
-            <label class="form-label" for="code">Kode Vaksin</label>
-            <input type="text" id="code" name="code" class="form-input form-input-disabled" value="{{ vaksin.code }}" disabled>
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label" for="name">Nama Vaksin</label>
-            <input type="text" id="name" name="name" class="form-input" value="{{ name|default:vaksin.name }}" required>
-            {% if errors.name %}
-                <div class="error-message">{{ errors.name }}</div>
-            {% endif %}
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label" for="price">Harga (Rp)</label>
-            <input type="number" id="price" name="price" class="form-input" value="{{ price|default:vaksin.price }}" min="1" required>
-            {% if errors.price %}
-                <div class="error-message">{{ errors.price }}</div>
-            {% endif %}
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label" for="stock">Stok</label>
-            <input type="text" id="stock" name="stock" class="form-input form-input-disabled" value="{{ vaksin.stock }}" disabled>
-            <small style="color: #6b7280;">Untuk mengubah stok, gunakan tombol "Update Stok" di halaman daftar vaksin.</small>
-        </div>
+  .message {
+    padding: 12px;
+    margin-bottom: 1.5rem;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+  }
 
-        <div align="right" style="margin-right: 100px;">
-            <a href="{% url 'vaksin:vaksin_perawat' %}" class="button cancel">Cancel</a>
-            <button type="submit" class="button">Update</button>
-        </div>
-    </form>
-</body>
-</html>
+  .success {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  .error {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+</style>
+{% endblock %}
