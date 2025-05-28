@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Update Kunjungan{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 max-w-2xl">
+    <h1 class="text-2xl font-bold mb-6">Update Kunjungan</h1>
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            
+            <!-- Klien Selection -->
+            <div class="mb-8">
+                <label for="klien" class="block text-sm font-bold text-gray-700 mb-2">ID Klien *</label>
+                <select id="klien" name="klien" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" onchange="loadHewan()" required>
+                    <option value="">Pilih ID Klien</option>
+                    {% for klien in klien_list %}
+                        <option value="{{ klien.0 }}" {% if selected_klien == klien.0|stringformat:"s" %}selected{% endif %}>
+                            {{ klien.1 }} ({{ klien.2  }})
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if errors.klien %}
+                    <p class="text-red-500 text-sm mt-1">{{ errors.klien }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Nama Hewan Selection -->
+            <div class="mb-8">
+                <label for="nama_hewan" class="block text-sm font-bold text-gray-700 mb-2">Nama Hewan *</label>
+                <select id="nama_hewan" name="nama_hewan" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                    <option value="">Pilih Nama Hewan</option>
+                    {% for hewan in hewan_list %}
+                        <option value="{{ hewan.0 }}" {% if selected_hewan == hewan.0 %}selected{% endif %}>
+                            {{ hewan.0 }}{% if not selected_klien %} - {{ hewan.1 }}{% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if errors.nama_hewan %}
+                    <p class="text-red-500 text-sm mt-1">{{ errors.nama_hewan }}</p>
+                {% endif %}
+                {% if not selected_klien %}
+                    <p class="text-blue-500 text-sm mt-1">Menampilkan semua hewan. Pilih klien untuk menyaring berdasarkan pemilik.</p>
+                {% elif selected_klien and not hewan_list %}
+                    <p class="text-orange-500 text-sm mt-1">Klien ini belum memiliki hewan yang terdaftar</p>
+                {% endif %}
+            </div>
+            
+            <!-- Dokter Hewan Selection -->
+            <div class="mb-8">
+                <label for="dokter" class="block text-sm font-bold text-gray-700 mb-2">Dokter Hewan *</label>
+                <select id="dokter" name="dokter" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                    <option value="">Pilih Dokter Hewan</option>
+                    {% for dokter in dokter_list %}
+                        <option value="{{ dokter.0 }}" {% if selected_dokter == dokter.0|stringformat:"s" %}selected{% endif %}>
+                            {{ dokter.1 }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if errors.dokter %}
+                    <p class="text-red-500 text-sm mt-1">{{ errors.dokter }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Perawat Hewan Selection -->
+            <div class="mb-8">
+                <label for="perawat" class="block text-sm font-bold text-gray-700 mb-2">Perawat Hewan *</label>
+                <select id="perawat" name="perawat" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                    <option value="">Pilih Perawat Hewan</option>
+                    {% for perawat in perawat_list %}
+                        <option value="{{ perawat.0 }}" {% if selected_perawat == perawat.0|stringformat:"s" %}selected{% endif %}>
+                            {{ perawat.1 }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if errors.perawat %}
+                    <p class="text-red-500 text-sm mt-1">{{ errors.perawat }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Metode Kunjungan Selection -->
+            <div class="mb-8">
+                <label for="tipe_kunjungan" class="block text-sm font-bold text-gray-700 mb-2">Metode Kunjungan *</label>
+                <select id="tipe_kunjungan" name="tipe_kunjungan" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                    <option value="">Pilih Metode Kunjungan</option>
+                    {% for value, label in tipe_kunjungan_choices %}
+                        <option value="{{ value }}" {% if selected_tipe == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if errors.tipe_kunjungan %}
+                    <p class="text-red-500 text-sm mt-1">{{ errors.tipe_kunjungan }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Waktu Mulai -->
+            <div class="mb-8">
+                <label for="waktu_mulai" class="block text-sm font-bold text-gray-700 mb-2">Waktu Mulai Penanganan *</label>
+                <input type="datetime-local" id="waktu_mulai" name="waktu_mulai" value="{{ waktu_mulai }}" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                {% if errors.waktu_mulai %}
+                    <p class="text-red-500 text-sm mt-1">{{ errors.waktu_mulai }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Waktu Selesai -->
+            <div class="mb-8">
+                <label for="waktu_akhir" class="block text-sm font-bold text-gray-700 mb-2">Waktu Selesai Penanganan</label>
+                <input type="datetime-local" id="waktu_akhir" name="waktu_akhir" value="{{ waktu_akhir }}" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                {% if errors.waktu_akhir %}
+                    <p class="text-red-500 text-sm mt-1">{{ errors.waktu_akhir }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="flex justify-between pt-4">
+                <a href="{% url 'perawatan_hewan:list_kunjungan' %}" class="py-2 px-4 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                    Cancel
+                </a>
+                <button type="submit" class="py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-md">
+                    Update
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function loadHewan() {
+    const klienSelect = document.getElementById('klien');
+    const hewanSelect = document.getElementById('nama_hewan');
+    const dokterSelect = document.getElementById('dokter');
+    const perawatSelect = document.getElementById('perawat');
+    const tipeSelect = document.getElementById('tipe_kunjungan');
+    const waktuMulaiInput = document.getElementById('waktu_mulai');
+    const waktuAkhirInput = document.getElementById('waktu_akhir');
+    
+    const selectedKlien = klienSelect.value;
+    
+    // Simpan nilai yang sudah dipilih di form lain
+    const currentValues = {
+        nama_hewan: hewanSelect.value,
+        dokter: dokterSelect.value,
+        perawat: perawatSelect.value,
+        tipe: tipeSelect.value,
+        waktu_mulai: waktuMulaiInput.value,
+        waktu_akhir: waktuAkhirInput.value
+    };
+    
+    // Buat URL dengan semua parameter yang perlu dipertahankan
+    const params = new URLSearchParams();
+    if (selectedKlien) {
+        params.append('klien', selectedKlien);
+    }
+    
+    if (currentValues.nama_hewan) params.append('nama_hewan', currentValues.nama_hewan);
+    if (currentValues.dokter) params.append('dokter', currentValues.dokter);
+    if (currentValues.perawat) params.append('perawat', currentValues.perawat);
+    if (currentValues.tipe) params.append('tipe', currentValues.tipe);
+    if (currentValues.waktu_mulai) params.append('waktu_mulai', currentValues.waktu_mulai);
+    if (currentValues.waktu_akhir) params.append('waktu_akhir', currentValues.waktu_akhir);
+    
+    // Redirect dengan semua parameter
+    window.location.href = `?${params.toString()}`;
+}
+</script>
+{% endblock %}
