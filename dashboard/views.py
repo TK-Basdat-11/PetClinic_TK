@@ -1,7 +1,8 @@
-from pyexpat.errors import messages
+from django.contrib import messages
 from django.db import connection
 from django.shortcuts import render, redirect
 from datetime import datetime
+import hashlib
 
 BULAN_INDONESIA = {
     'January': 'Januari',
@@ -243,8 +244,77 @@ def dashboard_perawat(request):
         "user_role": "perawat",
     })
 
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
 def update_password(request):
-    return render(request, "update_password.html")
+    user_email = request.session.get("email")
+    if not user_email:
+        messages.error(request, "Anda belum login.")
+        return redirect("authentication:login")
+
+    user_role = request.session.get('role')
+
+    if user_role == 'klien':
+        cancel_url = 'dashboard:klien_dashboard'
+    elif user_role == 'dokter':
+        cancel_url = 'dashboard:dokter_dashboard'
+    elif user_role == 'perawat':
+        cancel_url = 'dashboard:perawat_dashboard'
+    elif user_role == 'fdo':
+        cancel_url = 'dashboard:fdo_dashboard'
+    else:
+        cancel_url = 'authentication:login'
+
+    if request.method == "POST":
+        password_lama = request.POST.get("current_password")
+        password_baru = request.POST.get("new_password")
+        konfirmasi = request.POST.get("confirm_password")
+
+        if not password_lama:
+            messages.error(request, "Semua field wajib diisi.")
+            return redirect('dashboard:update_password')
+        
+        if not password_baru:
+            messages.error(request, "Semua field wajib diisi.")
+            return redirect('dashboard:update_password')
+
+        if not konfirmasi:
+                    messages.error(request, "Semua field wajib diisi.")
+                    return redirect('dashboard:update_password')
+
+        if password_baru != konfirmasi:
+            messages.error(request, "Konfirmasi password tidak sesuai.")
+            return redirect('dashboard:update_password')
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT 1 FROM PETCLINIC.USERS
+                WHERE email = %s AND password_user = %s
+            """, [user_email, password_lama])
+            valid = cursor.fetchone()
+
+        if not valid:
+            messages.error(request, "Password lama tidak sesuai.")
+            return redirect('dashboard:update_password')
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE PETCLINIC.USERS
+                SET password_user = %s
+                WHERE email = %s
+            """, [password_baru, user_email])
+        
+        request.session.flush()
+        request.session["email"] = user_email
+        request.session["role"] = user_role
+
+        messages.success(request, "Password berhasil diperbarui. Silakan login ulang.")
+        return redirect(cancel_url)
+
+    return render(request, 'update_password.html', {
+        'cancel_url': cancel_url
+    })
 
 def update_profile_dokter(request):
     return render(request, "dashboard/update_profile_dokter.html")
