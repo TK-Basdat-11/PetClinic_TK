@@ -1,5 +1,6 @@
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from django.db import connection
+from django.db import DatabaseError, connection
 from django.contrib import messages
 from datetime import datetime
 
@@ -31,12 +32,11 @@ def vaksin_dokter(request):
 
 def create_vaksin_dokter(request):
     dokter_id = request.session.get('user_id')
-    print(dokter_id)
 
     if request.session.get('user_role') != 'dokter':
         messages.error(request, 'Anda harus login sebagai dokter!')
         return redirect('authentication:login')   
-     
+
     if request.method == 'POST':
         kunjungan_id = request.POST.get('kunjungan')
         vaksin_kode = request.POST.get('vaksin')
@@ -48,93 +48,54 @@ def create_vaksin_dokter(request):
             errors['vaksin'] = 'Vaksin harus dipilih'
         
         if errors:
-            kunjungan_list = []
+            return render_create_form(request, dokter_id, errors, kunjungan_id, vaksin_kode)
+
+        try:
             with connection.cursor() as cursor:
                 cursor.execute("""
-                SELECT k.id_kunjungan, k.nama_hewan, TO_CHAR(k.timestamp_awal, 'Dy, DD Month YYYY')
-                FROM PETCLINIC.KUNJUNGAN k
-                WHERE k.no_dokter_hewan = %s 
-                  AND k.timestamp_akhir IS NULL
-                  AND k.kode_vaksin IS NULL
-                ORDER BY k.timestamp_awal DESC
-                """, [dokter_id])
-                print(kunjungan_list)
-                kunjungan_list = cursor.fetchall()
+                    UPDATE PETCLINIC.KUNJUNGAN
+                    SET kode_vaksin = %s
+                    WHERE id_kunjungan = %s AND no_dokter_hewan = %s
+                """, [vaksin_kode, kunjungan_id, dokter_id])
             
-            vaksin_list = []
-            with connection.cursor() as cursor:
-                cursor.execute("""
-                SELECT kode, nama, stok
-                FROM PETCLINIC.VAKSIN
-                WHERE stok > 0
-                ORDER BY kode
-                """)
-                vaksin_list = cursor.fetchall()
-            
-            context = {
-                'errors': errors,
-                'kunjungan_list': kunjungan_list,
-                'vaksin_list': vaksin_list,
-                'selected_kunjungan': kunjungan_id,
-                'selected_vaksin': vaksin_kode,
-                'user_role': 'dokter',
-            }
-            return render(request, "dokter/create_vaksin_dokter.html", context)
-        
-        # Validasi stok vaksin
-        with connection.cursor() as cursor:
-            cursor.execute("""
-            SELECT stok FROM PETCLINIC.VAKSIN WHERE kode = %s
-            """, [vaksin_kode])
-            result = cursor.fetchone()
-            
-            if not result or result[0] <= 0:
-                messages.error(request, 'Stok Vaksin yang dipilih sudah habis!')
-                return redirect('vaksin:create_vaksin_dokter')
-            
-            # Update kunjungan dengan vaksin yang dipilih dan kurangi stok
-            cursor.execute("""
-            UPDATE PETCLINIC.KUNJUNGAN
-            SET kode_vaksin = %s
-            WHERE id_kunjungan = %s AND no_dokter_hewan = %s
-            """, [vaksin_kode, kunjungan_id, dokter_id])
-            
-            # Kurangi stok vaksin
-            cursor.execute("""
-            UPDATE PETCLINIC.VAKSIN
-            SET stok = stok - 1
-            WHERE kode = %s
-            """, [vaksin_kode])
-        
-        messages.success(request, 'Vaksinasi berhasil dicatat!')
-        return redirect('vaksin:vaksin_dokter')
-    
-    # Menampilkan form untuk CREATE
-    kunjungan_list = []
+            messages.success(request, 'Vaksinasi berhasil dicatat!')
+            return redirect('vaksin:vaksin_dokter')
+
+        except DatabaseError as e:
+            full_msg = str(e)
+            err_msg = full_msg.split('CONTEXT:')[0].strip()
+            messages.error(request, err_msg)
+            return redirect('vaksin:create_vaksin_dokter')
+
+    return render_create_form(request, dokter_id)
+
+def render_create_form(request, dokter_id, errors=None, selected_kunjungan=None, selected_vaksin=None):
     with connection.cursor() as cursor:
         cursor.execute("""
-        SELECT k.id_kunjungan, k.nama_hewan, TO_CHAR(k.timestamp_awal, 'Dy, DD Month YYYY')
-        FROM PETCLINIC.KUNJUNGAN k
-        WHERE k.no_dokter_hewan = %s 
-          AND k.timestamp_akhir IS NULL
-          AND k.kode_vaksin IS NULL
-        ORDER BY k.timestamp_awal DESC
+            SELECT k.id_kunjungan, k.nama_hewan, TO_CHAR(k.timestamp_awal, 'Dy, DD Month YYYY')
+            FROM PETCLINIC.KUNJUNGAN k
+            WHERE k.no_dokter_hewan = %s 
+              AND k.timestamp_akhir IS NULL
+              AND k.kode_vaksin IS NULL
+            ORDER BY k.timestamp_awal DESC
         """, [dokter_id])
         kunjungan_list = cursor.fetchall()
     
-    vaksin_list = []
     with connection.cursor() as cursor:
         cursor.execute("""
-        SELECT kode, nama, stok
-        FROM PETCLINIC.VAKSIN
-        WHERE stok > 0
-        ORDER BY kode
+            SELECT kode, nama, stok
+            FROM PETCLINIC.VAKSIN
+            WHERE stok >= 0
+            ORDER BY kode
         """)
         vaksin_list = cursor.fetchall()
     
     context = {
         'kunjungan_list': kunjungan_list,
         'vaksin_list': vaksin_list,
+        'errors': errors or {},
+        'selected_kunjungan': selected_kunjungan,
+        'selected_vaksin': selected_vaksin,
         'user_role': 'dokter',
     }
     return render(request, "dokter/create_vaksin_dokter.html", context)
@@ -199,19 +160,6 @@ def update_vaksin_dokter(request, kunjungan_id=None):
             SET kode_vaksin = %s
             WHERE id_kunjungan = %s AND no_dokter_hewan = %s AND timestamp_akhir IS NULL
             """, [vaksin_kode_baru, kunjungan_id, dokter_id])
-            
-            if vaksin_kode_lama:
-                cursor.execute("""
-                UPDATE PETCLINIC.VAKSIN
-                SET stok = stok + 1
-                WHERE kode = %s
-                """, [vaksin_kode_lama])
-            
-            cursor.execute("""
-            UPDATE PETCLINIC.VAKSIN
-            SET stok = stok - 1
-            WHERE kode = %s
-            """, [vaksin_kode_baru])
         
         messages.success(request, 'Vaksinasi berhasil diperbarui!')
         return redirect('vaksin:vaksin_dokter')
@@ -279,12 +227,6 @@ def delete_vaksin_dokter(request, kunjungan_id=None):
             SET kode_vaksin = NULL
             WHERE id_kunjungan = %s AND no_dokter_hewan = %s
             """, [kunjungan_id, dokter_id])
-            
-            cursor.execute("""
-            UPDATE PETCLINIC.VAKSIN
-            SET stok = stok + 1
-            WHERE kode = %s
-            """, [vaksin_kode])
         
         messages.success(request, 'Vaksinasi berhasil dihapus!')
         return redirect('vaksin:vaksin_dokter')
@@ -304,11 +246,7 @@ def vaksin_perawat(request):
     list_vaksin_perawat = []
     with connection.cursor() as cursor:
         cursor.execute("""
-        SELECT v.kode, v.nama, v.harga, v.stok,
-            EXISTS (
-                SELECT 1 FROM PETCLINIC.KUNJUNGAN k
-                WHERE k.kode_vaksin = v.kode
-            ) AS is_used
+        SELECT v.kode, v.nama, v.harga, v.stok
         FROM PETCLINIC.VAKSIN v
         ORDER BY v.kode
         """)
@@ -522,23 +460,23 @@ def delete_vaksin_perawat(request, vaccine_code=None):
     if not perawat_id:
         messages.error(request, 'Anda harus login sebagai perawat!')
         return redirect('authentication:login')
-    
+
     if not vaccine_code and request.method == 'POST':
         vaccine_code = request.POST.get('vaccine_code')
-    
+
     if not vaccine_code:
         messages.error(request, 'Kode vaksin tidak valid!')
         return redirect('vaksin:vaksin_perawat')
-    
+
     vaksin = None
     with connection.cursor() as cursor:
         cursor.execute("""
-        SELECT kode, nama, harga, stok
-        FROM PETCLINIC.VAKSIN
-        WHERE kode = %s
+            SELECT kode, nama, harga, stok
+            FROM PETCLINIC.VAKSIN
+            WHERE kode = %s
         """, [vaccine_code])
         result = cursor.fetchone()
-        
+
         if result:
             vaksin = {
                 'code': result[0],
@@ -546,38 +484,38 @@ def delete_vaksin_perawat(request, vaccine_code=None):
                 'price': result[2],
                 'stock': result[3]
             }
-    
+
     if not vaksin:
         messages.error(request, 'Vaksin tidak ditemukan!')
         return redirect('vaksin:vaksin_perawat')
-    
-    with connection.cursor() as cursor:
-        cursor.execute("""
-        SELECT COUNT(*)
-        FROM PETCLINIC.KUNJUNGAN
-        WHERE kode_vaksin = %s
-        """, [vaccine_code])
-        used_count = cursor.fetchone()[0]
-    
-    if used_count > 0:
-        messages.error(request, f'Vaksin {vaksin["name"]} tidak dapat dihapus karena sudah digunakan dalam {used_count} kunjungan!')
-        return redirect('vaksin:vaksin_perawat')
-    
-    if request.method == 'POST' and 'confirm_delete' in request.POST:
+
+    can_delete = True
+    error_message = ""
+    try:
         with connection.cursor() as cursor:
-            cursor.execute("""
-            DELETE FROM PETCLINIC.VAKSIN
-            WHERE kode = %s
-            """, [vaccine_code])
-        
-        messages.success(request, f'Vaksin {vaksin["name"]} berhasil dihapus!')
-        return redirect('vaksin:vaksin_perawat')
-    
-    context = {
+            cursor.execute("BEGIN")  
+            cursor.execute("DELETE FROM PETCLINIC.VAKSIN WHERE kode = %s", [vaccine_code])
+            cursor.execute("ROLLBACK")  
+    except Exception as e:
+        error_message = str(e).split('CONTEXT:')[0].strip()
+        can_delete = False
+
+    if request.method == 'POST' and 'confirm_delete' in request.POST and can_delete:
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("DELETE FROM PETCLINIC.VAKSIN WHERE kode = %s", [vaccine_code])
+            messages.success(request, f'Vaksin {vaksin["name"]} berhasil dihapus!')
+            return redirect('vaksin:vaksin_perawat')
+        except Exception as e:
+            messages.error(request, f'Gagal menghapus vaksin: {str(e)}')
+            return redirect('vaksin:vaksin_perawat')
+
+    return render(request, "perawat/delete_vaksin_perawat.html", {
         'vaksin': vaksin,
         'user_role': 'perawat',
-    }
-    return render(request, "perawat/delete_vaksin_perawat.html", context)
+        'can_delete': can_delete,
+        'error_message': error_message,
+    })
 
 def vaksinasi_klien(request):
     client_id = request.session.get('user_id')
