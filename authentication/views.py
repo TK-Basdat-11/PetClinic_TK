@@ -73,7 +73,6 @@ def login(request):
 
     messages.success(request, f"Selamat datang, {email}!")
     
-    # Redirect based on user role
     if role == "dokter":
         return redirect('dashboard:dashboard_dokter')
     elif role == "fdo":
@@ -86,7 +85,6 @@ def login(request):
         return redirect("authentication:hero")
 
 def show_login(request):
-    # Use the actual login function instead of dummy approach
     if request.method == "POST":
         return login(request)
     return render(request, "login.html")
@@ -95,7 +93,6 @@ def hero_section(request):
     return render(request,"hero.html")
 
 def user_logout(request):
-   # Clear session data
    if "is_auth" in request.session:
        del request.session["is_auth"]
    if "email" in request.session:

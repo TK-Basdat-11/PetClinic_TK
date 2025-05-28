@@ -3,7 +3,9 @@ from django.db import connection
 from django.contrib import messages
 from django.template import TemplateDoesNotExist
 from django.http import HttpResponse
+from authentication.decorators import role_required
 
+@role_required(['dokter', 'perawat'])
 def list_obat(request):
     medicines = []
     with connection.cursor() as cursor:
@@ -22,6 +24,7 @@ def list_obat(request):
     }
     return render(request, 'manajemen_obat/list_obat.html', context)
 
+@role_required(['dokter', 'perawat'])
 def create_obat(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -98,6 +101,7 @@ def create_obat(request):
     }
     return render(request, 'manajemen_obat/form_obat.html', context)
 
+@role_required(['dokter', 'perawat'])
 def update_obat(request, med_code):
     medicine = None
     with connection.cursor() as cursor:
@@ -172,6 +176,7 @@ def update_obat(request, med_code):
     }
     return render(request, 'manajemen_obat/form_obat.html', context)
 
+@role_required(['dokter', 'perawat'])
 def update_stock(request):
     medicines = []
     selected_medicine = request.GET.get('medicine', '')
@@ -241,6 +246,7 @@ def update_stock(request):
     }
     return render(request, 'manajemen_obat/form_stock.html', context)
 
+@role_required(['dokter', 'perawat'])
 def delete_obat(request, med_code):
     medicine = None
     with connection.cursor() as cursor:
@@ -279,6 +285,7 @@ def delete_obat(request, med_code):
     }
     return render(request, 'manajemen_obat/confirm_delete_obat.html', context)
 
+@role_required(['dokter', 'perawat'])
 def list_perawatan(request):
     treatments = []
     with connection.cursor() as cursor:
@@ -297,6 +304,7 @@ def list_perawatan(request):
     }
     return render(request, 'manajemen_obat/list_perawatan.html', context)
 
+@role_required(['dokter', 'perawat'])
 def create_perawatan(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -359,6 +367,7 @@ def create_perawatan(request):
     }
     return render(request, 'manajemen_obat/form_perawatan.html', context)
 
+@role_required(['dokter', 'perawat'])
 def update_perawatan(request, treatment_code):
     treatment = None
     with connection.cursor() as cursor:
@@ -426,6 +435,7 @@ def update_perawatan(request, treatment_code):
     }
     return render(request, 'manajemen_obat/form_perawatan.html', context)
 
+@role_required(['dokter', 'perawat'])
 def delete_perawatan(request, treatment_code):
     treatment = None
     with connection.cursor() as cursor:
@@ -464,6 +474,7 @@ def delete_perawatan(request, treatment_code):
     }
     return render(request, 'manajemen_obat/confirm_delete_perawatan.html', context)
 
+@role_required('dokter')
 def list_resep(request):
     prescriptions = []
     
@@ -504,6 +515,7 @@ def list_resep(request):
     }
     return render(request, 'manajemen_obat/list_resep.html', context)
 
+@role_required('dokter')
 def create_resep(request):
     treatments = []
     medicines = []
@@ -620,6 +632,7 @@ def create_resep(request):
     }
     return render(request, 'manajemen_obat/form_resep.html', context)
 
+@role_required('dokter')
 def delete_resep(request, treatment_code, med_code):
     prescription = None
     
