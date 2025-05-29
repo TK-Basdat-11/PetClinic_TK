@@ -390,17 +390,6 @@ def register_perawat(request):
 
     return render(request, "register_perawat.html")
 
-def hero_section(request):
-
-    return render(request,"hero.html")
-
-def user_logout(request):
-   
-    request.session['user_type'] = "empty"
-    request.session['user_id'] = "empty"
-   
-    return redirect("authentication:hero")
-
 def get_klien_joined_with_users_data_from_id(id):
 
     dto_klien = dict()
