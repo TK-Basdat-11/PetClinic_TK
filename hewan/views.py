@@ -108,20 +108,20 @@ def create_hewan(data, no_identitas_klien = False):
         # Save to database using cursor
         with connection.cursor() as cursor:
             # Check if pemilik exists
-            cursor.execute("SELECT no_identitas FROM KLIEN WHERE no_identitas = %s", [pemilik_id])
+            cursor.execute("SELECT no_identitas FROM PETCLINIC.KLIEN WHERE no_identitas = %s", [pemilik_id])
             if not cursor.fetchone():
                 context['error'] = 'Pemilik tidak ditemukan'
                 return context
             
             # Check if jenis_hewan exists
-            cursor.execute("SELECT id FROM JENIS_HEWAN WHERE id = %s", [jenis_id])
+            cursor.execute("SELECT id FROM PETCLINIC.JENIS_HEWAN WHERE id = %s", [jenis_id])
             if not cursor.fetchone():
                 context['error'] = 'Jenis hewan tidak ditemukan'
                 return context
             
             # Check if hewan with same name already exists for this owner
             cursor.execute(
-                "SELECT nama FROM HEWAN WHERE nama = %s AND no_identitas_klien = %s", 
+                "SELECT nama FROM PETCLINIC.HEWAN WHERE nama = %s AND no_identitas_klien = %s", 
                 [nama, pemilik_id]
             )
             if cursor.fetchone():
@@ -131,7 +131,7 @@ def create_hewan(data, no_identitas_klien = False):
             # Insert new hewan
             cursor.execute(
                 """
-                INSERT INTO HEWAN (nama, no_identitas_klien, tanggal_lahir, id_jenis, url_foto)
+                INSERT INTO PETCLINIC.HEWAN (nama, no_identitas_klien, tanggal_lahir, id_jenis, url_foto)
                 VALUES (%s, %s, %s, %s, %s)
                 """,
                 [nama, pemilik_id, tanggal_lahir_formatted, jenis_id, foto_url]
@@ -195,7 +195,7 @@ def update_hewan(data, no_identitas_klien= False):
         with connection.cursor() as cursor:
             # Check if the original pet exists
             cursor.execute(
-                "SELECT nama FROM HEWAN WHERE no_identitas_klien = %s AND nama = %s;", 
+                "SELECT nama FROM PETCLINIC.HEWAN WHERE no_identitas_klien = %s AND nama = %s;", 
                 [original_owner_id, original_nama]
             )
             if not cursor.fetchone():
@@ -203,13 +203,13 @@ def update_hewan(data, no_identitas_klien= False):
                 return context
                 
             # Check if pemilik exists
-            cursor.execute("SELECT no_identitas FROM KLIEN WHERE no_identitas = %s;", [no_identitas_klien])
+            cursor.execute("SELECT no_identitas FROM PETCLINIC.KLIEN WHERE no_identitas = %s;", [no_identitas_klien])
             if not cursor.fetchone():
                 context['error'] = 'Pemilik tidak ditemukan'
                 return context
             
             # Check if jenis_hewan exists
-            cursor.execute("SELECT id FROM JENIS_HEWAN WHERE id = %s;", [id_jenis])
+            cursor.execute("SELECT id FROM PETCLINIC.JENIS_HEWAN WHERE id = %s;", [id_jenis])
             if not cursor.fetchone():
                 context['error'] = 'Jenis hewan tidak ditemukan'
                 return context
@@ -217,7 +217,7 @@ def update_hewan(data, no_identitas_klien= False):
             # If we're changing the name, check if a pet with the new name already exists for this owner
             if nama != original_nama:
                 cursor.execute(
-                    "SELECT nama FROM HEWAN WHERE no_identitas_klien = %s AND nama = %s AND nama != %s;", 
+                    "SELECT nama FROM PETCLINIC.HEWAN WHERE no_identitas_klien = %s AND nama = %s AND nama != %s;", 
                     [no_identitas_klien, nama, original_nama]
                 )
                 if cursor.fetchone():
@@ -227,7 +227,7 @@ def update_hewan(data, no_identitas_klien= False):
             # Update hewan record
             cursor.execute(
                 """
-                UPDATE HEWAN 
+                UPDATE PETCLINIC.HEWAN 
                 SET nama = %s, 
                     no_identitas_klien = %s, 
                     tanggal_lahir = %s, 
@@ -274,7 +274,7 @@ def delete_hewan(data):
 
     try:
         with connection.cursor() as cursor:
-            cursor.execute("DELETE FROM hewan WHERE nama = %s AND no_identitas_klien = %s",[nama, no_identitas_klien])
+            cursor.execute("DELETE FROM PETCLINIC.hewan WHERE nama = %s AND no_identitas_klien = %s",[nama, no_identitas_klien])
             if cursor.rowcount == 0:
                 context['error'] = f"Gagal menghapus hewan: {nama}"
 
