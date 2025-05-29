@@ -595,8 +595,6 @@ def create_resep(request):
             quantity = int(quantity)
             if quantity <= 0:
                 errors['quantity'] = 'Kuantitas harus lebih dari 0'
-            elif quantity > med_stock:
-                errors['quantity'] = f'Stok obat tidak mencukupi (tersedia: {med_stock})'
         except ValueError:
             errors['quantity'] = 'Kuantitas harus berupa angka'
             
