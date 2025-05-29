@@ -32,7 +32,6 @@ def dashboard_dokter(request):
         return redirect("authentication:login")
 
     with connection.cursor() as cursor:
-        # Ambil profil dokter lengkap
         cursor.execute("""
             SELECT d.no_dokter_hewan, tm.no_izin_praktik, p.email, 
                    TO_CHAR(p.tanggal_mulai_kerja, 'YYYY-MM-DD'), 
@@ -68,7 +67,6 @@ def dashboard_dokter(request):
             "telepon": row[6],
         }
 
-        # Ambil sertifikat
         cursor.execute("""
             SELECT no_sertifikat_kompetensi, nama_sertifikat
             FROM PETCLINIC.SERTIFIKAT_KOMPETENSI
@@ -76,7 +74,6 @@ def dashboard_dokter(request):
         """, [dokter_id])
         sertifikat_list = cursor.fetchall()
 
-        # Ambil jadwal praktik
         cursor.execute("""
             SELECT hari, jam
             FROM PETCLINIC.JADWAL_PRAKTIK
@@ -160,7 +157,11 @@ def dashboard_klien(request):
                         ELSE p.nama_perusahaan
                    END AS nama,
                    TO_CHAR(k.tanggal_registrasi, 'YYYY-MM-DD') AS tanggal,
-                   u.alamat, u.nomor_telepon
+                   u.alamat, u.nomor_telepon,
+                   CASE
+                        WHEN i.nama_depan IS NOT NULL THEN 'individu'
+                        ELSE 'perusahaan'
+                   END AS client_type
             FROM PETCLINIC.KLIEN k
             JOIN PETCLINIC.USERS u ON u.email = k.email
             LEFT JOIN PETCLINIC.INDIVIDU i ON k.no_identitas = i.no_identitas_klien
@@ -185,9 +186,12 @@ def dashboard_klien(request):
             'telepon': row[5],
         }
 
+        client_type = row[6]
+
     return render(request, 'dashboard/dashboard_klien.html', {
         'profile': profile,
         'user_role': 'klien',
+        'client_type': client_type,  
     })
 
 @role_required('perawat')
@@ -197,7 +201,6 @@ def dashboard_perawat(request):
         return redirect("authentication:login")
 
     with connection.cursor() as cursor:
-        # Ambil data profil
         cursor.execute("""
             SELECT ph.no_perawat_hewan, tm.no_izin_praktik, p.email,
                    TO_CHAR(p.tanggal_mulai_kerja, 'YYYY-MM-DD'),
@@ -234,7 +237,6 @@ def dashboard_perawat(request):
             "telepon": row[6],
         }
 
-        # Ambil sertifikat
         cursor.execute("""
             SELECT no_sertifikat_kompetensi, nama_sertifikat
             FROM PETCLINIC.SERTIFIKAT_KOMPETENSI
@@ -319,20 +321,391 @@ def update_password(request):
 
 @role_required('dokter')
 def update_profile_dokter(request):
-    return render(request, "dashboard/update_profile_dokter.html")
+    user_email = request.session.get("email")
+    no_dokter = request.session.get("user_id")
+
+    if not user_email or not no_dokter:
+        messages.error(request, "Anda belum login.")
+        return redirect("authentication:login")
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT u.alamat, u.nomor_telepon, TO_CHAR(p.tanggal_akhir_kerja, 'YYYY-MM-DD')
+            FROM PETCLINIC.USERS u
+            JOIN PETCLINIC.PEGAWAI p ON p.email = u.email
+            WHERE p.no_pegawai = %s
+        """, [no_dokter])
+        result = cursor.fetchone()
+
+        if not result:
+            messages.error(request, "Data dokter tidak ditemukan.")
+            return redirect("dashboard:dashboard_dokter")
+
+        alamat_awal, telepon_awal, akhir_kerja_awal = result
+
+        cursor.execute("""
+            SELECT no_sertifikat_kompetensi, nama_sertifikat
+            FROM PETCLINIC.SERTIFIKAT_KOMPETENSI
+            WHERE no_tenaga_medis = %s
+        """, [no_dokter])
+        sertifikat_list = cursor.fetchall()
+
+        cursor.execute("""
+            SELECT hari, jam
+            FROM PETCLINIC.JADWAL_PRAKTIK
+            WHERE no_dokter_hewan = %s
+        """, [no_dokter])
+        hasil_query_jadwal = cursor.fetchall()
+
+    jadwal_list = []
+    for jadwal in hasil_query_jadwal:
+        hari = jadwal[0]
+        jam = jadwal[1] or ""
+        jadwal_list.append((hari, jam))
+
+    if request.method == "POST":
+        alamat = request.POST.get("alamat", "").strip()
+        telepon = request.POST.get("telepon", "").strip()
+        akhir_kerja = request.POST.get("akhir_kerja", "").strip()
+
+        if not alamat or not telepon:
+            messages.error(request, "Alamat dan nomor telepon wajib diisi.")
+            return redirect("dashboard:update_profile_dokter")
+
+        cert_numbers = request.POST.getlist("certificate_number[]")
+        cert_names = request.POST.getlist("certificate_name[]")
+        
+        if not cert_numbers or not cert_names or not cert_numbers[0] or not cert_names[0]:
+            messages.error(request, "Minimal satu sertifikat kompetensi wajib diisi.")
+            return redirect("dashboard:update_profile_dokter")
+
+        days = request.POST.getlist("day[]")
+        schedule_times = request.POST.getlist("schedule_time[]")
+        
+        if not days or not schedule_times or not days[0] or not schedule_times[0]:
+            messages.error(request, "Minimal satu jadwal praktik wajib diisi.")
+            return redirect("dashboard:update_profile_dokter")
+
+        # for i, schedule_time in enumerate(schedule_times):
+        #     if schedule_time.strip():
+        #         if "-" or "–" or "—" not in schedule_time:
+        #             messages.error(request, f"Format jam tidak valid pada jadwal ke-{i+1}. Contoh: 08.00 - 12.00")
+        #             return redirect("dashboard:update_profile_dokter")
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE PETCLINIC.USERS
+                SET alamat = %s, nomor_telepon = %s
+                WHERE email = %s
+            """, [alamat, telepon, user_email])
+
+            if akhir_kerja:
+                cursor.execute("""
+                    UPDATE PETCLINIC.PEGAWAI
+                    SET tanggal_akhir_kerja = %s
+                    WHERE no_pegawai = %s
+                """, [akhir_kerja, no_dokter])
+            else:
+                cursor.execute("""
+                    UPDATE PETCLINIC.PEGAWAI
+                    SET tanggal_akhir_kerja = NULL
+                    WHERE no_pegawai = %s
+                """, [no_dokter])
+
+            cursor.execute("""
+                DELETE FROM PETCLINIC.SERTIFIKAT_KOMPETENSI
+                WHERE no_tenaga_medis = %s
+            """, [no_dokter])
+            
+            for cert_num, cert_name in zip(cert_numbers, cert_names):
+                if cert_num.strip() and cert_name.strip():
+                    cursor.execute("""
+                        INSERT INTO PETCLINIC.SERTIFIKAT_KOMPETENSI (no_sertifikat_kompetensi, nama_sertifikat, no_tenaga_medis)
+                        VALUES (%s, %s, %s)
+                    """, [cert_num.strip(), cert_name.strip(), no_dokter])
+
+            cursor.execute("""
+                DELETE FROM PETCLINIC.JADWAL_PRAKTIK
+                WHERE no_dokter_hewan = %s
+            """, [no_dokter])
+            
+            for day, schedule_time in zip(days, schedule_times):
+                if day.strip() and schedule_time.strip():
+                    cursor.execute("""
+                        INSERT INTO PETCLINIC.JADWAL_PRAKTIK (hari, jam, no_dokter_hewan)
+                        VALUES (%s, %s, %s)
+                    """, [day.strip(), schedule_time.strip(), no_dokter])
+
+        messages.success(request, "Profil dokter berhasil diperbarui.")
+        return redirect("dashboard:dashboard_dokter")
+
+    return render(request, "dashboard/update_profile_dokter.html", {
+        "alamat": alamat_awal,
+        "telepon": telepon_awal,
+        "akhir_kerja": akhir_kerja_awal,
+        "sertifikat_list": sertifikat_list,
+        "jadwal_list": jadwal_list,
+        "hari_list": ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"],
+    })
 
 @role_required('fdo')
 def update_profile_fdo(request):
-    return render(request, "dashboard/update_profile_fdo.html")
+    user_email = request.session.get("email")
+    no_fdo = request.session.get("user_id")
+
+    if not user_email or not no_fdo:
+        messages.error(request, "Anda belum login.")
+        return redirect("authentication:login")
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT u.alamat, u.nomor_telepon, TO_CHAR(p.tanggal_akhir_kerja, 'YYYY-MM-DD')
+            FROM PETCLINIC.USERS u
+            JOIN PETCLINIC.PEGAWAI p ON p.email = u.email
+            WHERE p.no_pegawai = %s
+        """, [no_fdo])
+        result = cursor.fetchone()
+
+        if not result:
+            messages.error(request, "Data FDO tidak ditemukan.")
+            return redirect("dashboard:dashboard_fdo")
+
+        alamat_awal, telepon_awal, akhir_kerja_awal = result
+
+    if request.method == "POST":
+        alamat = request.POST.get("alamat", "").strip()
+        telepon = request.POST.get("telepon", "").strip()
+        akhir_kerja = request.POST.get("akhir_kerja", "").strip() or None
+
+        if not alamat or not telepon:
+            messages.error(request, "Alamat dan nomor telepon wajib diisi.")
+            return redirect("dashboard:update_profile_fdo")
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE PETCLINIC.USERS
+                SET alamat = %s, nomor_telepon = %s
+                WHERE email = %s
+            """, [alamat, telepon, user_email])
+
+            cursor.execute("""
+                UPDATE PETCLINIC.PEGAWAI
+                SET tanggal_akhir_kerja = %s
+                WHERE no_pegawai = %s
+            """, [akhir_kerja, no_fdo])
+
+        messages.success(request, "Profil FDO berhasil diperbarui.")
+        return redirect("dashboard:dashboard_fdo")
+
+    return render(request, "dashboard/update_profile_fdo.html", {
+        "alamat": alamat_awal,
+        "telepon": telepon_awal,
+        "akhir_kerja": akhir_kerja_awal,
+    })
+
 
 @role_required('perawat')
 def update_profile_perawat(request):
-    return render(request, "dashboard/update_profile_perawat.html")
+    user_email = request.session.get("email")
+    no_perawat = request.session.get("user_id")
+
+    if not user_email or not no_perawat:
+        messages.error(request, "Anda belum login.")
+        return redirect("authentication:login")
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT u.alamat, u.nomor_telepon, TO_CHAR(p.tanggal_akhir_kerja, 'YYYY-MM-DD')
+            FROM PETCLINIC.USERS u
+            JOIN PETCLINIC.PEGAWAI p ON p.email = u.email
+            WHERE p.no_pegawai = %s
+        """, [no_perawat])
+        result = cursor.fetchone()
+
+        if not result:
+            messages.error(request, "Data perawat tidak ditemukan.")
+            return redirect("dashboard:dashboard_perawat")
+
+        alamat_awal, telepon_awal, akhir_kerja_awal = result
+
+        cursor.execute("""
+            SELECT no_sertifikat_kompetensi, nama_sertifikat
+            FROM PETCLINIC.SERTIFIKAT_KOMPETENSI
+            WHERE no_tenaga_medis = %s
+        """, [no_perawat])
+        sertifikat_list = cursor.fetchall()
+
+    if request.method == "POST":
+        alamat = request.POST.get("alamat", "").strip()
+        telepon = request.POST.get("telepon", "").strip()
+        akhir_kerja = request.POST.get("akhir_kerja", "").strip()
+
+        if not alamat or not telepon:
+            messages.error(request, "Alamat dan nomor telepon wajib diisi.")
+            return redirect("dashboard:update_profile_perawat")
+
+        cert_numbers = request.POST.getlist("certificate_number[]")
+        cert_names = request.POST.getlist("certificate_name[]")
+        
+        if not cert_numbers or not cert_names or not cert_numbers[0] or not cert_names[0]:
+            messages.error(request, "Minimal satu sertifikat kompetensi wajib diisi.")
+            return redirect("dashboard:update_profile_perawat")
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE PETCLINIC.USERS
+                SET alamat = %s, nomor_telepon = %s
+                WHERE email = %s
+            """, [alamat, telepon, user_email])
+
+            if akhir_kerja:
+                cursor.execute("""
+                    UPDATE PETCLINIC.PEGAWAI
+                    SET tanggal_akhir_kerja = %s
+                    WHERE no_pegawai = %s
+                """, [akhir_kerja, no_perawat])
+            else:
+                cursor.execute("""
+                    UPDATE PETCLINIC.PEGAWAI
+                    SET tanggal_akhir_kerja = NULL
+                    WHERE no_pegawai = %s
+                """, [no_perawat])
+
+            cursor.execute("""
+                DELETE FROM PETCLINIC.SERTIFIKAT_KOMPETENSI
+                WHERE no_tenaga_medis = %s
+            """, [no_perawat])
+            
+            for cert_num, cert_name in zip(cert_numbers, cert_names):
+                if cert_num.strip() and cert_name.strip():
+                    cursor.execute("""
+                        INSERT INTO PETCLINIC.SERTIFIKAT_KOMPETENSI (no_sertifikat_kompetensi, nama_sertifikat, no_tenaga_medis)
+                        VALUES (%s, %s, %s)
+                    """, [cert_num.strip(), cert_name.strip(), no_perawat])
+
+        messages.success(request, "Profil perawat berhasil diperbarui.")
+        return redirect("dashboard:dashboard_perawat")
+
+    return render(request, "dashboard/update_profile_perawat.html", {
+        "alamat": alamat_awal,
+        "telepon": telepon_awal,
+        "akhir_kerja": akhir_kerja_awal,
+        "sertifikat_list": sertifikat_list,
+    })
 
 @role_required('klien')
 def update_profile_klien_individu(request):
-    return render(request, "dashboard/update_profile_klien_individu.html")
+    user_email = request.session.get("email")
+    if not user_email:
+        messages.error(request, "Anda belum login.")
+        return redirect("authentication:login")
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT k.no_identitas, u.alamat, u.nomor_telepon,
+                   i.nama_depan, i.nama_tengah, i.nama_belakang
+            FROM PETCLINIC.KLIEN k
+            JOIN PETCLINIC.USERS u ON k.email = u.email
+            JOIN PETCLINIC.INDIVIDU i ON k.no_identitas = i.no_identitas_klien
+            WHERE k.email = %s
+        """, [user_email])
+        row = cursor.fetchone()
+
+    if not row:
+        messages.error(request, "Data klien individu tidak ditemukan.")
+        return redirect("dashboard:dashboard_klien")
+
+    no_identitas, alamat_awal, telepon_awal, nama_depan, nama_tengah, nama_belakang = row
+
+    if request.method == "POST":
+        alamat = request.POST.get("alamat", "").strip()
+        telepon = request.POST.get("telepon", "").strip()
+        depan = request.POST.get("nama_depan", "").strip()
+        tengah = request.POST.get("nama_tengah", "").strip()
+        belakang = request.POST.get("nama_belakang", "").strip()
+
+        if not all([alamat, telepon, depan, belakang]):
+            messages.error(request, "Semua field wajib diisi (kecuali nama tengah).")
+            return redirect("dashboard:update_profile_klien_individu")
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE PETCLINIC.USERS
+                SET alamat = %s, nomor_telepon = %s
+                WHERE email = %s
+            """, [alamat, telepon, user_email])
+
+            cursor.execute("""
+                UPDATE PETCLINIC.INDIVIDU
+                SET nama_depan = %s,
+                    nama_tengah = %s,
+                    nama_belakang = %s
+                WHERE no_identitas_klien = %s
+            """, [depan, tengah, belakang, no_identitas])
+
+        messages.success(request, "Profil berhasil diperbarui.")
+        return redirect("dashboard:dashboard_klien")
+
+    context = {
+        "alamat": alamat_awal,
+        "telepon": telepon_awal,
+        "nama_depan": nama_depan,
+        "nama_tengah": nama_tengah,
+        "nama_belakang": nama_belakang,
+    }
+    return render(request, "dashboard/update_profile_klien_individu.html", context)
 
 @role_required('klien')
 def update_profile_klien_perusahaan(request):
-    return render(request, "dashboard/update_profile_klien_perusahaan.html")
+    user_email = request.session.get("email")
+    if not user_email:
+        messages.error(request, "Anda belum login.")
+        return redirect("authentication:login")
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT k.no_identitas, u.alamat, u.nomor_telepon, p.nama_perusahaan
+            FROM PETCLINIC.KLIEN k
+            JOIN PETCLINIC.USERS u ON k.email = u.email
+            JOIN PETCLINIC.PERUSAHAAN p ON k.no_identitas = p.no_identitas_klien
+            WHERE k.email = %s
+        """, [user_email])
+        row = cursor.fetchone()
+
+    if not row:
+        messages.error(request, "Data klien perusahaan tidak ditemukan.")
+        return redirect("dashboard:dashboard_klien")
+
+    no_identitas, alamat_awal, telepon_awal, nama_perusahaan_awal = row
+
+    if request.method == "POST":
+        alamat = request.POST.get("alamat", "").strip()
+        telepon = request.POST.get("telepon", "").strip()
+        nama_perusahaan = request.POST.get("nama_perusahaan", "").strip()
+
+        if not all([alamat, telepon, nama_perusahaan]):
+            messages.error(request, "Semua field wajib diisi.")
+            return redirect("dashboard:update_profile_klien_perusahaan")
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE PETCLINIC.USERS
+                SET alamat = %s, nomor_telepon = %s
+                WHERE email = %s
+            """, [alamat, telepon, user_email])
+
+            cursor.execute("""
+                UPDATE PETCLINIC.PERUSAHAAN
+                SET nama_perusahaan = %s
+                WHERE no_identitas_klien = %s
+            """, [nama_perusahaan, no_identitas])
+
+        messages.success(request, "Profil berhasil diperbarui.")
+        return redirect("dashboard:dashboard_klien")
+
+    context = {
+        "alamat": alamat_awal,
+        "telepon": telepon_awal,
+        "nama_perusahaan": nama_perusahaan_awal,
+    }
+    return render(request, "dashboard/update_profile_klien_perusahaan.html", context)

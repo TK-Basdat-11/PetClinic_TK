@@ -26,10 +26,16 @@
     <h1 class="text-3xl font-bold text-gray-800">Profil Klien</h1>
     <div class="flex gap-3">
       <a href="{% url 'dashboard:update_password' %}" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm">Update Password</a>
-      {% if client_type == 'perusahaan' %}
-        <a href="{% url 'dashboard:update_profile_klien_perusahaan' %}" class="px-4 py-2 bg-indigo-800 text-white rounded-md hover:bg-indigo-700 text-sm">Update Profile</a>
-      {% else %}
-        <a href="{% url 'dashboard:update_profile_klien_individu' %}" class="px-4 py-2 bg-indigo-800 text-white rounded-md hover:bg-indigo-700 text-sm">Update Profile</a>
+      {% if client_type == 'individu' %}
+        <a href="{% url 'dashboard:update_profile_klien_individu' %}"
+          class="px-4 py-2 bg-indigo-800 text-white rounded-md hover:bg-indigo-700 text-sm">
+          Update Profile
+        </a>
+      {% elif client_type == 'perusahaan' %}
+        <a href="{% url 'dashboard:update_profile_klien_perusahaan' %}"
+          class="px-4 py-2 bg-indigo-800 text-white rounded-md hover:bg-indigo-700 text-sm">
+          Update Profile
+        </a>
       {% endif %}
     </div>
   </div>
