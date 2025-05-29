@@ -3,67 +3,135 @@ from django.db import connection
 from django.contrib import messages
 from django.template import TemplateDoesNotExist
 from django.http import HttpResponse
+from authentication.decorators import role_required
 
-
+@role_required(['fdo', 'dokter', 'perawat', 'klien'])
 def list_treatment(request):
     treatments = []
     user_role = request.session.get('user_role')
-    
-    with connection.cursor() as cursor:
-        cursor.execute("""
-        SELECT 
-            k.id_kunjungan,
-            k.no_identitas_klien,
-            k.nama_hewan,
-            CASE 
-                WHEN u_perawat.email IS NOT NULL 
-                THEN INITCAP(REPLACE(SPLIT_PART(u_perawat.email, '@', 1), '.', ' '))
-                ELSE 'N/A'
-            END as perawat_hewan,
-            CASE 
-                WHEN u_dokter.email IS NOT NULL 
-                THEN CONCAT('dr. ', INITCAP(REPLACE(SPLIT_PART(u_dokter.email, '@', 1), '.', ' ')))
-                ELSE 'N/A'
-            END as dokter_hewan,
-            CASE 
-                WHEN u_front_desk.email IS NOT NULL 
-                THEN INITCAP(REPLACE(SPLIT_PART(u_front_desk.email, '@', 1), '.', ' '))
-                ELSE 'N/A'
-            END as front_desk_officer,
-            p.nama_perawatan as jenis_perawatan,
-            k.catatan as catatan_medis,
-            kk.kode_perawatan
-        FROM PETCLINIC.KUNJUNGAN k
-        JOIN PETCLINIC.KUNJUNGAN_KEPERAWATAN kk ON k.id_kunjungan = kk.id_kunjungan
-        JOIN PETCLINIC.PERAWATAN p ON kk.kode_perawatan = p.kode_perawatan
+    user_email = request.session.get('email')
         
-        -- JOIN untuk Perawat Hewan
-        LEFT JOIN PETCLINIC.PERAWAT_HEWAN ph ON k.no_perawat_hewan = ph.no_perawat_hewan
-        LEFT JOIN PETCLINIC.TENAGA_MEDIS tm_perawat ON ph.no_perawat_hewan = tm_perawat.no_tenaga_medis
-        LEFT JOIN PETCLINIC.PEGAWAI peg_perawat ON tm_perawat.no_tenaga_medis = peg_perawat.no_pegawai
-        LEFT JOIN PETCLINIC.USERS u_perawat ON peg_perawat.email = u_perawat.email
-        
-        -- JOIN untuk Dokter Hewan
-        LEFT JOIN PETCLINIC.DOKTER_HEWAN dh ON k.no_dokter_hewan = dh.no_dokter_hewan
-        LEFT JOIN PETCLINIC.TENAGA_MEDIS tm_dokter ON dh.no_dokter_hewan = tm_dokter.no_tenaga_medis
-        LEFT JOIN PETCLINIC.PEGAWAI peg_dokter ON tm_dokter.no_tenaga_medis = peg_dokter.no_pegawai
-        LEFT JOIN PETCLINIC.USERS u_dokter ON peg_dokter.email = u_dokter.email
-        
-        -- JOIN untuk Front Desk Officer
-        LEFT JOIN PETCLINIC.FRONT_DESK fd ON k.no_front_desk = fd.no_front_desk
-        LEFT JOIN PETCLINIC.PEGAWAI peg_front_desk ON fd.no_front_desk = peg_front_desk.no_pegawai
-        LEFT JOIN PETCLINIC.USERS u_front_desk ON peg_front_desk.email = u_front_desk.email
-        
-        ORDER BY k.timestamp_awal DESC
-        """)
-        treatments = cursor.fetchall()
+    try:
+        with connection.cursor() as cursor:
+            if user_role == 'klien' and user_email:
+                cursor.execute("""
+                SELECT 
+                    k.id_kunjungan,
+                    k.no_identitas_klien,
+                    k.nama_hewan,
+                    CASE 
+                        WHEN u_perawat.email IS NOT NULL 
+                        THEN INITCAP(REPLACE(SPLIT_PART(u_perawat.email, '@', 1), '.', ' '))
+                        ELSE 'N/A'
+                    END as perawat_hewan,
+                    CASE 
+                        WHEN u_dokter.email IS NOT NULL 
+                        THEN CONCAT('dr. ', INITCAP(REPLACE(SPLIT_PART(u_dokter.email, '@', 1), '.', ' ')))
+                        ELSE 'N/A'
+                    END as dokter_hewan,
+                    CASE 
+                        WHEN u_front_desk.email IS NOT NULL 
+                        THEN INITCAP(REPLACE(SPLIT_PART(u_front_desk.email, '@', 1), '.', ' '))
+                        ELSE 'N/A'
+                    END as front_desk_officer,
+                    p.nama_perawatan as jenis_perawatan,
+                    k.catatan as catatan_medis,
+                    kk.kode_perawatan
+                FROM PETCLINIC.KUNJUNGAN k
+                JOIN PETCLINIC.KUNJUNGAN_KEPERAWATAN kk ON k.id_kunjungan = kk.id_kunjungan
+                JOIN PETCLINIC.PERAWATAN p ON kk.kode_perawatan = p.kode_perawatan
+                JOIN PETCLINIC.KLIEN kl ON k.no_identitas_klien = kl.no_identitas
+                
+                -- JOIN untuk Perawat Hewan
+                LEFT JOIN PETCLINIC.PERAWAT_HEWAN ph ON k.no_perawat_hewan = ph.no_perawat_hewan
+                LEFT JOIN PETCLINIC.TENAGA_MEDIS tm_perawat ON ph.no_perawat_hewan = tm_perawat.no_tenaga_medis
+                LEFT JOIN PETCLINIC.PEGAWAI peg_perawat ON tm_perawat.no_tenaga_medis = peg_perawat.no_pegawai
+                LEFT JOIN PETCLINIC.USERS u_perawat ON peg_perawat.email = u_perawat.email
+                
+                -- JOIN untuk Dokter Hewan
+                LEFT JOIN PETCLINIC.DOKTER_HEWAN dh ON k.no_dokter_hewan = dh.no_dokter_hewan
+                LEFT JOIN PETCLINIC.TENAGA_MEDIS tm_dokter ON dh.no_dokter_hewan = tm_dokter.no_tenaga_medis
+                LEFT JOIN PETCLINIC.PEGAWAI peg_dokter ON tm_dokter.no_tenaga_medis = peg_dokter.no_pegawai
+                LEFT JOIN PETCLINIC.USERS u_dokter ON peg_dokter.email = u_dokter.email
+                
+                -- JOIN untuk Front Desk Officer
+                LEFT JOIN PETCLINIC.FRONT_DESK fd ON k.no_front_desk = fd.no_front_desk
+                LEFT JOIN PETCLINIC.PEGAWAI peg_front_desk ON fd.no_front_desk = peg_front_desk.no_pegawai
+                LEFT JOIN PETCLINIC.USERS u_front_desk ON peg_front_desk.email = u_front_desk.email
+                
+                WHERE kl.email = %s
+                ORDER BY k.timestamp_awal DESC
+                """, [user_email])
+                
+                result = cursor.fetchall()
+                print(f"DEBUG: Query with email '{user_email}' returned {len(result)} rows")
+                
+            else:
+                print(f"DEBUG: Non-klien user role: {user_role}")
+                cursor.execute("""
+                SELECT 
+                    k.id_kunjungan,
+                    k.no_identitas_klien,
+                    k.nama_hewan,
+                    CASE 
+                        WHEN u_perawat.email IS NOT NULL 
+                        THEN INITCAP(REPLACE(SPLIT_PART(u_perawat.email, '@', 1), '.', ' '))
+                        ELSE 'N/A'
+                    END as perawat_hewan,
+                    CASE 
+                        WHEN u_dokter.email IS NOT NULL 
+                        THEN CONCAT('dr. ', INITCAP(REPLACE(SPLIT_PART(u_dokter.email, '@', 1), '.', ' ')))
+                        ELSE 'N/A'
+                    END as dokter_hewan,
+                    CASE 
+                        WHEN u_front_desk.email IS NOT NULL 
+                        THEN INITCAP(REPLACE(SPLIT_PART(u_front_desk.email, '@', 1), '.', ' '))
+                        ELSE 'N/A'
+                    END as front_desk_officer,
+                    p.nama_perawatan as jenis_perawatan,
+                    k.catatan as catatan_medis,
+                    kk.kode_perawatan
+                FROM PETCLINIC.KUNJUNGAN k
+                JOIN PETCLINIC.KUNJUNGAN_KEPERAWATAN kk ON k.id_kunjungan = kk.id_kunjungan
+                JOIN PETCLINIC.PERAWATAN p ON kk.kode_perawatan = p.kode_perawatan
+                
+                -- JOIN untuk Perawat Hewan
+                LEFT JOIN PETCLINIC.PERAWAT_HEWAN ph ON k.no_perawat_hewan = ph.no_perawat_hewan
+                LEFT JOIN PETCLINIC.TENAGA_MEDIS tm_perawat ON ph.no_perawat_hewan = tm_perawat.no_tenaga_medis
+                LEFT JOIN PETCLINIC.PEGAWAI peg_perawat ON tm_perawat.no_tenaga_medis = peg_perawat.no_pegawai
+                LEFT JOIN PETCLINIC.USERS u_perawat ON peg_perawat.email = u_perawat.email
+                
+                -- JOIN untuk Dokter Hewan
+                LEFT JOIN PETCLINIC.DOKTER_HEWAN dh ON k.no_dokter_hewan = dh.no_dokter_hewan
+                LEFT JOIN PETCLINIC.TENAGA_MEDIS tm_dokter ON dh.no_dokter_hewan = tm_dokter.no_tenaga_medis
+                LEFT JOIN PETCLINIC.PEGAWAI peg_dokter ON tm_dokter.no_tenaga_medis = peg_dokter.no_pegawai
+                LEFT JOIN PETCLINIC.USERS u_dokter ON peg_dokter.email = u_dokter.email
+                
+                -- JOIN untuk Front Desk Officer
+                LEFT JOIN PETCLINIC.FRONT_DESK fd ON k.no_front_desk = fd.no_front_desk
+                LEFT JOIN PETCLINIC.PEGAWAI peg_front_desk ON fd.no_front_desk = peg_front_desk.no_pegawai
+                LEFT JOIN PETCLINIC.USERS u_front_desk ON peg_front_desk.email = u_front_desk.email
+                
+                ORDER BY k.timestamp_awal DESC
+                """)
+                result = cursor.fetchall()
+                print(f"DEBUG: Non-klien query returned {len(result)} rows")
+            
+            treatments = result
+            
+    except Exception as e:
+        print(f"Error in list_treatment: {str(e)}")
+        messages.error(request, f'Terjadi kesalahan saat mengambil data treatment: {str(e)}')
+        treatments = []
     
     context = {
         'treatments': treatments,
         'user_role': user_role,
+        'user_email': user_email,
     }
     return render(request, 'perawatan_hewan/list_treatment.html', context)
-    
+
+@role_required(['fdo', 'dokter'])
 def create_treatment(request):
     kunjungan_list = []
     perawatan_list = []
@@ -222,7 +290,8 @@ def create_treatment(request):
         'user_role': user_role,
     }
     return render(request, 'perawatan_hewan/create_treatment.html', context)
-    
+
+@role_required(['fdo', 'dokter']) 
 def update_treatment(request, id_kunjungan, kode_perawatan):
     perawatan_list = []
     treatment_data = None
@@ -308,8 +377,7 @@ def update_treatment(request, id_kunjungan, kode_perawatan):
         perawatan_list = cursor.fetchall()
     
     if request.method == 'POST':
-        # Kunjungan tidak bisa diubah, jadi langsung ambil dari form (hidden input)
-        new_kunjungan_id = request.POST.get('kunjungan')  # Akan sama dengan id_kunjungan
+        new_kunjungan_id = request.POST.get('kunjungan') 
         new_perawatan_code = request.POST.get('perawatan')
         
         errors = {}
@@ -317,11 +385,9 @@ def update_treatment(request, id_kunjungan, kode_perawatan):
         if not new_perawatan_code:
             errors['perawatan'] = 'Silakan pilih jenis perawatan'
         
-        # Validasi apakah perawatan baru berbeda dengan yang lama
         if new_perawatan_code == kode_perawatan:
             errors['perawatan'] = 'Pilih jenis perawatan yang berbeda dari sebelumnya'
         
-        # Validasi apakah perawatan sudah pernah ditambahkan untuk kunjungan ini
         if new_perawatan_code and new_perawatan_code != kode_perawatan:
             with connection.cursor() as cursor:
                 cursor.execute("""
@@ -345,9 +411,7 @@ def update_treatment(request, id_kunjungan, kode_perawatan):
             }
             return render(request, 'perawatan_hewan/update_treatment.html', context)
         
-        # Update treatment (hanya ganti kode perawatan)
         with connection.cursor() as cursor:
-            # Update langsung kode perawatan dalam tabel kunjungan_keperawatan
             cursor.execute("""
             UPDATE PETCLINIC.KUNJUNGAN_KEPERAWATAN 
             SET kode_perawatan = %s
@@ -368,11 +432,11 @@ def update_treatment(request, id_kunjungan, kode_perawatan):
         'kode_perawatan': kode_perawatan,
     }
     return render(request, 'perawatan_hewan/update_treatment.html', context)
-    
+
+@role_required(['fdo', 'dokter'])
 def delete_treatment(request, id_kunjungan, kode_perawatan):
     treatment_data = None
-    
-    # Get existing treatment data
+
     with connection.cursor() as cursor:
         cursor.execute("""
         SELECT 
@@ -409,7 +473,6 @@ def delete_treatment(request, id_kunjungan, kode_perawatan):
     if request.method == 'POST':
         try:
             with connection.cursor() as cursor:
-                # Hard delete dari tabel KUNJUNGAN_KEPERAWATAN
                 cursor.execute("""
                 DELETE FROM PETCLINIC.KUNJUNGAN_KEPERAWATAN 
                 WHERE id_kunjungan = %s AND kode_perawatan = %s
@@ -432,10 +495,11 @@ def delete_treatment(request, id_kunjungan, kode_perawatan):
     }
     return render(request, 'perawatan_hewan/delete_treatment.html', context)
 
+@role_required(['fdo', 'dokter', 'perawat', 'klien'])
 def list_kunjungan(request):
     kunjungan = []
     user_role = request.session.get('user_role')
-    user_email = request.session.get('user_email')
+    user_email = request.session.get('email')
     
     with connection.cursor() as cursor:
         base_query = """
@@ -477,6 +541,7 @@ def list_kunjungan(request):
     }
     return render(request, 'perawatan_hewan/list_kunjungan.html', context)
 
+@role_required(['fdo'])
 def create_kunjungan(request):
     klien_list = []
     dokter_list = []
@@ -490,7 +555,6 @@ def create_kunjungan(request):
     waktu_akhir = request.GET.get('waktu_akhir', '')
     
     with connection.cursor() as cursor:
-        # Get list of klien
         cursor.execute("""
         SELECT k.no_identitas, 
                CASE 
@@ -507,7 +571,6 @@ def create_kunjungan(request):
         """)
         klien_list = cursor.fetchall()
         
-        # Get list of dokter hewan with email
         cursor.execute("""
         SELECT dh.no_dokter_hewan, u.email
         FROM PETCLINIC.DOKTER_HEWAN dh
@@ -518,7 +581,6 @@ def create_kunjungan(request):
         """)
         dokter_list = cursor.fetchall()
         
-        # Get list of perawat hewan with email
         cursor.execute("""
         SELECT ph.no_perawat_hewan, u.email
         FROM PETCLINIC.PERAWAT_HEWAN ph
@@ -529,7 +591,6 @@ def create_kunjungan(request):
         """)
         perawat_list = cursor.fetchall()
         
-        # Get hewan berdasarkan klien yang dipilih
         if selected_klien:
             cursor.execute("""
             SELECT nama
@@ -550,7 +611,6 @@ def create_kunjungan(request):
         
         errors = {}
         
-        # Validasi input
         if not klien_id:
             errors['klien'] = 'Silakan pilih klien'
         
@@ -571,7 +631,6 @@ def create_kunjungan(request):
         if not waktu_mulai:
             errors['waktu_mulai'] = 'Silakan isi waktu mulai penanganan'
         
-        # Validasi bahwa hewan milik klien yang dipilih
         if klien_id and nama_hewan:
             with connection.cursor() as cursor:
                 cursor.execute("""
@@ -688,6 +747,7 @@ def create_kunjungan(request):
     }
     return render(request, 'perawatan_hewan/create_kunjungan.html', context)
 
+@role_required(['fdo'])
 def update_kunjungan(request, id_kunjungan):
     klien_list = []
     dokter_list = []
@@ -915,6 +975,7 @@ def update_kunjungan(request, id_kunjungan):
     }
     return render(request, 'perawatan_hewan/update_kunjungan.html', context)
 
+@role_required(['fdo'])
 def delete_kunjungan(request, id_kunjungan):
     kunjungan_data = None
     
@@ -968,6 +1029,7 @@ def delete_kunjungan(request, id_kunjungan):
     }
     return render(request, 'perawatan_hewan/delete_kunjungan.html', context)
 
+@role_required(['fdo', 'dokter', 'perawat', 'klien'])
 def rekam_medis(request, id_kunjungan):
     rekam_medis_data = None
     kunjungan_data = None
@@ -1025,6 +1087,7 @@ def rekam_medis(request, id_kunjungan):
     }
     return render(request, 'perawatan_hewan/rekam_medis.html', context)
 
+@role_required(["dokter"])
 def create_rekam_medis(request, id_kunjungan):
     kunjungan_data = None
     
@@ -1111,6 +1174,7 @@ def create_rekam_medis(request, id_kunjungan):
     }
     return render(request, 'perawatan_hewan/create_rekam_medis.html', context)
 
+@role_required(["dokter"])
 def update_rekam_medis(request, id_kunjungan):
     kunjungan_data = None
     rekam_medis_data = None
@@ -1203,6 +1267,7 @@ def update_rekam_medis(request, id_kunjungan):
     }
     return render(request, 'perawatan_hewan/update_rekam_medis.html', context)
 
+@role_required(["dokter", "perawat", "klien", "fdo"])
 def rekam_medis_unavailable(request, id_kunjungan):
     kunjungan_data = None
     
