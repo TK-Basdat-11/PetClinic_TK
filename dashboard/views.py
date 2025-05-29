@@ -91,6 +91,11 @@ def dashboard_dokter(request):
         """, [dokter_id])
         jadwal_list = cursor.fetchall()
 
+    notices = connection.connection.notices
+    if notices:
+        latest_notice = notices[-1]
+        messages.info(request, latest_notice.strip())
+
     return render(request, "dashboard/dashboard_dokter.html", {
         "profile": profile,
         "sertifikat_list": sertifikat_list,
@@ -382,15 +387,10 @@ def update_profile_dokter(request):
         days = request.POST.getlist("day[]")
         schedule_times = request.POST.getlist("schedule_time[]")
         
-        if not days or not schedule_times or not days[0] or not schedule_times[0]:
-            messages.error(request, "Minimal satu jadwal praktik wajib diisi.")
-            return redirect("dashboard:update_profile_dokter")
-
-        # for i, schedule_time in enumerate(schedule_times):
-        #     if schedule_time.strip():
-        #         if "-" or "–" or "—" not in schedule_time:
-        #             messages.error(request, f"Format jam tidak valid pada jadwal ke-{i+1}. Contoh: 08.00 - 12.00")
-        #             return redirect("dashboard:update_profile_dokter")
+        if not akhir_kerja: 
+            if not days or not schedule_times or not days[0] or not schedule_times[0]:
+                messages.error(request, "Minimal satu jadwal praktik wajib diisi.")
+                return redirect("dashboard:update_profile_dokter")
 
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -424,19 +424,25 @@ def update_profile_dokter(request):
                         VALUES (%s, %s, %s)
                     """, [cert_num.strip(), cert_name.strip(), no_dokter])
 
-            cursor.execute("""
-                DELETE FROM PETCLINIC.JADWAL_PRAKTIK
-                WHERE no_dokter_hewan = %s
-            """, [no_dokter])
-            
-            for day, schedule_time in zip(days, schedule_times):
-                if day.strip() and schedule_time.strip():
-                    cursor.execute("""
-                        INSERT INTO PETCLINIC.JADWAL_PRAKTIK (hari, jam, no_dokter_hewan)
-                        VALUES (%s, %s, %s)
-                    """, [day.strip(), schedule_time.strip(), no_dokter])
+            if not akhir_kerja:  
+                cursor.execute("""
+                    DELETE FROM PETCLINIC.JADWAL_PRAKTIK
+                    WHERE no_dokter_hewan = %s
+                """, [no_dokter])
+                
+                for day, schedule_time in zip(days, schedule_times):
+                    if day.strip() and schedule_time.strip():
+                        cursor.execute("""
+                            INSERT INTO PETCLINIC.JADWAL_PRAKTIK (hari, jam, no_dokter_hewan)
+                            VALUES (%s, %s, %s)
+                        """, [day.strip(), schedule_time.strip(), no_dokter])
 
         messages.success(request, "Profil dokter berhasil diperbarui.")
+        notices = connection.connection.notices
+        if notices:
+            cleaned_notice = notices[0]
+            cleaned_notice = cleaned_notice.split('NOTICE:')[1].split('tidak aktif.')[0] + 'tidak aktif.'
+            messages.info(request, cleaned_notice.strip())
         return redirect("dashboard:dashboard_dokter")
 
     return render(request, "dashboard/update_profile_dokter.html", {
