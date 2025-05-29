@@ -33,7 +33,7 @@ def hewan(request):
     elif request.method == 'DELETE':
         try:
             data = json.loads(request.body)
-            context.update(delete_hewan(request, data))
+            context.update(delete_hewan(data))
 
         except json.JSONDecodeError:
             context['error'] = 'Invalid JSON data'
@@ -70,7 +70,6 @@ def show_hewan_client(request):
     return render(request,"hewanClient.html",context)
 
 
-
 def create_hewan(data, no_identitas_klien = False):
     """View for creating a new pet (hewan) record"""
     context = {}
@@ -88,14 +87,6 @@ def create_hewan(data, no_identitas_klien = False):
             context['error'] = 'Semua field harus diisi'
             return context
         
-        # Parse date (DD-MM-YYYY to YYYY-MM-DD for database)
-        try:
-            day, month, year = map(int, tanggal_lahir_str.split('-'))
-            tanggal_lahir = datetime.date(year, month, day)
-            tanggal_lahir_formatted = tanggal_lahir.strftime('%Y-%m-%d')
-        except ValueError:
-            context['error'] = 'Format tanggal tidak valid. Gunakan DD-MM-YYYY'
-            return context
         
         # Convert string IDs to UUID objects
         try:
@@ -134,7 +125,7 @@ def create_hewan(data, no_identitas_klien = False):
                 INSERT INTO PETCLINIC.HEWAN (nama, no_identitas_klien, tanggal_lahir, id_jenis, url_foto)
                 VALUES (%s, %s, %s, %s, %s)
                 """,
-                [nama, pemilik_id, tanggal_lahir_formatted, jenis_id, foto_url]
+                [nama, pemilik_id, tanggal_lahir_str, jenis_id, foto_url]
             )
         
         # Add success message to context
@@ -174,15 +165,7 @@ def update_hewan(data, no_identitas_klien= False):
             context['error'] = 'Semua field harus diisi'
             return context
         
-        # Parse date (DD-MM-YYYY to YYYY-MM-DD for database)
-        try:
-            day, month, year = map(int, tanggal_lahir.split('-'))
-            tanggal_lahir = datetime.date(year, month, day)
-            tanggal_lahir_formatted = tanggal_lahir.strftime('%Y-%m-%d')
-        except ValueError:
-            context['error'] = 'Format tanggal tidak valid. Gunakan DD-MM-YYYY'
-            return context
-        
+
         # Convert string IDs to UUID objects (if you're using UUIDs)
         try:
             uuid.UUID(no_identitas_klien)
@@ -235,7 +218,7 @@ def update_hewan(data, no_identitas_klien= False):
                     url_foto = %s
                 WHERE nama = %s AND no_identitas_klien = %s;
                 """,
-                [nama, no_identitas_klien, tanggal_lahir_formatted, id_jenis, url_foto, original_nama, original_owner_id]
+                [nama, no_identitas_klien, tanggal_lahir, id_jenis, url_foto, original_nama, original_owner_id]
             )
         
         # Add success message to context

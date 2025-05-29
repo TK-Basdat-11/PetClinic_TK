@@ -243,14 +243,16 @@
   </div>
   {% endif %}
 
-  <div style="display: flex; justify-content: flex-end; margin: 0 100px;">
-    <button id="createNewButton" class="button" style="display: flex; align-items: center; gap: 5px;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-      </svg>
-      Create New Animal Type
-    </button>
-  </div>
+{% if user_role == 'fdo' %}
+    <div style="display: flex; justify-content: flex-end; margin: 0 100px;">
+      <button id="createNewButton" class="button" style="display: flex; align-items: center; gap: 5px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+        </svg>
+        Create New Animal Type
+      </button>
+    </div>
+  {% endif %}
 
   <table id="listJenisHewan">
     <thead>
@@ -258,19 +260,24 @@
         <th width="50px">No</th>
         <th width="200px">ID Jenis</th>
         <th width="200px">Nama Jenis</th>
-        <th width="150px">Action</th>
+        {% if user_role == 'fdo' %}
+          <th width="150px">Action</th>
+        {% endif %}
       </tr>
     </thead>
     <tbody>
+
       {% for jenis in jenis_hewan %}
         <tr>
           <td>{{ forloop.counter }}</td>
           <td>{{ jenis.id }}</td>
           <td>{{ jenis.nama_jenis }}</td>
+          {% if user_role == 'fdo' %}
           <td>
             <button class="button update-button" data-id="{{ jenis.id }}" data-nama="{{ jenis.nama_jenis }}">Update</button>
             <button class="button-delete" data-id="{{ jenis.id }}" data-nama="{{ jenis.nama_jenis }}">Delete</button>
           </td>
+          {% endif %}
         </tr>
       {% endfor %}
     </tbody>

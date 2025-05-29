@@ -10,32 +10,29 @@ import uuid
 
 def jenis_hewan(request):
     context = dict()
+    user_role = request.session.get("user_role")
+    context["user_role"] = user_role
+    
+    # Dokter hanya bisa read
+    if user_role == "dokter":
+        context["jenis_hewan"] = get_jenis_hewan_logic()
+        return render(request, "jenis_hewan.html", context)
     
     if request.POST:
         nama_jenis = request.POST["nama_jenis"]
-
         create = create_jenis_hewan_logic(nama_jenis)
-
         context.update(create)
-
-
     elif request.method == 'PUT':
         data = json.loads(request.body)
-
         update = update_jenis_hewan(data)
-
         return JsonResponse(update)
-
     elif request.method == 'DELETE':
         data = json.loads(request.body)
-
         delete = delete_jenis_hewan(data)
-
         return JsonResponse(delete)
 
     context["jenis_hewan"] = get_jenis_hewan_logic()
-
-    return render(request, "jenis_hewan.html",context)
+    return render(request, "jenis_hewan.html", context)
 
 
 def get_jenis_hewan_logic():
