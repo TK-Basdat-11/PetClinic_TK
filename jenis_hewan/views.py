@@ -1,9 +1,9 @@
 import json
-from django.shortcuts import render
-from django.db import IntegrityError, connection
+from django.shortcuts import render, redirect
+from django.db import IntegrityError, connection, DatabaseError
 from django.http import JsonResponse 
 from authentication.decorators import role_required
-
+from django.contrib import messages
 import uuid
 
 # Create your views here.
@@ -30,30 +30,36 @@ def jenis_hewan(request):
                 create_result = create_jenis_hewan_logic(nama_jenis)
                 response_data = create_result
 
+        except DatabaseError as e:
+            # Get the error message directly from the database error
+            full_msg = str(e)
+            err_msg = full_msg.split('CONTEXT:')[0].strip()
+            
             # For AJAX requests
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                if 'error' in response_data:
-                    return JsonResponse(response_data, status=400)
-                return JsonResponse(response_data)
-
-            # For regular form submissions
-            context.update(response_data)
+                return JsonResponse({'error': err_msg}, status=400)
+            
+            # For regular requests
+            messages.error(request, err_msg)
+            return redirect('jenis_hewan:index')
             
         except Exception as e:
             response_data['error'] = f"Terjadi kesalahan: {str(e)}"
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse(response_data, status=500)
-            context.update(response_data)
+            
+        # Handle response
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            if 'error' in response_data:
+                return JsonResponse(response_data, status=400)
+            return JsonResponse(response_data)
+        
+        if 'error' in response_data:
+            messages.error(request, response_data['error'])
+        elif 'success' in response_data:
+            messages.success(request, response_data['success'])
+        
+        return redirect('jenis_hewan:index')
 
-    elif request.method == 'PUT':
-        data = json.loads(request.body)
-        update = update_jenis_hewan(data)
-        return JsonResponse(update)
-    elif request.method == 'DELETE':
-        data = json.loads(request.body)
-        delete = delete_jenis_hewan(data)
-        return JsonResponse(delete)
-
+    # Refresh the list after any operation
     context["jenis_hewan"] = get_jenis_hewan_logic()
     return render(request, "jenis_hewan.html", context)
 

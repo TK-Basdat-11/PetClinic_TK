@@ -1,7 +1,8 @@
 import json
-from pyexpat.errors import messages
 from django.shortcuts import redirect, render
-from django.db import connection
+from django.db import connection, DatabaseError
+from django.http import JsonResponse
+from django.contrib import messages
 from jenis_hewan.views import get_jenis_hewan_logic,get_nama_jenis_from_id
 from authentication.views import get_nama_klien_from_individu
 import uuid
@@ -22,54 +23,109 @@ def hewan(request):
     elif request.method == 'PUT':
         try:
             data = json.loads(request.body)
-        except json.JSONDecodeError:
-            context['error'] = 'Invalid JSON data'
-            return render(request, 'hewan.html', context)
+            result_context = update_hewan(request, data)
             
-        
-        result_context = update_hewan(request, data)
-
-        context.update(result_context)
+            # For AJAX requests
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                if 'error' in result_context:
+                    return JsonResponse(result_context, status=400)
+                return JsonResponse(result_context)
+            
+            context.update(result_context)
+            
+        except json.JSONDecodeError:
+            error_data = {'error': 'Invalid JSON data'}
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse(error_data, status=400)
+            context.update(error_data)
 
     elif request.method == 'DELETE':
         try:
             data = json.loads(request.body)
-            context.update(delete_hewan(data))
+            result = delete_hewan(request, data)
+            
+            # For AJAX requests
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                if 'error' in result:
+                    return JsonResponse(result, status=400)
+                return JsonResponse(result)
+            
+            # For regular requests
+            if 'error' in result:
+                messages.error(request, result['error'])
+            else:
+                messages.success(request, result['success'])
+            return redirect('hewan:index')
 
         except json.JSONDecodeError:
-            context['error'] = 'Invalid JSON data'
-            return render(request, 'hewan.html', context)
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
 
     return render(request, "hewan.html", context)
 
 @role_required(['klien'])
 def show_hewan_client(request):
-
     no_identitas_klien = request.session['user_id']
 
     context = {
         "jenis_list": get_jenis_hewan_logic(),
         "hewan_list": get_client_hewan_logic(no_identitas_klien),
-        "pemilik_list": get_one_individu(no_identitas_klien)
+        "pemilik_list": get_one_individu(no_identitas_klien),
+        "user_role": request.session.get("user_role"),
     }
 
     if request.method == 'POST':
         context.update(create_hewan(request.POST, no_identitas_klien))
-
+        
     elif request.method == 'PUT':
         try:
             data = json.loads(request.body)
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                result = update_hewan(data, no_identitas_klien)
+                if 'error' in result:
+                    return JsonResponse(result, status=400)
+                return JsonResponse(result)
+            else:
+                context.update(update_hewan(data, no_identitas_klien))
         except json.JSONDecodeError:
-            context['error'] = 'Invalid JSON data'
-            return render(request, 'hewanClient.html', context)
+            result = {'error': 'Invalid JSON data'}
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse(result, status=400)
+            context.update(result)
+        except Exception as e:
+            error_msg = str(e)
+            # Extract the error message from the trigger if it exists
+            if "ERROR:" in error_msg:
+                error_msg = error_msg.split("ERROR:", 1)[1].strip()
+            result = {'error': error_msg}
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse(result, status=400)
+            context.update(result)
             
-        
-        result_context = update_hewan(data, no_identitas_klien)
+    elif request.method == 'DELETE':
+        try:
+            data = json.loads(request.body)
+            data['no_identitas_klien'] = no_identitas_klien  # Ensure client can only delete their own pets
+            result = delete_hewan(request, data)
+            
+            # For AJAX requests
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                if 'error' in result:
+                    return JsonResponse(result, status=400)
+                return JsonResponse(result)
+            
+            # For regular requests
+            if 'error' in result:
+                messages.error(request, result['error'])
+            else:
+                messages.success(request, result['success'])
+            return redirect('hewan:client')
 
-        context.update(result_context)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
 
-
-    return render(request,"hewanClient.html",context)
+    return render(request, "hewanClient.html", context)
 
 @role_required(['fdo', 'klien'])
 def create_hewan(data, no_identitas_klien = False):
@@ -245,53 +301,33 @@ def update_hewan(data, no_identitas_klien= False):
         return context
 
 @role_required(['fdo'])
-def delete_hewan(data):
-    context = dict()
-
-    context['hewan_list'] = get_all_hewan_logic()
-    context['pemilik_list'] = get_all_individu()
-    context['jenis_list'] = get_jenis_hewan_logic()
+def delete_hewan(request, data):
     try:
-        nama = data["nama"]
-        no_identitas_klien = data["no_identitas_klien"]
-    except KeyError as ke:
-        context['error'] = f"Data tidak lengkap: {str(ke)}"
-        return context
+        nama = data.get("nama")
+        no_identitas_klien = data.get("no_identitas_klien")
+        
+        if not all([nama, no_identitas_klien]):
+            raise ValueError("Data tidak lengkap")
 
-    try:
-        # First check if the pet has any active visits
         with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT COUNT(*) 
-                FROM PETCLINIC.KUNJUNGAN 
-                WHERE nama_hewan = %s 
-                AND no_identitas_klien = %s 
-                AND timestamp_akhir IS NULL
-            """, [nama, no_identitas_klien])
-            
-            active_visits = cursor.fetchone()[0]
-            
-            if active_visits > 0:
-                context['error'] = f"Tidak dapat menghapus hewan {nama} karena masih memiliki kunjungan aktif"
-                return context
-
-            # If no active visits, proceed with deletion
             cursor.execute(
                 "DELETE FROM PETCLINIC.hewan WHERE nama = %s AND no_identitas_klien = %s",
                 [nama, no_identitas_klien]
             )
             
             if cursor.rowcount == 0:
-                context['error'] = f"Gagal menghapus hewan: {nama}"
-                return context
-        
-    except Exception as db_error:
-        error_msg = str(db_error)
-        context['error'] = f"Gagal menghapus hewan: {error_msg}"
-        return context
+                raise ValueError(f"Gagal menghapus hewan: {nama}")
 
-    context['success'] = f"Hewan {nama} berhasil dihapus!"
-    return context
+            return {'success': f"Hewan {nama} berhasil dihapus!"}
+
+    except DatabaseError as e:
+        # Get the error message directly from the database error
+        full_msg = str(e)
+        err_msg = full_msg.split('CONTEXT:')[0].strip()
+        return {'error': err_msg}
+        
+    except Exception as e:
+        return {'error': str(e)}
 
 def get_all_hewan_logic():
     list_all_hewan = []
