@@ -368,6 +368,7 @@ def create_treatment(request):
 
     kunjungan_id   = request.POST.get('kunjungan')
     perawatan_code = request.POST.get('perawatan')
+    catatan_medis  = request.POST.get('catatan_medis', '')
     errors = {}
 
     if not kunjungan_id:
@@ -406,7 +407,6 @@ def create_treatment(request):
     try:
         with transaction.atomic():
             with connection.cursor() as cursor:
-                # ambil detail kunjungan (nama hewan, dsb.)
                 cursor.execute("""
                     SELECT nama_hewan, no_identitas_klien, no_front_desk,
                            no_perawat_hewan, no_dokter_hewan
@@ -414,13 +414,10 @@ def create_treatment(request):
                     WHERE  id_kunjungan = %s
                 """, [kunjungan_id])
                 row = cursor.fetchone()
-                if row is None:  # (lindungi race condition)
+                if row is None:
                     raise ValueError('Kunjungan tidak ditemukan')
 
                 nama_hewan, no_klien, no_fd, no_perawat, no_dokter = row
-
-                # INSERT; trigger f_reduce_stock_for_treatment akan
-                # otomatis memvalidasi stok & menguranginya.
                 cursor.execute("""
                     INSERT INTO PETCLINIC.KUNJUNGAN_KEPERAWATAN (
                         id_kunjungan, nama_hewan, no_identitas_klien,
@@ -432,6 +429,13 @@ def create_treatment(request):
                     no_fd, no_perawat, no_dokter,
                     perawatan_code
                 ])
+
+                if catatan_medis.strip():
+                    cursor.execute("""
+                        UPDATE PETCLINIC.KUNJUNGAN
+                        SET catatan = %s
+                        WHERE id_kunjungan = %s
+                    """, [catatan_medis, kunjungan_id])
 
         messages.success(
             request,
@@ -525,10 +529,17 @@ def update_treatment(request, id_kunjungan, kode_perawatan):
         ORDER BY kode_perawatan
         """)
         perawatan_list = cursor.fetchall()
+
+        cursor.execute("""
+        SELECT catatan 
+        FROM PETCLINIC.KUNJUNGAN
+        WHERE id_kunjungan = %s
+        """, [id_kunjungan])
+        current_notes = cursor.fetchone()[0] or ''
     
     if request.method == 'POST':
-        new_kunjungan_id = request.POST.get('kunjungan') 
         new_perawatan_code = request.POST.get('perawatan')
+        catatan_medis = request.POST.get('catatan_medis', '')
         
         errors = {}
         
@@ -558,6 +569,7 @@ def update_treatment(request, id_kunjungan, kode_perawatan):
                 'treatment_data': treatment_data,
                 'id_kunjungan': id_kunjungan,
                 'kode_perawatan': kode_perawatan,
+                'catatan_medis': current_notes
             }
             return render(request, 'perawatan_hewan/update_treatment.html', context)
         
@@ -567,6 +579,13 @@ def update_treatment(request, id_kunjungan, kode_perawatan):
             SET kode_perawatan = %s
             WHERE id_kunjungan = %s AND kode_perawatan = %s
             """, [new_perawatan_code, id_kunjungan, kode_perawatan])
+            
+            if catatan_medis.strip():
+                cursor.execute("""
+                UPDATE PETCLINIC.KUNJUNGAN 
+                SET catatan = %s
+                WHERE id_kunjungan = %s
+                """, [catatan_medis, id_kunjungan])
         
         messages.success(request, 'Treatment berhasil diupdate!')
         return redirect('perawatan_hewan:list_treatment')
@@ -580,6 +599,7 @@ def update_treatment(request, id_kunjungan, kode_perawatan):
         'treatment_data': treatment_data,
         'id_kunjungan': id_kunjungan,
         'kode_perawatan': kode_perawatan,
+        'catatan_medis': current_notes
     }
     return render(request, 'perawatan_hewan/update_treatment.html', context)
 
