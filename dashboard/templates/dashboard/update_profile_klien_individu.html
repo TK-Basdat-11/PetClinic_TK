@@ -1,114 +1,78 @@
 {% extends "base.html" %}
-{% block title %}Update Profile Client Individu{% endblock %}
+{% block title %}Update Profil Klien{% endblock %}
+
 {% block content %}
-<html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <title>Update Profile Client</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-    }
-    .container {
-      max-width: 800px;
-      margin: 20px auto;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    h1 {
-      margin-bottom: 20px;
-      color: rgb(28, 28, 81);
-    }
-    .form-group {
-      margin-bottom: 20px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-      color: #333;
-    }
-    input[type="text"],
-    input[type="tel"],
-    textarea {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 16px;
-    }
-    .name-row {
-      display: flex;
-      gap: 15px;
-    }
-    .name-row .form-group {
-      flex: 1;
-    }
-    .button-container {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 30px;
-    }
-    .submit-button, .cancel-button {
-      padding: 10px 25px;
-      border-radius: 7px;
-      font-size: 15px;
-      cursor: pointer;
-    }
-    .submit-button {
-      background-color: rgb(28, 28, 81);
-      color: white;
-      border: 1px solid rgb(28, 28, 81);
-    }
-    .cancel-button {
-      background-color: white;
-      color: rgb(28, 28, 81);
-      border: 1px solid #ddd;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Update Profile Client</h1>
-    
-    <form method="post" action="">
-      {% csrf_token %}
-      
-      <div class="name-row">
-        <div class="form-group">
-          <label for="first_name">Nama Depan:</label>
-          <input type="text" id="first_name" name="first_name" value="Amanda" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="middle_name">Nama Tengah (opsional):</label>
-          <input type="text" id="middle_name" name="middle_name" value="">
-        </div>
-        
-        <div class="form-group">
-          <label for="last_name">Nama Belakang:</label>
-          <input type="text" id="last_name" name="last_name" value="Zahra" required>
-        </div>
+<div class="max-w-3xl mx-auto mt-10 px-6 py-8 bg-white shadow-md rounded-lg">
+  <h1 class="text-2xl font-bold text-indigo-900 mb-6">Update Profil Klien</h1>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="mb-4 px-4 py-3 rounded text-sm font-medium 
+        {% if message.tags == 'success' %}
+          bg-green-100 text-green-800
+        {% elif message.tags == 'error' %}
+          bg-red-100 text-red-800
+        {% endif %}">
+        {{ message }}
       </div>
-      
-      <div class="form-group">
-        <label for="address">Alamat:</label>
-        <textarea id="address" name="address" rows="3" required>Jl. Melati Indah No.26, Kel. Sukamaju, Kec. Cibinong, Kab. Bogor, Jawa Barat, 16914</textarea>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" class="space-y-5">
+    {% csrf_token %}
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label for="nama_depan" class="block font-medium text-gray-700 mb-1">
+          Nama Depan <span class="text-red-500">*</span>
+        </label>
+        <input type="text" name="nama_depan" id="nama_depan" required
+               class="w-full border border-gray-300 rounded-md px-3 py-2"
+               value="{{ nama_depan }}">
       </div>
-      
-      <div class="form-group">
-        <label for="phone">Nomor Telepon:</label>
-        <input type="tel" id="phone" name="phone" value="081234567890" required>
+      <div>
+        <label for="nama_tengah" class="block font-medium text-gray-700 mb-1">
+          Nama Tengah
+        </label>
+        <input type="text" name="nama_tengah" id="nama_tengah"
+               class="w-full border border-gray-300 rounded-md px-3 py-2"
+               value="{{ nama_tengah }}">
       </div>
-      
-      <div class="button-container">
-        <a href="{% url 'dashboard:dashboard_klien' %}" class="cancel-button">Batal</a>
-        <button type="submit" class="submit-button">Simpan Perubahan</button>
+      <div>
+        <label for="nama_belakang" class="block font-medium text-gray-700 mb-1">
+          Nama Belakang <span class="text-red-500">*</span>
+        </label>
+        <input type="text" name="nama_belakang" id="nama_belakang" required
+               class="w-full border border-gray-300 rounded-md px-3 py-2"
+               value="{{ nama_belakang }}">
       </div>
-    </form>
-  </div>
-</body>
-</html> 
+    </div>
+
+    <div>
+      <label for="alamat" class="block font-medium text-gray-700 mb-1">
+        Alamat <span class="text-red-500">*</span>
+      </label>
+      <textarea name="alamat" id="alamat" rows="3" required
+                class="w-full border border-gray-300 rounded-md px-3 py-2">{{ alamat }}</textarea>
+    </div>
+
+    <div>
+      <label for="telepon" class="block font-medium text-gray-700 mb-1">
+        Nomor Telepon <span class="text-red-500">*</span>
+      </label>
+      <input type="tel" name="telepon" id="telepon" required
+             class="w-full border border-gray-300 rounded-md px-3 py-2"
+             value="{{ telepon }}">
+    </div>
+
+    <div class="flex justify-between pt-6">
+      <a href="{% url 'dashboard:dashboard_klien' %}"
+         class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100">Batal</a>
+      <button type="submit"
+              class="px-4 py-2 bg-indigo-800 text-white rounded-md hover:bg-indigo-900">
+        Simpan Perubahan
+      </button>
+    </div>
+  </form>
+</div>
 {% endblock %}
