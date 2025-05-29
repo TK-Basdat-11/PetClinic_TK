@@ -1,13 +1,14 @@
 import json
-from django.shortcuts import render
+from pyexpat.errors import messages
+from django.shortcuts import redirect, render
 from django.db import connection
 from jenis_hewan.views import get_jenis_hewan_logic,get_nama_jenis_from_id
 from authentication.views import get_nama_klien_from_individu
 import uuid
-import datetime
-
+from authentication.decorators import role_required
 
 # Create your views here.
+@role_required(['fdo'])
 def hewan(request):
     context = {
         "jenis_list": get_jenis_hewan_logic(),
@@ -41,6 +42,7 @@ def hewan(request):
 
     return render(request, "hewan.html", context)
 
+@role_required(['klien'])
 def show_hewan_client(request):
 
     no_identitas_klien = request.session['user_id']
@@ -69,7 +71,7 @@ def show_hewan_client(request):
 
     return render(request,"hewanClient.html",context)
 
-
+@role_required(['fdo', 'klien'])
 def create_hewan(data, no_identitas_klien = False):
     """View for creating a new pet (hewan) record"""
     context = {}
@@ -148,6 +150,7 @@ def create_hewan(data, no_identitas_klien = False):
         context['error'] = f'Terjadi kesalahan: {str(e)}'
         return context
     
+@role_required(['fdo', 'klien'])
 def update_hewan(data, no_identitas_klien= False):
     context = {}
     
@@ -241,6 +244,7 @@ def update_hewan(data, no_identitas_klien= False):
         context['error'] = f'Terjadi kesalahan: {str(e)}'
         return context
 
+@role_required(['fdo'])
 def delete_hewan(data):
     context = dict()
 
@@ -252,28 +256,41 @@ def delete_hewan(data):
         no_identitas_klien = data["no_identitas_klien"]
     except KeyError as ke:
         context['error'] = f"Data tidak lengkap: {str(ke)}"
-
         return context
 
     try:
+        # First check if the pet has any active visits
         with connection.cursor() as cursor:
-            cursor.execute("DELETE FROM PETCLINIC.hewan WHERE nama = %s AND no_identitas_klien = %s",[nama, no_identitas_klien])
+            cursor.execute("""
+                SELECT COUNT(*) 
+                FROM PETCLINIC.KUNJUNGAN 
+                WHERE nama_hewan = %s 
+                AND no_identitas_klien = %s 
+                AND timestamp_akhir IS NULL
+            """, [nama, no_identitas_klien])
+            
+            active_visits = cursor.fetchone()[0]
+            
+            if active_visits > 0:
+                context['error'] = f"Tidak dapat menghapus hewan {nama} karena masih memiliki kunjungan aktif"
+                return context
+
+            # If no active visits, proceed with deletion
+            cursor.execute(
+                "DELETE FROM PETCLINIC.hewan WHERE nama = %s AND no_identitas_klien = %s",
+                [nama, no_identitas_klien]
+            )
+            
             if cursor.rowcount == 0:
                 context['error'] = f"Gagal menghapus hewan: {nama}"
-
                 return context
         
     except Exception as db_error:
-
         error_msg = str(db_error)
-
         context['error'] = f"Gagal menghapus hewan: {error_msg}"
-
         return context
 
     context['success'] = f"Hewan {nama} berhasil dihapus!"
-
-
     return context
 
 def get_all_hewan_logic():
@@ -315,15 +332,21 @@ def get_client_hewan_logic(no_identitas_klien):
     list_client_hewan = []
 
     with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM PETCLINIC.HEWAN WHERE no_identitas_klien=%s",
-        [no_identitas_klien])
+        cursor.execute("""
+            SELECT h.*, 
+                   (SELECT COUNT(*) 
+                    FROM PETCLINIC.KUNJUNGAN k 
+                    WHERE k.nama_hewan = h.nama 
+                    AND k.no_identitas_klien = h.no_identitas_klien 
+                    AND k.timestamp_akhir IS NULL) as active_visits
+            FROM PETCLINIC.HEWAN h
+            WHERE h.no_identitas_klien = %s
+        """, [no_identitas_klien])
 
         tuple_all_hewan = cursor.fetchall()
 
-        for i,j,k,l,m in tuple_all_hewan:
-
+        for i,j,k,l,m,active_visits in tuple_all_hewan:
             nama_jenis = get_nama_jenis_from_id(l)
-
             klien = get_nama_klien_from_individu(j)
 
             dto_hewan = {
@@ -332,7 +355,8 @@ def get_client_hewan_logic(no_identitas_klien):
                 "pemilik" : klien,
                 "tanggal_lahir" : k,
                 "nama_jenis" : nama_jenis,
-                "url_foto" : m
+                "url_foto" : m,
+                "can_delete": active_visits == 0  # Can delete only if no active visits
             }
 
             list_client_hewan.append(dto_hewan)

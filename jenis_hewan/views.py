@@ -2,19 +2,21 @@ import json
 from django.shortcuts import render
 from django.db import IntegrityError, connection
 from django.http import JsonResponse 
+from authentication.decorators import role_required
 
 import uuid
 
 # Create your views here.
 
 
+@role_required(['fdo', 'dokter', 'perawat', 'klien'])
 def jenis_hewan(request):
     context = dict()
     user_role = request.session.get("user_role")
     context["user_role"] = user_role
     
-    # Dokter hanya bisa read
-    if user_role == "dokter":
+    # Only FDO can modify, others can only read
+    if user_role != "fdo":
         context["jenis_hewan"] = get_jenis_hewan_logic()
         return render(request, "jenis_hewan.html", context)
     

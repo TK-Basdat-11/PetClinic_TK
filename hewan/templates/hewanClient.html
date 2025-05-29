@@ -330,56 +330,7 @@
         </tr>
         {% endfor %}
         {% else %}
-        <!-- Hardcoded data as fallback if hewan_list is empty -->
-        <tr>
-          <td>1</td>
-          <td>John Doe</td>
-          <td>Kucing</td>
-          <td>Snowy</td>
-          <td>9 Februari 2020</td>
-          <td><img src="https://awsimages.detik.net.id/community/media/visual/2023/09/02/kucing-ragdoll_169.jpeg?w=1200"
-              alt="Snowy" class="pet-photo"></td>
-          <td>
-            <button class="button update-button" data-id="1" data-pemilik="John Doe" data-jenis="Kucing"
-              data-nama="Snowy" data-tanggal="09-02-2020"
-              data-foto="https://awsimages.detik.net.id/community/media/visual/2023/09/02/kucing-ragdoll_169.jpeg?w=1200">Update</button>
-            <button class="button-delete delete-button" data-id="1" data-pemilik="John Doe"
-              data-nama="Snowy">Delete</button>
-          </td>
-        </tr>
-        <tr>
-          <td>2</td>
-          <td>PT Aku Sayang Hewan</td>
-          <td>Anjing</td>
-          <td>Blacky</td>
-          <td>15 November 2019</td>
-          <td><img src="https://cdn.pixabay.com/photo/2016/02/11/17/00/dog-1194087_1280.jpg" alt="Blacky"
-              class="pet-photo"></td>
-          <td>
-            <button class="button update-button" data-id="2" data-pemilik="PT Aku Sayang Hewan" data-jenis="Anjing"
-              data-nama="Blacky" data-tanggal="15-11-2019"
-              data-foto="https://cdn.pixabay.com/photo/2016/02/11/17/00/dog-1194087_1280.jpg">Update</button>
-            <button class="button-delete delete-button" data-id="2" data-pemilik="PT Aku Sayang Hewan"
-              data-nama="Blacky">Delete</button>
-          </td>
-        </tr>
-        <tr>
-          <td>3</td>
-          <td>PT Pecinta Kucing</td>
-          <td>Hamster</td>
-          <td>Hamseung</td>
-          <td>15 Oktober 2024</td>
-          <td><img
-              src="https://thumb.viva.id/vivapurwasuka/665x374/2025/01/22/6790b62d412bd-hamster-peliharaan_purwasuka.jpg"
-              alt="Hamseung" class="pet-photo"></td>
-          <td>
-            <button class="button update-button" data-id="3" data-pemilik="PT Pecinta Kucing" data-jenis="Hamster"
-              data-nama="Hamseung" data-tanggal="15-10-2024"
-              data-foto="https://thumb.viva.id/vivapurwasuka/665x374/2025/01/22/6790b62d412bd-hamster-peliharaan_purwasuka.jpg">Update</button>
-            <button class="button-delete delete-button" data-id="3" data-pemilik="PT Pecinta Kucing"
-              data-nama="Hamseung">Delete</button>
-          </td>
-        </tr>
+          <tr><td colspan="6" class="py-4 text-center">Klien belum memiliki hewan peliharaan.</td></tr>
         {% endif %}
       </tbody>
     </table>

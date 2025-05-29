@@ -4,7 +4,7 @@ from django.db import connection
 from django.shortcuts import redirect, render
 from authentication.decorators import role_required
 
-@role_required(['fdo'])
+@role_required('fdo')
 def list_klien(request):
     search_query = request.GET.get('q', '')
 
