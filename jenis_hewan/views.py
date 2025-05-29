@@ -82,7 +82,7 @@ def create_jenis_hewan_logic(nama_jenis):
         try:
             cursor.execute(
             """
-            INSERT INTO jenis_hewan (id, nama_jenis)     
+            INSERT INTO PETCLINIC.jenis_hewan (id, nama_jenis)     
             VALUES (%s, %s)
             """,
             [id_jenis,nama_jenis,])
@@ -106,7 +106,7 @@ def update_jenis_hewan(data):
         try:
             cursor.execute(
                     """
-                    UPDATE JENIS_HEWAN 
+                    UPDATE PETCLINIC.JENIS_HEWAN 
                     SET nama_jenis = %s
                     WHERE id = %s;
                     """,
@@ -130,7 +130,7 @@ def delete_jenis_hewan(data):
         try:
             cursor.execute(
                     """
-                    DELETE FROM JENIS_HEWAN 
+                    DELETE FROM PETCLINIC.JENIS_HEWAN 
                     WHERE id = %s;
                     """,
                     [id_jenis]
