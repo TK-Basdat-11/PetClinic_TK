@@ -327,8 +327,10 @@
             <button class="button update-button" data-id="{{ forloop.counter }}" data-pemilik="{{ hewan.pemilik }}"
               data-jenis="{{ hewan.jenis }}" data-nama="{{ hewan.nama }}"
               data-tanggal="{{ hewan.tanggal_lahir|date:'d-m-Y' }}" data-foto="{{ hewan.url_foto }}">Update</button>
+            {% if user_role == 'fdo' and hewan.can_delete %}
             <button class="button-delete delete-button" data-id="{{ forloop.counter }}"
               data-pemilik="{{ hewan.pemilik }}" data-nama="{{ hewan.nama }}">Delete</button>
+            {% endif %}
           </td>
         </tr>
         {% endfor %}
@@ -346,8 +348,10 @@
             <button class="button update-button" data-id="1" data-pemilik="John Doe" data-jenis="Kucing"
               data-nama="Snowy" data-tanggal="09-02-2020"
               data-foto="https://awsimages.detik.net.id/community/media/visual/2023/09/02/kucing-ragdoll_169.jpeg?w=1200">Update</button>
+            {% if user_role == 'fdo' %}
             <button class="button-delete delete-button" data-id="1" data-pemilik="John Doe"
               data-nama="Snowy">Delete</button>
+            {% endif %}
           </td>
         </tr>
         <tr>
@@ -362,8 +366,10 @@
             <button class="button update-button" data-id="2" data-pemilik="PT Aku Sayang Hewan" data-jenis="Anjing"
               data-nama="Blacky" data-tanggal="15-11-2019"
               data-foto="https://cdn.pixabay.com/photo/2016/02/11/17/00/dog-1194087_1280.jpg">Update</button>
+            {% if user_role == 'fdo' %}
             <button class="button-delete delete-button" data-id="2" data-pemilik="PT Aku Sayang Hewan"
               data-nama="Blacky">Delete</button>
+            {% endif %}
           </td>
         </tr>
         <tr>
@@ -379,8 +385,10 @@
             <button class="button update-button" data-id="3" data-pemilik="PT Pecinta Kucing" data-jenis="Hamster"
               data-nama="Hamseung" data-tanggal="15-10-2024"
               data-foto="https://thumb.viva.id/vivapurwasuka/665x374/2025/01/22/6790b62d412bd-hamster-peliharaan_purwasuka.jpg">Update</button>
+            {% if user_role == 'fdo' %}
             <button class="button-delete delete-button" data-id="3" data-pemilik="PT Pecinta Kucing"
               data-nama="Hamseung">Delete</button>
+            {% endif %}
           </td>
         </tr>
         {% endif %}
@@ -435,7 +443,7 @@
         <input type="text" id="namaCreate" name="nama" placeholder="Nama Hewan" required>
 
         <label for="tanggalCreate">Tanggal Lahir Hewan</label>
-        <input type="text" id="tanggalCreate" name="tanggal_lahir" placeholder="DD-MM-YYYY" required>
+        <input type="date" id="tanggalCreate" name="tanggal_lahir" required>
 
         <label for="fotoCreate">URL Foto Hewan</label>
         <input type="text" id="fotoCreate" name="foto_url" placeholder="https://example.com" required>
@@ -499,7 +507,7 @@
         <input type="text" id="namaUpdate" name="nama" required>
 
         <label for="tanggalUpdate">Tanggal Lahir Hewan</label>
-        <input type="text" id="tanggalUpdate" name="tanggal_lahir" required>
+        <input type="date" id="tanggalUpdate" name="tanggal_lahir" required>
 
         <label for="fotoUpdate">URL Foto Hewan</label>
         <input type="text" id="fotoUpdate" name="foto_url" required>

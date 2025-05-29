@@ -10,32 +10,29 @@ import uuid
 
 def jenis_hewan(request):
     context = dict()
+    user_role = request.session.get("user_role")
+    context["user_role"] = user_role
+    
+    # Dokter hanya bisa read
+    if user_role == "dokter":
+        context["jenis_hewan"] = get_jenis_hewan_logic()
+        return render(request, "jenis_hewan.html", context)
     
     if request.POST:
         nama_jenis = request.POST["nama_jenis"]
-
         create = create_jenis_hewan_logic(nama_jenis)
-
         context.update(create)
-
-
     elif request.method == 'PUT':
         data = json.loads(request.body)
-
         update = update_jenis_hewan(data)
-
         return JsonResponse(update)
-
     elif request.method == 'DELETE':
         data = json.loads(request.body)
-
         delete = delete_jenis_hewan(data)
-
         return JsonResponse(delete)
 
     context["jenis_hewan"] = get_jenis_hewan_logic()
-
-    return render(request, "jenis_hewan.html",context)
+    return render(request, "jenis_hewan.html", context)
 
 
 def get_jenis_hewan_logic():
@@ -43,14 +40,18 @@ def get_jenis_hewan_logic():
     all_jenis_hewan = []
 
     with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM PETCLINIC.JENIS_HEWAN;")
+        cursor.execute("SELECT id, nama_jenis FROM PETCLINIC.JENIS_HEWAN;")
         jenis = cursor.fetchall()
 
         
         for i,j in jenis:
+            # Cek apakah jenis hewan ini di-assign ke hewan manapun
+            cursor.execute("SELECT COUNT(*) FROM PETCLINIC.HEWAN WHERE id_jenis = %s;", [i])
+            count = cursor.fetchone()[0]
             jenis_hewan_dto = {
                 "id" : i,
-                "nama_jenis" : j
+                "nama_jenis" : j,
+                "can_delete" : count == 0
             }
 
             all_jenis_hewan.append(jenis_hewan_dto)
@@ -82,7 +83,7 @@ def create_jenis_hewan_logic(nama_jenis):
         try:
             cursor.execute(
             """
-            INSERT INTO jenis_hewan (id, nama_jenis)     
+            INSERT INTO PETCLINIC.jenis_hewan (id, nama_jenis)     
             VALUES (%s, %s)
             """,
             [id_jenis,nama_jenis,])
@@ -106,7 +107,7 @@ def update_jenis_hewan(data):
         try:
             cursor.execute(
                     """
-                    UPDATE JENIS_HEWAN 
+                    UPDATE PETCLINIC.JENIS_HEWAN 
                     SET nama_jenis = %s
                     WHERE id = %s;
                     """,
@@ -130,7 +131,7 @@ def delete_jenis_hewan(data):
         try:
             cursor.execute(
                     """
-                    DELETE FROM JENIS_HEWAN 
+                    DELETE FROM PETCLINIC.JENIS_HEWAN 
                     WHERE id = %s;
                     """,
                     [id_jenis]

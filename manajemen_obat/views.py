@@ -309,7 +309,7 @@ def list_perawatan(request):
 @role_required(['klien'])
 def list_resep_klien(request):
     prescriptions = []
-    user_email = request.session.get('user_email')
+    user_email = request.session.get('email')
 
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -317,7 +317,8 @@ def list_resep_klien(request):
                     p.nama_perawatan,
                     po.kode_obat,
                     o.nama              AS nama_obat,
-                    po.kuantitas_obat
+                    po.kuantitas_obat,
+                    o.harga * po.kuantitas_obat as total_price
             FROM    PETCLINIC.KLIEN                c
             JOIN    PETCLINIC.KUNJUNGAN            k   ON k.no_identitas_klien = c.no_identitas
             JOIN    PETCLINIC.KUNJUNGAN_KEPERAWATAN kp  ON kp.id_kunjungan      = k.id_kunjungan
@@ -333,7 +334,6 @@ def list_resep_klien(request):
 
     context = {
         'prescriptions': prescriptions,
-        'user_role': 'klien',
     }
     return render(request, 'manajemen_obat/list_resep.html', context)
 
