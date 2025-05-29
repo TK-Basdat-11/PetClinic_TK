@@ -249,7 +249,73 @@ def dashboard_perawat(request):
     })
 
 def update_password(request):
-    return render(request, "update_password.html")
+    user_email = request.session.get("email")
+    if not user_email:
+        messages.error(request, "Anda belum login.")
+        return redirect("authentication:login")
+
+    user_role = request.session.get('user_role')
+    print(user_role)
+
+    if user_role == 'klien':
+        cancel_url = 'dashboard:dashboard_klien'
+    elif user_role == 'dokter':
+        cancel_url = 'dashboard:dashboard_dokter'
+    elif user_role == 'perawat':
+        cancel_url = 'dashboard:dashboard_perawat'
+    elif user_role == 'fdo':
+        cancel_url = 'dashboard:dashboard_fdo'
+    else:
+        cancel_url = 'authentication:login'
+
+    if request.method == "POST":
+        password_lama = request.POST.get("current_password")
+        password_baru = request.POST.get("new_password")
+        konfirmasi = request.POST.get("confirm_password")
+
+        if not password_lama:
+            messages.error(request, "Semua field wajib diisi.")
+            return redirect('dashboard:update_password')
+        
+        if not password_baru:
+            messages.error(request, "Semua field wajib diisi.")
+            return redirect('dashboard:update_password')
+
+        if not konfirmasi:
+                    messages.error(request, "Semua field wajib diisi.")
+                    return redirect('dashboard:update_password')
+
+        if password_baru != konfirmasi:
+            messages.error(request, "Konfirmasi password tidak sesuai.")
+            return redirect('dashboard:update_password')
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT 1 FROM PETCLINIC.USERS
+                WHERE email = %s AND password_user = %s
+            """, [user_email, password_lama])
+            valid = cursor.fetchone()
+
+        if not valid:
+            messages.error(request, "Password lama tidak sesuai.")
+            return redirect('dashboard:update_password')
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE PETCLINIC.USERS
+                SET password_user = %s
+                WHERE email = %s
+            """, [password_baru, user_email])
+        
+        request.session["email"] = user_email
+        request.session["user_role"] = user_role
+
+        messages.success(request, "Password berhasil diperbarui.")
+        return redirect(cancel_url)
+
+    return render(request, 'update_password.html', {
+        'cancel_url': cancel_url
+    })
 
 @role_required('dokter')
 def update_profile_dokter(request):

@@ -136,7 +136,7 @@ def update_vaksin_dokter(request, kunjungan_id=None):
             }
     
     if not kunjungan_detail:
-        messages.error(request, 'Kunjungan tidak ditemukan, sudah selesai, atau bukan milik dokter ini!')
+        messages.error(request, 'Kunjungan sudah berakhir, vaksinasi tidak dapat diperbarui!')
         return redirect('vaksin:vaksin_dokter')
     
     if request.method == 'POST':
@@ -201,7 +201,7 @@ def delete_vaksin_dokter(request, kunjungan_id=None):
                k.kode_vaksin, v.nama
         FROM PETCLINIC.KUNJUNGAN k
         JOIN PETCLINIC.VAKSIN v ON k.kode_vaksin = v.kode
-        WHERE k.id_kunjungan = %s AND k.no_dokter_hewan = %s AND k.kode_vaksin IS NOT NULL
+        WHERE k.id_kunjungan = %s AND k.no_dokter_hewan = %s AND k.kode_vaksin IS NOT NULL AND k.timestamp_akhir IS NULL
         """, [kunjungan_id, dokter_id])
         result = cursor.fetchone()
         
@@ -215,7 +215,7 @@ def delete_vaksin_dokter(request, kunjungan_id=None):
             }
     
     if not kunjungan_detail:
-        messages.error(request, 'Kunjungan tidak ditemukan, bukan milik dokter ini, atau tidak ada vaksinasi!')
+        messages.error(request, 'Kunjungan sudah berakhir, tidak dapat menghapus vaksinasi!')
         return redirect('vaksin:vaksin_dokter')
     
     if request.method == 'POST' and 'confirm_delete' in request.POST:
