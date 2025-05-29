@@ -70,6 +70,7 @@ def login(request):
     request.session["email"]     = email
     request.session["user_role"] = role
     request.session["user_id"] = str(user_id) if user_id else None
+    
 
     messages.success(request, f"Selamat datang, {email}!")
     
@@ -84,10 +85,10 @@ def login(request):
     else:
         return redirect("authentication:hero")
 
-def show_login(request):
-    if request.method == "POST":
-        return login(request)
-    return render(request, "login.html")
+# def show_login(request):
+#     if request.method == "POST":
+#         return login(request)
+#     return render(request, "login.html")
 
 def hero_section(request):
     return render(request,"hero.html")
