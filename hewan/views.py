@@ -1,11 +1,11 @@
 import json
-from django.shortcuts import render
+from pyexpat.errors import messages
+from django.shortcuts import redirect, render
 from django.db import connection
 from jenis_hewan.views import get_jenis_hewan_logic,get_nama_jenis_from_id
 from authentication.views import get_nama_klien_from_individu
 import uuid
-import datetime
-
+from authentication.decorators import role_required
 
 # Create your views here.
 def hewan(request):
@@ -68,7 +68,6 @@ def show_hewan_client(request):
 
 
     return render(request,"hewanClient.html",context)
-
 
 def create_hewan(data, no_identitas_klien = False):
     """View for creating a new pet (hewan) record"""
