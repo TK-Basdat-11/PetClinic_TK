@@ -54,8 +54,9 @@
       <div class="menu">
         <a href="{% url 'dashboard:dashboard_klien' %}">Dashboard</a>
         <a href="{% url 'hewan:hewan' %}">Kelola Hewan Peliharaan</a>
-        <a href="{% url 'perawatan_hewan:list_kunjungan'}">Daftar Kunjungan</a>
+        <a href="{% url 'perawatan_hewan:list_kunjungan' %}">Daftar Kunjungan</a>
         <a href="{% url 'vaksin:vaksinasi_klien' %}">Daftar Vaksinasi</a>
+        <a href="{% url 'obat:list_resep_klien' %}">Daftar Resep</a>
       </div>
       <div class="menu">
         <a href="{% url 'authentication:logout' %}" class="logout">Logout</a>
