@@ -64,10 +64,8 @@ def list_treatment(request):
                 """, [user_email])
                 
                 result = cursor.fetchall()
-                print(f"DEBUG: Query with email '{user_email}' returned {len(result)} rows")
                 
             else:
-                print(f"DEBUG: Non-klien user role: {user_role}")
                 cursor.execute("""
                 SELECT 
                     k.id_kunjungan,
@@ -115,12 +113,10 @@ def list_treatment(request):
                 ORDER BY k.timestamp_awal DESC
                 """)
                 result = cursor.fetchall()
-                print(f"DEBUG: Non-klien query returned {len(result)} rows")
             
             treatments = result
             
     except Exception as e:
-        print(f"Error in list_treatment: {str(e)}")
         messages.error(request, f'Terjadi kesalahan saat mengambil data treatment: {str(e)}')
         treatments = []
     
@@ -139,7 +135,6 @@ def create_treatment(request):
     selected_perawatan = request.GET.get('perawatan', '')
     
     with connection.cursor() as cursor:
-        # Get list of kunjungan dengan detail lengkap
         cursor.execute("""
         SELECT 
             k.id_kunjungan,
@@ -197,8 +192,6 @@ def create_treatment(request):
         ORDER BY k.timestamp_awal DESC
         """)
         kunjungan_list = cursor.fetchall()
-        
-        # Get list of perawatan yang tersedia
         cursor.execute("""
         SELECT kode_perawatan, nama_perawatan, biaya_perawatan
         FROM PETCLINIC.PERAWATAN
@@ -217,11 +210,9 @@ def create_treatment(request):
         
         if not perawatan_code:
             errors['perawatan'] = 'Silakan pilih jenis perawatan'
-        
-        # Validasi apakah kunjungan dan perawatan valid
+
         if kunjungan_id and perawatan_code:
             with connection.cursor() as cursor:
-                # Cek apakah kunjungan ada
                 cursor.execute("""
                 SELECT k.nama_hewan, k.no_identitas_klien, k.no_front_desk, 
                        k.no_perawat_hewan, k.no_dokter_hewan
@@ -233,7 +224,6 @@ def create_treatment(request):
                 if not kunjungan_data:
                     errors['kunjungan'] = 'Kunjungan tidak ditemukan'
                 else:
-                    # Cek apakah perawatan sudah pernah ditambahkan untuk kunjungan ini
                     cursor.execute("""
                     SELECT 1 FROM PETCLINIC.KUNJUNGAN_KEPERAWATAN 
                     WHERE id_kunjungan = %s AND kode_perawatan = %s
@@ -254,9 +244,7 @@ def create_treatment(request):
             }
             return render(request, 'perawatan_hewan/create_treatment.html', context)
         
-        # Insert ke tabel KUNJUNGAN_KEPERAWATAN
         with connection.cursor() as cursor:
-            # Get data kunjungan
             cursor.execute("""
             SELECT nama_hewan, no_identitas_klien, no_front_desk, 
                    no_perawat_hewan, no_dokter_hewan
@@ -265,7 +253,6 @@ def create_treatment(request):
             """, [kunjungan_id])
             kunjungan_data = cursor.fetchone()
             
-            # Insert perawatan ke KUNJUNGAN_KEPERAWATAN
             cursor.execute("""
             INSERT INTO PETCLINIC.KUNJUNGAN_KEPERAWATAN (
                 id_kunjungan, nama_hewan, no_identitas_klien, no_front_desk,
@@ -296,7 +283,6 @@ def update_treatment(request, id_kunjungan, kode_perawatan):
     perawatan_list = []
     treatment_data = None
     
-    # Get existing treatment data
     with connection.cursor() as cursor:
         cursor.execute("""
         SELECT 
@@ -364,11 +350,9 @@ def update_treatment(request, id_kunjungan, kode_perawatan):
         messages.error(request, 'Treatment tidak ditemukan')
         return redirect('perawatan_hewan:list_treatment')
     
-    # Default selected perawatan adalah yang saat ini
     selected_perawatan = kode_perawatan
     
     with connection.cursor() as cursor:
-        # Get list of perawatan yang tersedia
         cursor.execute("""
         SELECT kode_perawatan, nama_perawatan, biaya_perawatan
         FROM PETCLINIC.PERAWATAN
@@ -630,17 +614,7 @@ def create_kunjungan(request):
         
         if not waktu_mulai:
             errors['waktu_mulai'] = 'Silakan isi waktu mulai penanganan'
-        
-        if klien_id and nama_hewan:
-            with connection.cursor() as cursor:
-                cursor.execute("""
-                SELECT 1 FROM PETCLINIC.HEWAN 
-                WHERE nama = %s AND no_identitas_klien = %s
-                """, [nama_hewan, klien_id])
-                if not cursor.fetchone():
-                    errors['nama_hewan'] = 'Hewan tidak ditemukan untuk klien yang dipilih'
-        
-        # Jika ada error, tampilkan form dengan error
+
         if errors:
             user_role = request.session.get('user_role')
             
@@ -658,72 +632,144 @@ def create_kunjungan(request):
                 'waktu_mulai': waktu_mulai,
                 'waktu_akhir': waktu_akhir,
                 'user_role': user_role,
+                'tipe_kunjungan_choices': [
+                    ('Janji Temu', 'Janji Temu'),
+                    ('Walk-In', 'Walk-In'),
+                    ('Darurat', 'Darurat')
+                ]
             }
             return render(request, 'perawatan_hewan/create_kunjungan.html', context)
         
-        with connection.cursor() as cursor:
-            import uuid
-            kunjungan_id = str(uuid.uuid4())
-            
-            # Get front desk officer yang sedang login (assuming FDO yang buat kunjungan)
-            user_email = request.session.get('user_email')
-            cursor.execute("""
-            SELECT fd.no_front_desk
-            FROM PETCLINIC.FRONT_DESK fd
-            JOIN PETCLINIC.PEGAWAI peg ON fd.no_front_desk = peg.no_pegawai
-            JOIN PETCLINIC.USERS u ON peg.email = u.email
-            WHERE u.email = %s
-            """, [user_email])
-            front_desk_result = cursor.fetchone()
-            
-            if not front_desk_result:
-                # Jika user bukan FDO, ambil FDO pertama yang tersedia
-                cursor.execute("""
-                SELECT no_front_desk FROM PETCLINIC.FRONT_DESK LIMIT 1
-                """)
-                front_desk_result = cursor.fetchone()
-            
-            front_desk_id = front_desk_result[0] if front_desk_result else None
-            
-            if not front_desk_id:
-                errors['general'] = 'Tidak ada Front Desk Officer yang tersedia'
-                user_role = request.session.get('user_role')
+        try:
+            with connection.cursor() as cursor:
+                import uuid
+                kunjungan_id = str(uuid.uuid4())
                 
-                context = {
-                    'klien_list': klien_list,
-                    'dokter_list': dokter_list,
-                    'perawat_list': perawat_list,
-                    'hewan_list': hewan_list,
-                    'errors': errors,
-                    'selected_klien': klien_id,
-                    'selected_hewan': nama_hewan,
-                    'selected_dokter': dokter_id,
-                    'selected_perawat': perawat_id,
-                    'selected_tipe': tipe_kunjungan,
-                    'waktu_mulai': waktu_mulai,
-                    'waktu_akhir': waktu_akhir,
-                    'user_role': user_role,
-                }
-                return render(request, 'perawatan_hewan/create_kunjungan.html', context)
+                user_email = request.session.get('user_email')
+                cursor.execute("""
+                SELECT fd.no_front_desk
+                FROM PETCLINIC.FRONT_DESK fd
+                JOIN PETCLINIC.PEGAWAI peg ON fd.no_front_desk = peg.no_pegawai
+                JOIN PETCLINIC.USERS u ON peg.email = u.email
+                WHERE u.email = %s
+                """, [user_email])
+                front_desk_result = cursor.fetchone()
+                
+                if not front_desk_result:
+                    cursor.execute("""
+                    SELECT no_front_desk FROM PETCLINIC.FRONT_DESK LIMIT 1
+                    """)
+                    front_desk_result = cursor.fetchone()
+                
+                front_desk_id = front_desk_result[0] if front_desk_result else None
+                
+                if not front_desk_id:
+                    errors['general'] = 'Tidak ada Front Desk Officer yang tersedia'
+                    user_role = request.session.get('user_role')
+                    
+                    context = {
+                        'klien_list': klien_list,
+                        'dokter_list': dokter_list,
+                        'perawat_list': perawat_list,
+                        'hewan_list': hewan_list,
+                        'errors': errors,
+                        'selected_klien': klien_id,
+                        'selected_hewan': nama_hewan,
+                        'selected_dokter': dokter_id,
+                        'selected_perawat': perawat_id,
+                        'selected_tipe': tipe_kunjungan,
+                        'waktu_mulai': waktu_mulai,
+                        'waktu_akhir': waktu_akhir,
+                        'user_role': user_role,
+                        'tipe_kunjungan_choices': [
+                            ('Janji Temu', 'Janji Temu'),
+                            ('Walk-In', 'Walk-In'),
+                            ('Darurat', 'Darurat')
+                        ]
+                    }
+                    return render(request, 'perawatan_hewan/create_kunjungan.html', context)
+                
+                waktu_akhir_value = waktu_akhir if waktu_akhir and waktu_akhir.strip() else None
+                
+                cursor.execute("""
+                INSERT INTO PETCLINIC.KUNJUNGAN (
+                    id_kunjungan, nama_hewan, no_identitas_klien, no_front_desk,
+                    no_perawat_hewan, no_dokter_hewan, tipe_kunjungan,
+                    timestamp_awal, timestamp_akhir
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """, [
+                    kunjungan_id, nama_hewan, klien_id, front_desk_id,
+                    perawat_id, dokter_id, tipe_kunjungan,
+                    waktu_mulai, waktu_akhir_value
+                ])
+                
             
-            # Konversi waktu_akhir ke None jika kosong
-            waktu_akhir_value = waktu_akhir if waktu_akhir and waktu_akhir.strip() else None
+            messages.success(request, f'Kunjungan berhasil dibuat!')
+            return redirect('perawatan_hewan:list_kunjungan')
             
-            # Insert ke tabel KUNJUNGAN
-            cursor.execute("""
-            INSERT INTO PETCLINIC.KUNJUNGAN (
-                id_kunjungan, nama_hewan, no_identitas_klien, no_front_desk,
-                no_perawat_hewan, no_dokter_hewan, tipe_kunjungan,
-                timestamp_awal, timestamp_akhir
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, [
-                kunjungan_id, nama_hewan, klien_id, front_desk_id,
-                perawat_id, dokter_id, tipe_kunjungan,
-                waktu_mulai, waktu_akhir_value
-            ])
-        
-        messages.success(request, f'Kunjungan berhasil dibuat!')
-        return redirect('perawatan_hewan:list_kunjungan')
+        except Exception as e:
+            error_message = str(e)
+            
+            if "ERROR:" in error_message:
+                try:
+                    error_parts = error_message.split("ERROR: ")[1]
+                    if "CONTEXT:" in error_parts:
+                        user_message = error_parts.split("CONTEXT:")[0].strip()
+                    elif "DETAIL:" in error_parts:
+                        user_message = error_parts.split("DETAIL:")[0].strip()
+                    else:
+                        user_message = error_parts.split("\n")[0].strip()
+                    
+                    user_message = user_message.replace('"', '').strip()
+                    
+                    
+                    if "Timestamp akhir kunjungan tidak boleh lebih awal dari timestamp awal" in user_message:
+                        errors['waktu_akhir'] = 'Timestamp akhir kunjungan tidak boleh lebih awal dari timestamp awal.'
+                    elif "tidak terdaftar atas nama pemilik" in user_message:
+                        errors['nama_hewan'] = user_message
+                    else:
+                        errors['general'] = user_message
+                        
+                except (IndexError, AttributeError) as parse_error:
+                    errors['general'] = f'Terjadi kesalahan: {error_message}'
+            else:
+                if any(keyword in error_message.lower() for keyword in [
+                    'timestamp akhir kunjungan tidak boleh lebih awal',
+                    'timestamp_akhir',
+                    'check constraint'
+                ]):
+                    errors['waktu_akhir'] = 'Timestamp akhir kunjungan tidak boleh lebih awal dari timestamp awal.'
+                elif "foreign key" in error_message.lower():
+                    if "nama_hewan" in error_message.lower() or "no_identitas_klien" in error_message.lower():
+                        errors['nama_hewan'] = 'Data hewan atau klien tidak valid'
+                    else:
+                        errors['general'] = 'Data referensi tidak valid'
+                else:
+                    errors['general'] = f'Terjadi kesalahan: {error_message}'
+            
+            user_role = request.session.get('user_role')
+            
+            context = {
+                'klien_list': klien_list,
+                'dokter_list': dokter_list,
+                'perawat_list': perawat_list,
+                'hewan_list': hewan_list,
+                'errors': errors,
+                'selected_klien': klien_id,
+                'selected_hewan': nama_hewan,
+                'selected_dokter': dokter_id,
+                'selected_perawat': perawat_id,
+                'selected_tipe': tipe_kunjungan,
+                'waktu_mulai': waktu_mulai,
+                'waktu_akhir': waktu_akhir,
+                'user_role': user_role,
+                'tipe_kunjungan_choices': [
+                    ('Janji Temu', 'Janji Temu'),
+                    ('Walk-In', 'Walk-In'),
+                    ('Darurat', 'Darurat')
+                ]
+            }
+            return render(request, 'perawatan_hewan/create_kunjungan.html', context)
     
     user_role = request.session.get('user_role')
     
@@ -755,7 +801,6 @@ def update_kunjungan(request, id_kunjungan):
     hewan_list = []
     kunjungan_data = None
     
-    # Get existing kunjungan data
     with connection.cursor() as cursor:
         cursor.execute("""
         SELECT 
@@ -776,7 +821,6 @@ def update_kunjungan(request, id_kunjungan):
         messages.error(request, 'Kunjungan tidak ditemukan')
         return redirect('perawatan_hewan:list_kunjungan')
     
-    # Extract current values
     selected_klien = request.GET.get('klien', str(kunjungan_data[2]))
     selected_hewan = request.GET.get('nama_hewan', kunjungan_data[1])
     selected_dokter = request.GET.get('dokter', str(kunjungan_data[3]))
@@ -786,7 +830,6 @@ def update_kunjungan(request, id_kunjungan):
     waktu_akhir = request.GET.get('waktu_akhir', kunjungan_data[7] if kunjungan_data[7] else '')
     
     with connection.cursor() as cursor:
-        # Get list of klien
         cursor.execute("""
         SELECT k.no_identitas, 
                CASE 
@@ -803,7 +846,6 @@ def update_kunjungan(request, id_kunjungan):
         """)
         klien_list = cursor.fetchall()
         
-        # Get list of dokter hewan with email
         cursor.execute("""
         SELECT dh.no_dokter_hewan, u.email
         FROM PETCLINIC.DOKTER_HEWAN dh
@@ -814,7 +856,6 @@ def update_kunjungan(request, id_kunjungan):
         """)
         dokter_list = cursor.fetchall()
         
-        # Get list of perawat hewan with email
         cursor.execute("""
         SELECT ph.no_perawat_hewan, u.email
         FROM PETCLINIC.PERAWAT_HEWAN ph
@@ -825,7 +866,6 @@ def update_kunjungan(request, id_kunjungan):
         """)
         perawat_list = cursor.fetchall()
         
-        # Get hewan - jika klien dipilih maka filter berdasarkan klien, jika tidak tampilkan semua
         if selected_klien:
             cursor.execute("""
             SELECT nama, 
@@ -870,7 +910,6 @@ def update_kunjungan(request, id_kunjungan):
         
         errors = {}
         
-        # Validasi input (sama seperti create)
         if not klien_id:
             errors['klien'] = 'Silakan pilih klien'
         
@@ -890,8 +929,17 @@ def update_kunjungan(request, id_kunjungan):
         
         if not waktu_mulai:
             errors['waktu_mulai'] = 'Silakan isi waktu mulai penanganan'
-        
-        # Validasi bahwa hewan milik klien yang dipilih
+
+        if waktu_mulai and waktu_akhir and waktu_akhir.strip():
+            from datetime import datetime
+            try:
+                waktu_mulai_dt = datetime.fromisoformat(waktu_mulai.replace('T', ' '))
+                waktu_akhir_dt = datetime.fromisoformat(waktu_akhir.replace('T', ' '))
+                if waktu_akhir_dt < waktu_mulai_dt:
+                    errors['waktu_akhir'] = 'Timestamp akhir kunjungan tidak boleh lebih awal dari timestamp awal.'
+            except ValueError as ve:
+                errors['waktu_mulai'] = 'Format waktu tidak valid'
+
         if klien_id and nama_hewan:
             with connection.cursor() as cursor:
                 cursor.execute("""
@@ -899,9 +947,20 @@ def update_kunjungan(request, id_kunjungan):
                 WHERE nama = %s AND no_identitas_klien = %s
                 """, [nama_hewan, klien_id])
                 if not cursor.fetchone():
-                    errors['nama_hewan'] = 'Hewan tidak ditemukan untuk klien yang dipilih'
-        
-        # Jika ada error, tampilkan form dengan error
+                    cursor.execute("""
+                    SELECT COALESCE(
+                        (SELECT CONCAT(nama_depan, ' ', COALESCE(nama_tengah || ' ', ''), nama_belakang) 
+                         FROM PETCLINIC.INDIVIDU WHERE no_identitas_klien = %s),
+                        (SELECT nama_perusahaan 
+                         FROM PETCLINIC.PERUSAHAAN WHERE no_identitas_klien = %s),
+                        %s
+                    ) AS nama_pemilik
+                    """, [klien_id, klien_id, klien_id])
+                    nama_pemilik_result = cursor.fetchone()
+                    nama_pemilik = nama_pemilik_result[0] if nama_pemilik_result else klien_id
+                    
+                    errors['nama_hewan'] = f'Hewan "{nama_hewan}" tidak terdaftar atas nama pemilik "{nama_pemilik}".'
+
         if errors:
             user_role = request.session.get('user_role')
             
@@ -928,28 +987,94 @@ def update_kunjungan(request, id_kunjungan):
             }
             return render(request, 'perawatan_hewan/update_kunjungan.html', context)
         
-        # Konversi waktu_akhir ke None jika kosong
         waktu_akhir_value = waktu_akhir if waktu_akhir and waktu_akhir.strip() else None
         
-        # Update kunjungan
-        with connection.cursor() as cursor:
-            cursor.execute("""
-            UPDATE PETCLINIC.KUNJUNGAN 
-            SET nama_hewan = %s,
-                no_identitas_klien = %s,
-                no_dokter_hewan = %s,
-                no_perawat_hewan = %s,
-                tipe_kunjungan = %s,
-                timestamp_awal = %s,
-                timestamp_akhir = %s
-            WHERE id_kunjungan = %s
-            """, [
-                nama_hewan, klien_id, dokter_id, perawat_id,
-                tipe_kunjungan, waktu_mulai, waktu_akhir_value, id_kunjungan
-            ])
-        
-        messages.success(request, 'Kunjungan berhasil diupdate!')
-        return redirect('perawatan_hewan:list_kunjungan')
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                UPDATE PETCLINIC.KUNJUNGAN 
+                SET nama_hewan = %s,
+                    no_identitas_klien = %s,
+                    no_dokter_hewan = %s,
+                    no_perawat_hewan = %s,
+                    tipe_kunjungan = %s,
+                    timestamp_awal = %s,
+                    timestamp_akhir = %s
+                WHERE id_kunjungan = %s
+                """, [
+                    nama_hewan, klien_id, dokter_id, perawat_id,
+                    tipe_kunjungan, waktu_mulai, waktu_akhir_value, id_kunjungan
+                ])
+                
+            
+            messages.success(request, 'Kunjungan berhasil diupdate!')
+            return redirect('perawatan_hewan:list_kunjungan')
+            
+        except Exception as e:
+            error_message = str(e)
+            
+            if "ERROR:" in error_message:
+                try:
+                    error_parts = error_message.split("ERROR: ")[1]
+                    if "CONTEXT:" in error_parts:
+                        user_message = error_parts.split("CONTEXT:")[0].strip()
+                    elif "DETAIL:" in error_parts:
+                        user_message = error_parts.split("DETAIL:")[0].strip()
+                    else:
+                        user_message = error_parts.split("\n")[0].strip()
+                    
+                    user_message = user_message.replace('"', '').strip()
+                    
+                    
+                    if "Timestamp akhir kunjungan tidak boleh lebih awal dari timestamp awal" in user_message:
+                        errors['waktu_akhir'] = 'Timestamp akhir kunjungan tidak boleh lebih awal dari timestamp awal.'
+                    elif "tidak terdaftar atas nama pemilik" in user_message:
+                        errors['nama_hewan'] = user_message
+                    else:
+                        errors['general'] = user_message
+                        
+                except (IndexError, AttributeError) as parse_error:
+                    errors['general'] = f'Terjadi kesalahan: {error_message}'
+            else:
+                if any(keyword in error_message.lower() for keyword in [
+                    'timestamp akhir kunjungan tidak boleh lebih awal',
+                    'timestamp_akhir',
+                    'check constraint'
+                ]):
+                    errors['waktu_akhir'] = 'Timestamp akhir kunjungan tidak boleh lebih awal dari timestamp awal.'
+                elif "foreign key" in error_message.lower():
+                    if "nama_hewan" in error_message.lower() or "no_identitas_klien" in error_message.lower():
+                        errors['nama_hewan'] = 'Data hewan atau klien tidak valid'
+                    else:
+                        errors['general'] = 'Data referensi tidak valid'
+                else:
+                    errors['general'] = f'Terjadi kesalahan: {error_message}'
+            
+            
+            user_role = request.session.get('user_role')
+            
+            context = {
+                'klien_list': klien_list,
+                'dokter_list': dokter_list,
+                'perawat_list': perawat_list,
+                'hewan_list': hewan_list,
+                'errors': errors,
+                'selected_klien': klien_id,
+                'selected_hewan': nama_hewan,
+                'selected_dokter': dokter_id,
+                'selected_perawat': perawat_id,
+                'selected_tipe': tipe_kunjungan,
+                'waktu_mulai': waktu_mulai,
+                'waktu_akhir': waktu_akhir,
+                'user_role': user_role,
+                'id_kunjungan': id_kunjungan,
+                'tipe_kunjungan_choices': [
+                    ('Janji Temu', 'Janji Temu'),
+                    ('Walk-In', 'Walk-In'),
+                    ('Darurat', 'Darurat')
+                ]
+            }
+            return render(request, 'perawatan_hewan/update_kunjungan.html', context)
     
     user_role = request.session.get('user_role')
     
@@ -979,7 +1104,6 @@ def update_kunjungan(request, id_kunjungan):
 def delete_kunjungan(request, id_kunjungan):
     kunjungan_data = None
     
-    # Get existing kunjungan data
     with connection.cursor() as cursor:
         cursor.execute("""
         SELECT 
@@ -1001,13 +1125,11 @@ def delete_kunjungan(request, id_kunjungan):
     if request.method == 'POST':
         try:
             with connection.cursor() as cursor:
-                # Hapus data terkait dari tabel KUNJUNGAN_KEPERAWATAN terlebih dahulu
                 cursor.execute("""
                 DELETE FROM PETCLINIC.KUNJUNGAN_KEPERAWATAN 
                 WHERE id_kunjungan = %s
                 """, [id_kunjungan])
                 
-                # Hapus data dari tabel KUNJUNGAN
                 cursor.execute("""
                 DELETE FROM PETCLINIC.KUNJUNGAN 
                 WHERE id_kunjungan = %s
@@ -1035,7 +1157,6 @@ def rekam_medis(request, id_kunjungan):
     kunjungan_data = None
     
     with connection.cursor() as cursor:
-        # Get kunjungan data
         cursor.execute("""
         SELECT 
             k.id_kunjungan,
@@ -1062,7 +1183,6 @@ def rekam_medis(request, id_kunjungan):
             messages.error(request, 'Kunjungan tidak ditemukan')
             return redirect('perawatan_hewan:list_kunjungan')
         
-        # Check if rekam medis exists for this kunjungan
         cursor.execute("""
         SELECT 
             k.suhu,
@@ -1073,7 +1193,6 @@ def rekam_medis(request, id_kunjungan):
         """, [id_kunjungan])
         rekam_medis_data = cursor.fetchone()
     
-    # If no rekam medis data exists, redirect to unavailable page
     if not rekam_medis_data:
         return redirect('perawatan_hewan:rekam_medis_unavailable', id_kunjungan=id_kunjungan)
     
@@ -1091,7 +1210,6 @@ def rekam_medis(request, id_kunjungan):
 def create_rekam_medis(request, id_kunjungan):
     kunjungan_data = None
     
-    # Get kunjungan data
     with connection.cursor() as cursor:
         cursor.execute("""
         SELECT 
@@ -1126,7 +1244,6 @@ def create_rekam_medis(request, id_kunjungan):
         
         errors = {}
         
-        # Validasi input
         if suhu and not suhu.replace('.', '').isdigit():
             errors['suhu'] = 'Suhu harus berupa angka'
         
@@ -1149,7 +1266,6 @@ def create_rekam_medis(request, id_kunjungan):
             }
             return render(request, 'perawatan_hewan/create_rekam_medis.html', context)
         
-        # Update kunjungan dengan data rekam medis
         with connection.cursor() as cursor:
             cursor.execute("""
             UPDATE PETCLINIC.KUNJUNGAN 
@@ -1180,7 +1296,6 @@ def update_rekam_medis(request, id_kunjungan):
     rekam_medis_data = None
     
     with connection.cursor() as cursor:
-        # Get kunjungan and rekam medis data
         cursor.execute("""
         SELECT 
             k.id_kunjungan,
@@ -1210,8 +1325,8 @@ def update_rekam_medis(request, id_kunjungan):
         messages.error(request, 'Kunjungan tidak ditemukan')
         return redirect('perawatan_hewan:list_kunjungan')
     
-    kunjungan_data = result[:6]  # First 6 columns
-    rekam_medis_data = result[6:]  # Last 3 columns (suhu, berat_badan, catatan)
+    kunjungan_data = result[:6]  
+    rekam_medis_data = result[6:] 
     
     if request.method == 'POST':
         suhu = request.POST.get('suhu')
@@ -1220,7 +1335,6 @@ def update_rekam_medis(request, id_kunjungan):
         
         errors = {}
         
-        # Validasi input
         if suhu and not suhu.replace('.', '').isdigit():
             errors['suhu'] = 'Suhu harus berupa angka'
         
@@ -1241,7 +1355,6 @@ def update_rekam_medis(request, id_kunjungan):
             }
             return render(request, 'perawatan_hewan/update_rekam_medis.html', context)
         
-        # Update kunjungan dengan data rekam medis
         with connection.cursor() as cursor:
             cursor.execute("""
             UPDATE PETCLINIC.KUNJUNGAN 
@@ -1272,7 +1385,6 @@ def rekam_medis_unavailable(request, id_kunjungan):
     kunjungan_data = None
     
     with connection.cursor() as cursor:
-        # Get kunjungan data
         cursor.execute("""
         SELECT 
             k.id_kunjungan,
