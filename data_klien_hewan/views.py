@@ -46,7 +46,7 @@ def list_klien(request):
     }
     return render(request, "list_klien.html", context)
 
-@role_required(['fdo'])
+@role_required('fdo')
 def detail_klien(request, identitas):
     with connection.cursor() as cursor:
         cursor.execute("""

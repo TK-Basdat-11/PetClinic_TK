@@ -3,7 +3,9 @@ from django.shortcuts import render, redirect
 from django.db import DatabaseError, connection
 from django.contrib import messages
 from datetime import datetime
+from authentication.decorators import role_required
 
+@role_required('dokter')
 def vaksin_dokter(request):
     dokter_id = request.session.get('user_id')
 
@@ -30,6 +32,7 @@ def vaksin_dokter(request):
     }
     return render(request, "dokter/vaksin_dokter.html", context)
 
+@role_required('dokter')
 def create_vaksin_dokter(request):
     dokter_id = request.session.get('user_id')
 
@@ -69,6 +72,7 @@ def create_vaksin_dokter(request):
 
     return render_create_form(request, dokter_id)
 
+@role_required('dokter')
 def render_create_form(request, dokter_id, errors=None, selected_kunjungan=None, selected_vaksin=None):
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -100,6 +104,7 @@ def render_create_form(request, dokter_id, errors=None, selected_kunjungan=None,
     }
     return render(request, "dokter/create_vaksin_dokter.html", context)
 
+@role_required('dokter')
 def update_vaksin_dokter(request, kunjungan_id=None):
     dokter_id = request.session.get('user_id')
 
@@ -181,6 +186,7 @@ def update_vaksin_dokter(request, kunjungan_id=None):
     }
     return render(request, "dokter/update_vaksin_dokter.html", context)
 
+@role_required('dokter')
 def delete_vaksin_dokter(request, kunjungan_id=None):
     dokter_id = request.session.get('user_id')
     if not dokter_id:
@@ -237,6 +243,7 @@ def delete_vaksin_dokter(request, kunjungan_id=None):
     }
     return render(request, "dokter/delete_vaksin_dokter.html", context)
 
+@role_required('perawat')
 def vaksin_perawat(request):
     perawat_id = request.session.get('user_id')
     if not perawat_id:
@@ -258,6 +265,7 @@ def vaksin_perawat(request):
     }
     return render(request, "perawat/vaksin_perawat.html", context)
 
+@role_required('perawat')
 def create_vaksin_perawat(request):
     perawat_id = request.session.get('user_id')
     if not perawat_id:
@@ -324,6 +332,7 @@ def create_vaksin_perawat(request):
     }
     return render(request, "perawat/create_vaksin_perawat.html", context)
 
+@role_required('perawat')
 def update_vaksin_perawat(request, vaccine_code):
     perawat_id = request.session.get('user_id')
     if not perawat_id:
@@ -392,6 +401,7 @@ def update_vaksin_perawat(request, vaccine_code):
     }
     return render(request, "perawat/update_vaksin_perawat.html", context)
 
+@role_required('perawat')
 def update_stok(request, vaccine_code):
     perawat_id = request.session.get('user_id')
     if not perawat_id:
@@ -455,6 +465,7 @@ def update_stok(request, vaccine_code):
     }
     return render(request, "perawat/update_stok.html", context)
 
+@role_required('perawat')
 def delete_vaksin_perawat(request, vaccine_code=None):
     perawat_id = request.session.get('user_id')
     if not perawat_id:
@@ -517,6 +528,7 @@ def delete_vaksin_perawat(request, vaccine_code=None):
         'error_message': error_message,
     })
 
+@role_required('klien')
 def vaksinasi_klien(request):
     client_id = request.session.get('user_id')
     if not client_id:

@@ -255,6 +255,7 @@ def dashboard_perawat(request):
         "user_role": "perawat",
     })
 
+@role_required(['dokter', 'klien', 'fdo', 'perawat'])
 def update_password(request):
     user_email = request.session.get("email")
     if not user_email:
