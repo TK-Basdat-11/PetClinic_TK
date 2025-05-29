@@ -280,14 +280,20 @@ def get_all_hewan_logic():
     list_all_hewan = []
 
     with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM PETCLINIC.HEWAN")
+        cursor.execute("""
+            SELECT h.*, 
+                   (SELECT COUNT(*) 
+                    FROM PETCLINIC.KUNJUNGAN k 
+                    WHERE k.nama_hewan = h.nama 
+                    AND k.no_identitas_klien = h.no_identitas_klien 
+                    AND k.timestamp_akhir IS NULL) as active_visits
+            FROM PETCLINIC.HEWAN h
+        """)
 
         tuple_all_hewan = cursor.fetchall()
 
-        for i,j,k,l,m in tuple_all_hewan:
-
+        for i,j,k,l,m,active_visits in tuple_all_hewan:
             nama_jenis = get_nama_jenis_from_id(l)
-
             klien = get_nama_klien_from_individu(j)
 
             dto_hewan = {
@@ -296,7 +302,8 @@ def get_all_hewan_logic():
                 "pemilik" : klien,
                 "tanggal_lahir" : k,
                 "nama_jenis" : nama_jenis,
-                "url_foto" : m
+                "url_foto" : m,
+                "can_delete": active_visits == 0  # Can delete only if no active visits
             }
 
             list_all_hewan.append(dto_hewan)
