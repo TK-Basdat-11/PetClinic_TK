@@ -275,7 +275,9 @@
           {% if user_role == 'fdo' %}
           <td>
             <button class="button update-button" data-id="{{ jenis.id }}" data-nama="{{ jenis.nama_jenis }}">Update</button>
-            <button class="button-delete" data-id="{{ jenis.id }}" data-nama="{{ jenis.nama_jenis }}">Delete</button>
+            {% if jenis.can_delete %}
+              <button class="button-delete" data-id="{{ jenis.id }}" data-nama="{{ jenis.nama_jenis }}">Delete</button>
+            {% endif %}
           </td>
           {% endif %}
         </tr>

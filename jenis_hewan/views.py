@@ -40,14 +40,18 @@ def get_jenis_hewan_logic():
     all_jenis_hewan = []
 
     with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM PETCLINIC.JENIS_HEWAN;")
+        cursor.execute("SELECT id, nama_jenis FROM PETCLINIC.JENIS_HEWAN;")
         jenis = cursor.fetchall()
 
         
         for i,j in jenis:
+            # Cek apakah jenis hewan ini di-assign ke hewan manapun
+            cursor.execute("SELECT COUNT(*) FROM PETCLINIC.HEWAN WHERE id_jenis = %s;", [i])
+            count = cursor.fetchone()[0]
             jenis_hewan_dto = {
                 "id" : i,
-                "nama_jenis" : j
+                "nama_jenis" : j,
+                "can_delete" : count == 0
             }
 
             all_jenis_hewan.append(jenis_hewan_dto)
