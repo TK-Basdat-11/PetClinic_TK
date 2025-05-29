@@ -20,10 +20,31 @@ def jenis_hewan(request):
         context["jenis_hewan"] = get_jenis_hewan_logic()
         return render(request, "jenis_hewan.html", context)
     
-    if request.POST:
-        nama_jenis = request.POST["nama_jenis"]
-        create = create_jenis_hewan_logic(nama_jenis)
-        context.update(create)
+    if request.method == 'POST':
+        response_data = {}
+        try:
+            nama_jenis = request.POST.get("nama_jenis")
+            if not nama_jenis:
+                response_data['error'] = "Nama jenis hewan tidak boleh kosong"
+            else:
+                create_result = create_jenis_hewan_logic(nama_jenis)
+                response_data = create_result
+
+            # For AJAX requests
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                if 'error' in response_data:
+                    return JsonResponse(response_data, status=400)
+                return JsonResponse(response_data)
+
+            # For regular form submissions
+            context.update(response_data)
+            
+        except Exception as e:
+            response_data['error'] = f"Terjadi kesalahan: {str(e)}"
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse(response_data, status=500)
+            context.update(response_data)
+
     elif request.method == 'PUT':
         data = json.loads(request.body)
         update = update_jenis_hewan(data)
@@ -72,28 +93,48 @@ def get_nama_jenis_from_id(id):
     return nama_jenis
 
 def create_jenis_hewan_logic(nama_jenis):
-
     context = dict()
 
-    context["jenis_hewan"] = get_jenis_hewan_logic()
+    if not nama_jenis or not nama_jenis.strip():
+        context["error"] = "Nama jenis hewan tidak boleh kosong"
+        context["jenis_hewan"] = get_jenis_hewan_logic()
+        return context
 
     with connection.cursor() as cursor:
+        # Check if name already exists
+        cursor.execute(
+            """
+            SELECT nama_jenis FROM PETCLINIC.JENIS_HEWAN 
+            WHERE LOWER(nama_jenis) = LOWER(%s)
+            """, 
+            [nama_jenis.strip()]
+        )
+        if cursor.fetchone():
+            context["error"] = "Jenis hewan dengan nama tersebut sudah ada"
+            context["jenis_hewan"] = get_jenis_hewan_logic()
+            return context
 
         ANIMAL_NAMESPACE = uuid.uuid5(uuid.NAMESPACE_DNS, 'jenis_hewan.animal_types')
+        id_jenis = str(uuid.uuid5(ANIMAL_NAMESPACE, nama_jenis.strip()))
 
-        id_jenis = str(uuid.uuid5(ANIMAL_NAMESPACE, nama_jenis))
         try:
             cursor.execute(
-            """
-            INSERT INTO PETCLINIC.jenis_hewan (id, nama_jenis)     
-            VALUES (%s, %s)
-            """,
-            [id_jenis,nama_jenis,])
-
+                """
+                INSERT INTO PETCLINIC.JENIS_HEWAN (id, nama_jenis)     
+                VALUES (%s, %s)
+                """,
+                [id_jenis, nama_jenis.strip()]
+            )
             context['success'] = "Berhasil menambahkan jenis hewan"
         except IntegrityError as e:
-            context["error"] = f"Gagal menambahkan jenis hewan karena: {e}"
+            if "duplicate key" in str(e).lower():
+                context["error"] = "Jenis hewan dengan nama tersebut sudah ada"
+            else:
+                context["error"] = f"Gagal menambahkan jenis hewan: {str(e)}"
+        except Exception as e:
+            context["error"] = f"Terjadi kesalahan: {str(e)}"
     
+    context["jenis_hewan"] = get_jenis_hewan_logic()
     return context
 
 def update_jenis_hewan(data):

@@ -441,27 +441,29 @@
     cancelCreateBtn.onclick = function() {
       createModal.style.display = "none";
       createForm.reset();
-    }
-
-    // Create Submit
-    submitCreateBtn.onclick = function() {
+    }    // Create Submit
+    submitCreateBtn.onclick = function(e) {
+      e.preventDefault();
       const namaJenis = document.getElementById("namaJenisCreate").value;
       
-      if (!namaJenis) {
+      if (!namaJenis || !namaJenis.trim()) {
         showNotification("Nama jenis hewan tidak boleh kosong!", "error");
         return;
       }
       
       // Create FormData object
       const formData = new FormData();
-      formData.append('nama_jenis', namaJenis);
+      formData.append('nama_jenis', namaJenis.trim());
+      formData.append('csrfmiddlewaretoken', csrfToken);
       
-      // Send POST request
+      // Send POST request with proper headers
       fetch("{% url 'jenis_hewan:jenis-hewan' %}", {
         method: 'POST',
         headers: {
+          'X-Requested-With': 'XMLHttpRequest',
           'X-CSRFToken': csrfToken
         },
+        credentials: 'same-origin',
         body: formData
       })
       .then(response => {
@@ -470,13 +472,12 @@
           return;
         }
         
-        if (response.ok) {
-          return response.json();
-        } else {
-          return response.json().then(data => {
+        return response.json().then(data => {
+          if (!response.ok) {
             throw new Error(data.error || "Failed to create animal type.");
-          });
-        }
+          }
+          return data;
+        });
       })
       .then(data => {
         // Close the modal
@@ -484,7 +485,7 @@
         createForm.reset();
         
         // Show success notification
-        showNotification("Jenis hewan berhasil dibuat!", "success");
+        showNotification(data.success || "Jenis hewan berhasil dibuat!", "success");
         
         // Reload the page after a short delay
         setTimeout(() => {
