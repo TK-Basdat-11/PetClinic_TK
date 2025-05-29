@@ -71,6 +71,7 @@ def show_hewan_client(request):
 
     return render(request,"hewanClient.html",context)
 
+@role_required(['fdo', 'klien'])
 def create_hewan(data, no_identitas_klien = False):
     """View for creating a new pet (hewan) record"""
     context = {}
