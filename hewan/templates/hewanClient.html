@@ -322,10 +322,8 @@
           <td><img src="{{ hewan.url_foto }}" alt="{{ hewan.nama }}" class="pet-photo"></td>
           <td>
             <button class="button update-button" data-id="{{ forloop.counter }}" data-pemilik="{{ hewan.pemilik }}"
-              data-jenis="{{ hewan.jenis }}" data-nama="{{ hewan.nama }}"
+              data-jenis="{{ hewan.jenis }}" data-jenis-name="{{ hewan.nama_jenis }}" data-nama="{{ hewan.nama }}"
               data-tanggal="{{ hewan.tanggal_lahir|date:'d-m-Y' }}" data-foto="{{ hewan.url_foto }}">Update</button>
-            <!-- <button class="button-delete delete-button" data-id="{{ forloop.counter }}"
-              data-pemilik="{{ hewan.pemilik }}" data-nama="{{ hewan.nama }}">Delete</button> -->
           </td>
         </tr>
         {% endfor %}
@@ -345,20 +343,12 @@
 
         <label for="pemilikCreate">Pemilik</label>
         <div class="dropdown-container">
-          <input type="text" id="pemilikCreateDisplay" class="select-field" placeholder="Pilih pemilik" readonly>
-          <input type="hidden" id="pemilikCreate" name="pemilik_id">
-          <div id="pemilikDropdownCreate" class="dropdown">
-            {% if pemilik_list %}
-            {% for pemilik in pemilik_list %}
-            <div class="dropdown-option" data-value="{{ pemilik.no_identitas }}">{{ pemilik.nama }}</div>
-            {% endfor %}
-            {% else %}
-            <!-- Hardcoded options if pemilik_list is empty -->
-            <div class="dropdown-option" data-value="1">John Doe</div>
-            <div class="dropdown-option" data-value="2">PT Pecinta Kucing</div>
-            <div class="dropdown-option" data-value="3">PT Aku Sayang Hewan</div>
-            {% endif %}
-          </div>
+          <input type="text" id="pemilikCreateDisplay" class="select-field readonly-input" 
+            value="{% if pemilik_list %}{{ pemilik_list.0.nama }}{% endif %}" 
+            placeholder="Pemilik (Anda)" readonly disabled>
+          <input type="hidden" id="pemilikCreate" name="pemilik_id" 
+            value="{% if pemilik_list %}{{ pemilik_list.0.no_identitas }}{% endif %}">
+          <!-- Dropdown hidden since client can only create for themselves -->
         </div>
 
         <label for="jenisCreate">Jenis Hewan</label>
@@ -370,11 +360,6 @@
             {% for jenis in jenis_list %}
             <div class="dropdown-option" data-value="{{ jenis.id }}">{{ jenis.nama_jenis }}</div>
             {% endfor %}
-            {% else %}
-            <!-- Hardcoded options if jenis_list is empty -->
-            <div class="dropdown-option" data-value="1">Kucing</div>
-            <div class="dropdown-option" data-value="2">Anjing</div>
-            <div class="dropdown-option" data-value="3">Hamster</div>
             {% endif %}
           </div>
         </div>
@@ -399,7 +384,7 @@
   <div id="updatePetModal" class="modal">
     <div class="modal-content">
       <h1>Update Pet</h1>
-      <form id="updatePetForm" method="PUT" action="{% url 'hewan:client' %}">
+      <form id="updatePetForm" method="POST" action="{% url 'hewan:client' %}">
         {% csrf_token %}
         <input type="hidden" id="petIdUpdate" name="pet_id">
         <input type="hidden" name="_method" value="PUT">
@@ -409,20 +394,12 @@
 
         <label for="pemilikUpdate">Pemilik</label>
         <div class="dropdown-container">
-          <input type="text" id="pemilikUpdateDisplay" class="select-field" placeholder="Pilih pemilik" readonly>
-          <input type="hidden" id="pemilikUpdate" name="pemilik_id">
-          <div id="pemilikDropdownUpdate" class="dropdown">
-            {% if pemilik_list %}
-            {% for pemilik in pemilik_list %}
-            <div class="dropdown-option" data-value="{{ pemilik.no_identitas }}">{{ pemilik.nama }}</div>
-            {% endfor %}
-            {% else %}
-            <!-- Hardcoded options if pemilik_list is empty -->
-            <div class="dropdown-option" data-value="1">John Doe</div>
-            <div class="dropdown-option" data-value="2">PT Pecinta Kucing</div>
-            <div class="dropdown-option" data-value="3">PT Aku Sayang Hewan</div>
-            {% endif %}
-          </div>
+          <input type="text" id="pemilikUpdateDisplay" class="select-field readonly-input" 
+                 value="{% if pemilik_list %}{{ pemilik_list.0.nama }}{% endif %}" 
+                 placeholder="Pemilik (Anda)" readonly disabled>
+          <input type="hidden" id="pemilikUpdate" name="no_identitas_klien" 
+                 value="{% if pemilik_list %}{{ pemilik_list.0.no_identitas }}{% endif %}">
+          <!-- Dropdown hidden since client can only update their own pets -->
         </div>
 
         <label for="jenisUpdate">Jenis Hewan</label>
@@ -434,11 +411,6 @@
             {% for jenis in jenis_list %}
             <div class="dropdown-option" data-value="{{ jenis.id }}">{{ jenis.nama_jenis }}</div>
             {% endfor %}
-            {% else %}
-            <!-- Hardcoded options if jenis_list is empty -->
-            <div class="dropdown-option" data-value="1">Kucing</div>
-            <div class="dropdown-option" data-value="2">Anjing</div>
-            <div class="dropdown-option" data-value="3">Hamster</div>
             {% endif %}
           </div>
         </div>
@@ -505,7 +477,6 @@
       create: {
         pemilik: {
           display: document.getElementById("pemilikCreateDisplay"),
-          dropdown: document.getElementById("pemilikDropdownCreate"),
           input: document.getElementById("pemilikCreate")
         },
         jenis: {
@@ -517,7 +488,6 @@
       update: {
         pemilik: {
           display: document.getElementById("pemilikUpdateDisplay"),
-          dropdown: document.getElementById("pemilikDropdownUpdate"),
           input: document.getElementById("pemilikUpdate")
         },
         jenis: {
@@ -545,25 +515,41 @@
 
         // Clear dropdown display fields
         if (dropdowns[modalId]) {
-          dropdowns[modalId].pemilik.display.value = "";
-          dropdowns[modalId].jenis.display.value = "";
+          // Don't clear pemilik for create form since it's pre-populated and disabled
+          if (modalId !== 'create' || !dropdowns[modalId].pemilik || !dropdowns[modalId].pemilik.display.disabled) {
+            if (dropdowns[modalId].pemilik) {
+              dropdowns[modalId].pemilik.display.value = "";
+            }
+          }
+          if (dropdowns[modalId].jenis) {
+            dropdowns[modalId].jenis.display.value = "";
+          }
         }
       }
       toggleBodyScroll(false);
     }
 
     function toggleDropdown(formType, fieldType, event) {
+      // Don't toggle if the field is disabled
+      if (event.target.disabled) {
+        return;
+      }
+      
       // Hide all dropdowns first
       Object.keys(dropdowns).forEach(form => {
         Object.keys(dropdowns[form]).forEach(field => {
-          dropdowns[form][field].dropdown.style.display = "none";
+          if (dropdowns[form][field].dropdown) {
+            dropdowns[form][field].dropdown.style.display = "none";
+          }
         });
       });
 
       // Toggle the requested dropdown
       const dropdown = dropdowns[formType][fieldType].dropdown;
-      dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
-      event.stopPropagation();
+      if (dropdown) {
+        dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+        event.stopPropagation();
+      }
     }
 
     function handleDropdownSelection(formType, fieldType, option, event) {
@@ -631,12 +617,17 @@
       // Setup dropdown toggles
       Object.keys(dropdowns).forEach(formType => {
         Object.keys(dropdowns[formType]).forEach(fieldType => {
-          dropdowns[formType][fieldType].display.onclick = (event) => toggleDropdown(formType, fieldType, event);
+          // Skip if display is disabled (like owner field for client)
+          if (dropdowns[formType][fieldType].display && !dropdowns[formType][fieldType].display.disabled) {
+            dropdowns[formType][fieldType].display.onclick = (event) => toggleDropdown(formType, fieldType, event);
+          }
 
-          // Setup dropdown option selection
-          dropdowns[formType][fieldType].dropdown.querySelectorAll('.dropdown-option').forEach(option => {
-            option.onclick = (event) => handleDropdownSelection(formType, fieldType, option, event);
-          });
+          // Setup dropdown option selection only if dropdown exists
+          if (dropdowns[formType][fieldType].dropdown) {
+            dropdowns[formType][fieldType].dropdown.querySelectorAll('.dropdown-option').forEach(option => {
+              option.onclick = (event) => handleDropdownSelection(formType, fieldType, option, event);
+            });
+          }
         });
       });
 
@@ -665,31 +656,48 @@
       button.onclick = function () {
         const petId = this.getAttribute("data-id");
         const pemilikName = this.getAttribute("data-pemilik");
-        const jenisName = this.getAttribute("data-jenis");
+        const jenisId = this.getAttribute("data-jenis");
+        const jenisName = this.getAttribute("data-jenis-name");
         const nama = this.getAttribute("data-nama");
         const tanggal = this.getAttribute("data-tanggal");
         const foto = this.getAttribute("data-foto");
 
-        // Find pemilik ID from dropdown
-        let pemilikId = "";
-        document.querySelectorAll('#pemilikDropdownUpdate .dropdown-option').forEach(option => {
-          if (option.textContent === pemilikName) {
-            pemilikId = option.getAttribute("data-value");
-          }
+        console.log("Button data attributes:", {
+          petId, pemilikName, jenisId, jenisName, nama, tanggal, foto
         });
 
-        // Find jenis ID from dropdown
-        let jenisId = "";
-        document.querySelectorAll('#jenisDropdownUpdate .dropdown-option').forEach(option => {
-          if (option.textContent === jenisName) {
-            jenisId = option.getAttribute("data-value");
+        // Verify jenis data
+        if (!jenisId || !jenisName) {
+          console.warn("Missing jenis data:", { jenisId, jenisName });
+          
+          // Try to recover jenis information
+          if (jenisId && !jenisName) {
+            // We have ID but no name, try to get name from dropdown
+            document.querySelectorAll('#jenisDropdownUpdate .dropdown-option').forEach(option => {
+              if (option.getAttribute("data-value") === jenisId) {
+                console.log(`Found jenis name ${option.textContent} for ID ${jenisId}`);
+                jenisName = option.textContent;
+              }
+            });
+          } else if (jenisName && !jenisId) {
+            // We have name but no ID, try to get ID from dropdown
+            document.querySelectorAll('#jenisDropdownUpdate .dropdown-option').forEach(option => {
+              if (option.textContent === jenisName) {
+                console.log(`Found jenis ID ${option.getAttribute("data-value")} for name ${jenisName}`);
+                jenisId = option.getAttribute("data-value");
+              }
+            });
           }
-        });
+        }
+
+        // Client already has the pemilik ID from the hidden field
+        const pemilikId = document.getElementById("pemilikUpdate").value;
+
+        console.log("Updating pet:", { petId, pemilikName, pemilikId, jenisName, jenisId, nama, tanggal, foto });
 
         // Set the form values
         document.getElementById("petIdUpdate").value = petId;
-        dropdowns.update.pemilik.display.value = pemilikName;
-        dropdowns.update.pemilik.input.value = pemilikId;
+        // Don't need to set pemilik fields as they're already pre-populated and disabled
         dropdowns.update.jenis.display.value = jenisName;
         dropdowns.update.jenis.input.value = jenisId;
         document.getElementById("namaUpdate").value = nama;
@@ -755,16 +763,44 @@
     forms.update.addEventListener("submit", function (e) {
       e.preventDefault();
 
+      // Log the actual values from the form elements
+      console.log("Form elements:", {
+        namaValue: document.getElementById("namaUpdate").value,
+        pemilikValue: document.getElementById("pemilikUpdate").value,
+        tanggalValue: document.getElementById("tanggalUpdate").value,
+        jenisValue: dropdowns.update.jenis.input.value,
+        jenisDisplayValue: dropdowns.update.jenis.display.value,
+        fotoValue: document.getElementById("fotoUpdate").value,
+        originalNamaValue: document.getElementById("originalNamaUpdate").value,
+        originalOwnerValue: document.getElementById("originalOwnerIdUpdate").value
+      });
+
       // Get form data
       const formData = {
         nama: document.getElementById("namaUpdate").value,
-        no_identitas_klien: dropdowns.update.pemilik.input.value,
+        no_identitas_klien: document.getElementById("pemilikUpdate").value,
         tanggal_lahir: document.getElementById("tanggalUpdate").value,
         id_jenis: dropdowns.update.jenis.input.value,
         url_foto: document.getElementById("fotoUpdate").value,
         original_nama: document.getElementById("originalNamaUpdate").value,
         original_owner_id: document.getElementById("originalOwnerIdUpdate").value
       };
+
+      // Debugging
+      if (!formData.id_jenis) {
+        console.error("Jenis ID is missing!");
+        // Try to recover by looking up the display value in the dropdown
+        const jenisDisplay = dropdowns.update.jenis.display.value;
+        document.querySelectorAll('#jenisDropdownUpdate .dropdown-option').forEach(option => {
+          if (option.textContent === jenisDisplay) {
+            formData.id_jenis = option.getAttribute("data-value");
+            console.log(`Found jenis ID ${formData.id_jenis} for ${jenisDisplay}`);
+          }
+        });
+      }
+
+      console.log("Submitting update with data:", formData);
+      console.log("JSON payload:", JSON.stringify(formData));
 
       // Validate form data
       const validationErrors = validateFormData(formData);
@@ -776,6 +812,9 @@
       // Get CSRF token
       const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
+      // Show a notification that we're sending the request
+      showNotification("Sending update request...", "success");
+
       // Send PUT request
       fetch("{% url 'hewan:client' %}", {
         method: "PUT",
@@ -786,6 +825,13 @@
         body: JSON.stringify(formData)
       })
         .then(response => {
+          console.log("Update response status:", response.status);
+          console.log("Update response headers:", {
+            contentType: response.headers.get('Content-Type'),
+            redirected: response.redirected,
+            url: response.url
+          });
+          
           if (response.redirected) {
             window.location.href = response.url;
           } else if (response.ok) {
@@ -797,13 +843,23 @@
             }, 1500);
           } else {
             // If error, parse and display error
-            return response.json().then(data => {
-              showNotification(data.error || "Terjadi kesalahan saat memperbarui data!", "error");
+            return response.text().then(text => {
+              console.error("Update error response text:", text);
+              try {
+                const data = JSON.parse(text);
+                showNotification(data.error || "Terjadi kesalahan saat memperbarui data!", "error");
+              } catch (parseError) {
+                console.error("Error parsing response as JSON:", parseError);
+                showNotification("Terjadi kesalahan saat memperbarui data!", "error");
+              }
+            }).catch(parseError => {
+              console.error("Error parsing error response:", parseError);
+              showNotification("Terjadi kesalahan saat memperbarui data!", "error");
             });
           }
         })
         .catch(error => {
-          console.error("Error:", error);
+          console.error("Network error:", error);
           showNotification("Terjadi kesalahan saat memperbarui data!", "error");
         });
     });
@@ -878,12 +934,25 @@
 
     // Helper functions
     function validateFormData(data) {
-      if (!data.no_identitas_klien) return "Pemilik harus dipilih!";
-      if (!data.id_jenis) return "Jenis hewan harus dipilih!";
-      if (!data.nama) return "Nama hewan harus diisi!";
-      if (!data.tanggal_lahir) return "Tanggal lahir harus diisi!";
-      if (!data.url_foto) return "URL foto harus diisi!";
-      return null;
+      const errors = [];
+      
+      if (!data.no_identitas_klien) errors.push("Pemilik harus dipilih!");
+      if (!data.id_jenis) errors.push("Jenis hewan harus dipilih!");
+      if (!data.nama) errors.push("Nama hewan harus diisi!");
+      if (!data.tanggal_lahir) errors.push("Tanggal lahir harus diisi!");
+      if (!data.url_foto) errors.push("URL foto harus diisi!");
+      
+      // Detailed logging for debugging
+      console.log("Validation results:", {
+        owner: !!data.no_identitas_klien,
+        jenis: !!data.id_jenis,
+        nama: !!data.nama,
+        tanggal: !!data.tanggal_lahir,
+        foto: !!data.url_foto,
+        data: data
+      });
+      
+      return errors.length > 0 ? errors.join(" ") : null;
     }
 
     function restoreFormValues(formType) {
@@ -897,13 +966,7 @@
         if (request.POST.foto_url) {
           document.getElementById("fotoCreate").value = request.POST.foto_url;
         }
-        if (request.POST.pemilik_id) {
-          dropdowns.create.pemilik.input.value = request.POST.pemilik_id;
-          const option = document.querySelector(`#pemilikDropdownCreate .dropdown-option[data-value="${request.POST.pemilik_id}"]`);
-          if (option) {
-            dropdowns.create.pemilik.display.value = option.textContent;
-          }
-        }
+        // No need to restore pemilik for client view as it's pre-populated and disabled
         if (request.POST.jenis_id) {
           dropdowns.create.jenis.input.value = request.POST.jenis_id;
           const option = document.querySelector(`#jenisDropdownCreate .dropdown-option[data-value="${request.POST.jenis_id}"]`);

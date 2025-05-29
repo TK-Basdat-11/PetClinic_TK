@@ -325,72 +325,14 @@
           <td><img src="{{ hewan.url_foto }}" alt="{{ hewan.nama }}" class="pet-photo"></td>
           <td>
             <button class="button update-button" data-id="{{ forloop.counter }}" data-pemilik="{{ hewan.pemilik }}"
-              data-jenis="{{ hewan.jenis }}" data-nama="{{ hewan.nama }}"
+              data-jenis="{{ hewan.jenis }}" data-jenis-name="{{ hewan.nama_jenis }}" data-nama="{{ hewan.nama }}"
               data-tanggal="{{ hewan.tanggal_lahir|date:'d-m-Y' }}" data-foto="{{ hewan.url_foto }}">Update</button>
-            {% if user_role == 'fdo' and hewan.can_delete %}
-            <button class="button-delete delete-button" data-id="{{ forloop.counter }}"
-              data-pemilik="{{ hewan.pemilik }}" data-nama="{{ hewan.nama }}">Delete</button>
+            {% if hewan.can_delete %}
+            <button class="button-delete delete-button" data-id="{{ forloop.counter }}" data-pemilik="{{ hewan.pemilik }}" data-nama="{{ hewan.nama }}">Delete</button>
             {% endif %}
           </td>
         </tr>
         {% endfor %}
-        {% else %}
-        <!-- Hardcoded data as fallback if hewan_list is empty -->
-        <tr>
-          <td>1</td>
-          <td>John Doe</td>
-          <td>Kucing</td>
-          <td>Snowy</td>
-          <td>9 Februari 2020</td>
-          <td><img src="https://awsimages.detik.net.id/community/media/visual/2023/09/02/kucing-ragdoll_169.jpeg?w=1200"
-              alt="Snowy" class="pet-photo"></td>
-          <td>
-            <button class="button update-button" data-id="1" data-pemilik="John Doe" data-jenis="Kucing"
-              data-nama="Snowy" data-tanggal="09-02-2020"
-              data-foto="https://awsimages.detik.net.id/community/media/visual/2023/09/02/kucing-ragdoll_169.jpeg?w=1200">Update</button>
-            {% if user_role == 'fdo' %}
-            <button class="button-delete delete-button" data-id="1" data-pemilik="John Doe"
-              data-nama="Snowy">Delete</button>
-            {% endif %}
-          </td>
-        </tr>
-        <tr>
-          <td>2</td>
-          <td>PT Aku Sayang Hewan</td>
-          <td>Anjing</td>
-          <td>Blacky</td>
-          <td>15 November 2019</td>
-          <td><img src="https://cdn.pixabay.com/photo/2016/02/11/17/00/dog-1194087_1280.jpg" alt="Blacky"
-              class="pet-photo"></td>
-          <td>
-            <button class="button update-button" data-id="2" data-pemilik="PT Aku Sayang Hewan" data-jenis="Anjing"
-              data-nama="Blacky" data-tanggal="15-11-2019"
-              data-foto="https://cdn.pixabay.com/photo/2016/02/11/17/00/dog-1194087_1280.jpg">Update</button>
-            {% if user_role == 'fdo' %}
-            <button class="button-delete delete-button" data-id="2" data-pemilik="PT Aku Sayang Hewan"
-              data-nama="Blacky">Delete</button>
-            {% endif %}
-          </td>
-        </tr>
-        <tr>
-          <td>3</td>
-          <td>PT Pecinta Kucing</td>
-          <td>Hamster</td>
-          <td>Hamseung</td>
-          <td>15 Oktober 2024</td>
-          <td><img
-              src="https://thumb.viva.id/vivapurwasuka/665x374/2025/01/22/6790b62d412bd-hamster-peliharaan_purwasuka.jpg"
-              alt="Hamseung" class="pet-photo"></td>
-          <td>
-            <button class="button update-button" data-id="3" data-pemilik="PT Pecinta Kucing" data-jenis="Hamster"
-              data-nama="Hamseung" data-tanggal="15-10-2024"
-              data-foto="https://thumb.viva.id/vivapurwasuka/665x374/2025/01/22/6790b62d412bd-hamster-peliharaan_purwasuka.jpg">Update</button>
-            {% if user_role == 'fdo' %}
-            <button class="button-delete delete-button" data-id="3" data-pemilik="PT Pecinta Kucing"
-              data-nama="Hamseung">Delete</button>
-            {% endif %}
-          </td>
-        </tr>
         {% endif %}
       </tbody>
     </table>
@@ -412,11 +354,6 @@
             {% for pemilik in pemilik_list %}
             <div class="dropdown-option" data-value="{{ pemilik.no_identitas }}">{{ pemilik.nama }}</div>
             {% endfor %}
-            {% else %}
-            <!-- Hardcoded options if pemilik_list is empty -->
-            <div class="dropdown-option" data-value="1">John Doe</div>
-            <div class="dropdown-option" data-value="2">PT Pecinta Kucing</div>
-            <div class="dropdown-option" data-value="3">PT Aku Sayang Hewan</div>
             {% endif %}
           </div>
         </div>
@@ -430,11 +367,6 @@
             {% for jenis in jenis_list %}
             <div class="dropdown-option" data-value="{{ jenis.id }}">{{ jenis.nama_jenis }}</div>
             {% endfor %}
-            {% else %}
-            <!-- Hardcoded options if jenis_list is empty -->
-            <div class="dropdown-option" data-value="1">Kucing</div>
-            <div class="dropdown-option" data-value="2">Anjing</div>
-            <div class="dropdown-option" data-value="3">Hamster</div>
             {% endif %}
           </div>
         </div>
@@ -476,11 +408,6 @@
             {% for pemilik in pemilik_list %}
             <div class="dropdown-option" data-value="{{ pemilik.no_identitas }}">{{ pemilik.nama }}</div>
             {% endfor %}
-            {% else %}
-            <!-- Hardcoded options if pemilik_list is empty -->
-            <div class="dropdown-option" data-value="1">John Doe</div>
-            <div class="dropdown-option" data-value="2">PT Pecinta Kucing</div>
-            <div class="dropdown-option" data-value="3">PT Aku Sayang Hewan</div>
             {% endif %}
           </div>
         </div>
@@ -494,11 +421,6 @@
             {% for jenis in jenis_list %}
             <div class="dropdown-option" data-value="{{ jenis.id }}">{{ jenis.nama_jenis }}</div>
             {% endfor %}
-            {% else %}
-            <!-- Hardcoded options if jenis_list is empty -->
-            <div class="dropdown-option" data-value="1">Kucing</div>
-            <div class="dropdown-option" data-value="2">Anjing</div>
-            <div class="dropdown-option" data-value="3">Hamster</div>
             {% endif %}
           </div>
         </div>
@@ -725,12 +647,17 @@
       button.onclick = function () {
         const petId = this.getAttribute("data-id");
         const pemilikName = this.getAttribute("data-pemilik");
-        const jenisName = this.getAttribute("data-jenis");
+        const jenisName = this.getAttribute("data-jenis-name");
+        const jenisId = this.getAttribute("data-jenis");
         const nama = this.getAttribute("data-nama");
         const tanggal = this.getAttribute("data-tanggal");
         const foto = this.getAttribute("data-foto");
 
-        // Find pemilik ID from dropdown
+        console.log("Button data attributes:", {
+          petId, pemilikName, jenisId, jenisName, nama, tanggal, foto
+        });
+
+        // Find pemilik ID from dropdown by matching the name
         let pemilikId = "";
         document.querySelectorAll('#pemilikDropdownUpdate .dropdown-option').forEach(option => {
           if (option.textContent === pemilikName) {
@@ -738,13 +665,7 @@
           }
         });
 
-        // Find jenis ID from dropdown
-        let jenisId = "";
-        document.querySelectorAll('#jenisDropdownUpdate .dropdown-option').forEach(option => {
-          if (option.textContent === jenisName) {
-            jenisId = option.getAttribute("data-value");
-          }
-        });
+        console.log("Updating pet:", { petId, pemilikName, pemilikId, jenisName, jenisId, nama, tanggal, foto });
 
         // Set the form values
         document.getElementById("petIdUpdate").value = petId;

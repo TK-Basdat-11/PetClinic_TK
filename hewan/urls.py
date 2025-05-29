@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import hewan,create_hewan,update_hewan,delete_hewan,show_hewan_client
+from .views import hewan, create_hewan, update_hewan, delete_hewan, show_hewan_client
 
 app_name = 'hewan' 
 
