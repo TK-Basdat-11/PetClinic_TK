@@ -79,6 +79,13 @@
                 {% endif %}
             </div>
 
+            <!-- Catatan Medis -->
+            <div class="mb-6">
+                <label for="catatan_medis" class="block text-sm font-bold text-gray-700 mb-2">Catatan Medis</label>
+                <textarea id="catatan_medis" name="catatan_medis" rows="4" class="mt-1 block w-full p-3 border border-gray-300 rounded-md text-sm">{{ catatan_medis|default:'' }}</textarea>
+                <p class="text-xs text-gray-500 mt-1">Tambahkan catatan medis untuk kunjungan ini.</p>
+            </div>
+
             <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
                 <a href="{% url 'perawatan_hewan:list_treatment' %}" class="py-2 px-6 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 transition duration-150 ease-in-out">
                     Cancel
