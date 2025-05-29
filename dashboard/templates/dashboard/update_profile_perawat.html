@@ -1,186 +1,103 @@
 {% extends "base.html" %}
 {% block title %}Update Profile Perawat{% endblock %}
 {% block content %}
-<html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <title>Update Profile Perawat</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-    }
-    .container {
-      max-width: 800px;
-      margin: 20px auto;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    h1 {
-      margin-bottom: 20px;
-      color: rgb(28, 28, 81);
-    }
-    .form-group {
-      margin-bottom: 20px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-      color: #333;
-    }
-    input[type="text"],
-    input[type="tel"],
-    input[type="date"],
-    textarea {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 16px;
-    }
-    .certificate-container {
-      margin-bottom: 15px;
-      padding: 15px;
-      border: 1px solid #eee;
-      border-radius: 4px;
-      background-color: #f9f9f9;
-    }
-    .certificate-row {
-      display: flex;
-      margin-bottom: 10px;
-      gap: 10px;
-    }
-    .certificate-row input {
-      flex: 1;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    .add-button {
-      background-color: rgb(28, 28, 81);
-      color: white;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    .remove-button {
-      background-color: #ff4d4d;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .button-container {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 30px;
-    }
-    .submit-button, .cancel-button {
-      padding: 10px 25px;
-      border-radius: 7px;
-      font-size: 15px;
-      cursor: pointer;
-    }
-    .submit-button {
-      background-color: rgb(28, 28, 81);
-      color: white;
-      border: 1px solid rgb(28, 28, 81);
-    }
-    .cancel-button {
-      background-color: white;
-      color: rgb(28, 28, 81);
-      border: 1px solid #ddd;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Update Profile Perawat</h1>
-    
-    <form method="post" action="">
-      {% csrf_token %}
-      
-      <div class="form-group">
-        <label for="address">Alamat:</label>
-        <textarea id="address" name="address" rows="3" required>Jl. Melati Indah No.24, Kel. Sukamaju, Kec. Cibinong, Kab. Bogor, Jawa Barat, 16914</textarea>
-      </div>
-      
-      <div class="form-group">
-        <label for="phone">Nomor Telepon:</label>
-        <input type="tel" id="phone" name="phone" value="081234567894" required>
-      </div>
-      
-      <div class="form-group">
-        <label for="end_date">Tanggal Akhir Kerja (kosongkan jika tidak ada):</label>
-        <input type="date" id="end_date" name="end_date">
-      </div>
-      
-      <div class="form-group">
-        <label>Sertifikat Kompetensi:</label>
-        <div id="certificates-container">
-          <div class="certificate-container">
-            <div class="certificate-row">
-              <input type="text" name="certificate_number[]" placeholder="Nomor Sertifikat" value="123/PH/456" required>
-              <input type="text" name="certificate_name[]" placeholder="Nama Sertifikat" value="Paraprofesional Kedokteran Hewan" required>
-              <button type="button" class="remove-button">Hapus</button>
-            </div>
-          </div>
-          <div class="certificate-container">
-            <div class="certificate-row">
-              <input type="text" name="certificate_number[]" placeholder="Nomor Sertifikat" value="456/PH/456" required>
-              <input type="text" name="certificate_name[]" placeholder="Nama Sertifikat" value="Keperawatan Hewan Profesional" required>
-              <button type="button" class="remove-button">Hapus</button>
-            </div>
-          </div>
-          <div class="certificate-container">
-            <div class="certificate-row">
-              <input type="text" name="certificate_number[]" placeholder="Nomor Sertifikat" value="789/PH/789" required>
-              <input type="text" name="certificate_name[]" placeholder="Nama Sertifikat" value="Sertifikat Organisasi Profesi" required>
-              <button type="button" class="remove-button">Hapus</button>
-            </div>
-          </div>
-        </div>
-        <button type="button" id="add-certificate" class="add-button">Tambah Sertifikat</button>
-      </div>
-      
-      <div class="button-container">
-        <a href="{% url 'dashboard:dashboard_perawat' %}" class="cancel-button">Batal</a>
-        <button type="submit" class="submit-button">Simpan Perubahan</button>
-      </div>
-    </form>
-  </div>
+<div class="max-w-3xl mx-auto mt-10 px-6 py-8 bg-white shadow-md rounded-lg">
+  <h1 class="text-2xl font-bold text-indigo-900 mb-6">Update Profil Perawat</h1>
 
-  <script>
-    document.getElementById('add-certificate').addEventListener('click', function() {
-      const container = document.getElementById('certificates-container');
-      const newCertificate = document.createElement('div');
-      newCertificate.className = 'certificate-container';
-      newCertificate.innerHTML = `
-        <div class="certificate-row">
-          <input type="text" name="certificate_number[]" placeholder="Nomor Sertifikat" required>
-          <input type="text" name="certificate_name[]" placeholder="Nama Sertifikat" required>
-          <button type="button" class="remove-button">Hapus</button>
+  {% if messages %}
+    {% for message in messages %}
+      <div class="mb-4 px-4 py-3 rounded text-sm font-medium 
+        {% if message.tags == 'success' %}
+          bg-green-100 text-green-800
+        {% elif message.tags == 'error' %}
+          bg-red-100 text-red-800
+        {% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="mb-4">
+      <label for="alamat" class="block font-semibold text-gray-700 mb-1">Alamat <span class="text-red-500">*</span></label>
+      <textarea id="alamat" name="alamat" rows="3" required class="w-full border border-gray-300 rounded-md px-3 py-2">{{ alamat }}</textarea>
+    </div>
+
+    <div class="mb-4">
+      <label for="telepon" class="block font-semibold text-gray-700 mb-1">Nomor Telepon <span class="text-red-500">*</span></label>
+      <input type="tel" id="telepon" name="telepon" required class="w-full border border-gray-300 rounded-md px-3 py-2" value="{{ telepon }}">
+    </div>
+
+    <div class="mb-6">
+      <label for="akhir_kerja" class="block font-semibold text-gray-700 mb-1">Tanggal Akhir Kerja</label>
+      <input type="date" id="akhir_kerja" name="akhir_kerja" class="w-full border border-gray-300 rounded-md px-3 py-2" value="{{ akhir_kerja }}">
+      <p class="text-xs text-gray-500 mt-1">Boleh dikosongkan jika belum ada tanggal akhir kerja.</p>
+    </div>
+
+    <div class="mb-6">
+      <label class="block font-semibold text-gray-700 mb-2">Sertifikat Kompetensi <span class="text-red-500">*</span></label>
+      <div id="certificates-container" class="space-y-3">
+        {% for cert in sertifikat_list %}
+        <div class="flex gap-3 items-center">
+          <input type="text" name="certificate_number[]" placeholder="Nomor Sertifikat" value="{{ cert.0 }}" required class="w-1/2 border border-gray-300 rounded-md px-3 py-2">
+          <input type="text" name="certificate_name[]" placeholder="Nama Sertifikat" value="{{ cert.1 }}" required class="w-1/2 border border-gray-300 rounded-md px-3 py-2">
+          {% if not forloop.first %}
+          <button type="button" class="remove-button text-red-600 font-bold text-xl">&times;</button>
+          {% else %}
+          <span class="w-6"></span>
+          {% endif %}
         </div>
-      `;
-      container.appendChild(newCertificate);
-      
-      newCertificate.querySelector('.remove-button').addEventListener('click', function() {
-        container.removeChild(newCertificate);
-      });
+        {% empty %}
+        <div class="flex gap-3 items-center">
+          <input type="text" name="certificate_number[]" placeholder="Nomor Sertifikat" required class="w-1/2 border border-gray-300 rounded-md px-3 py-2">
+          <input type="text" name="certificate_name[]" placeholder="Nama Sertifikat" required class="w-1/2 border border-gray-300 rounded-md px-3 py-2">
+          <span class="w-6"></span>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="button" id="add-certificate" class="mt-2 px-4 py-2 bg-indigo-800 text-white rounded-md text-sm">Tambah Sertifikat</button>
+    </div>
+
+    <div class="flex justify-between">
+      <a href="{% url 'dashboard:dashboard_perawat' %}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100">Batal</a>
+      <button type="submit" class="px-4 py-2 bg-indigo-800 text-white rounded-md hover:bg-indigo-900">Simpan Perubahan</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  function attachRemoveHandlers(containerSelector) {
+    const container = document.querySelector(containerSelector);
+    container.querySelectorAll(".remove-button").forEach((button, index) => {
+      button.onclick = () => {
+        const allItems = container.querySelectorAll('.flex.gap-3.items-center');
+        const buttonParent = button.parentElement;
+        const itemIndex = Array.from(allItems).indexOf(buttonParent);
+        
+        if (itemIndex > 0) { 
+          buttonParent.remove();
+        } else {
+          alert("Item pertama tidak dapat dihapus karena wajib ada.");
+        }
+      };
     });
-    
-    document.querySelectorAll('.remove-button').forEach(button => {
-      button.addEventListener('click', function() {
-        const container = this.closest('.certificate-container');
-        container.parentNode.removeChild(container);
-      });
-    });
-  </script>
-</body>
-</html> 
+  }
+
+  document.getElementById('add-certificate').addEventListener('click', function () {
+    const container = document.getElementById('certificates-container');
+    const div = document.createElement('div');
+    div.className = 'flex gap-3 items-center';
+    div.innerHTML = `
+      <input type="text" name="certificate_number[]" placeholder="Nomor Sertifikat" required class="w-1/2 border border-gray-300 rounded-md px-3 py-2">
+      <input type="text" name="certificate_name[]" placeholder="Nama Sertifikat" required class="w-1/2 border border-gray-300 rounded-md px-3 py-2">
+      <button type="button" class="remove-button text-red-600 font-bold text-xl">&times;</button>
+    `;
+    container.appendChild(div);
+    attachRemoveHandlers("#certificates-container");
+  });
+
+  attachRemoveHandlers("#certificates-container");
+</script>
 {% endblock %}

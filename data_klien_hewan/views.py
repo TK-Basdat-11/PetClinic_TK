@@ -1,9 +1,10 @@
 from datetime import date, datetime
 from pyexpat.errors import messages
-from django.shortcuts import redirect, render
-
 from django.db import connection
+from django.shortcuts import redirect, render
+from authentication.decorators import role_required
 
+@role_required(['fdo'])
 def list_klien(request):
     search_query = request.GET.get('q', '')
 
@@ -45,36 +46,7 @@ def list_klien(request):
     }
     return render(request, "list_klien.html", context)
 
-def detail_klien(request, identitas):
-    with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT k.no_identitas, u.email, u.alamat, u.nomor_telepon,
-                   i.nama_depan, i.nama_tengah, i.nama_belakang,
-                   p.nama_perusahaan
-            FROM PETCLINIC.KLIEN k
-            JOIN PETCLINIC.USERS u ON u.email = k.email
-            LEFT JOIN PETCLINIC.INDIVIDU i ON i.no_identitas_klien = k.no_identitas
-            LEFT JOIN PETCLINIC.PERUSAHAAN p ON p.no_identitas_klien = k.no_identitas
-            WHERE k.no_identitas = %s
-        """, [identitas])
-        row = cursor.fetchone()
-
-    if not row:
-        messages.error(request, "Klien tidak ditemukan.")
-        return redirect('list_klien')
-
-    nama_lengkap = " ".join(filter(None, [row[4], row[5], row[6]])).strip()
-    is_perusahaan = row[7] is not None
-
-    profile = {
-        "id": row[0],
-        "email": row[1],
-        "alamat": row[2],
-        "telepon": row[3],
-        "jenis": "Perusahaan" if is_perusahaan else "Individu",
-        "nama": row[7] if is_perusahaan else nama_lengkap
-    }
-
+@role_required(['fdo'])
 def detail_klien(request, identitas):
     with connection.cursor() as cursor:
         cursor.execute("""

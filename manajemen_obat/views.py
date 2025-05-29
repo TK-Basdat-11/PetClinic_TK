@@ -304,6 +304,39 @@ def list_perawatan(request):
     }
     return render(request, 'manajemen_obat/list_perawatan.html', context)
 
+
+
+@role_required(['klien'])
+def list_resep_klien(request):
+    prescriptions = []
+    user_email = request.session.get('user_email')
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT  kp.kode_perawatan,
+                    p.nama_perawatan,
+                    po.kode_obat,
+                    o.nama              AS nama_obat,
+                    po.kuantitas_obat
+            FROM    PETCLINIC.KLIEN                c
+            JOIN    PETCLINIC.KUNJUNGAN            k   ON k.no_identitas_klien = c.no_identitas
+            JOIN    PETCLINIC.KUNJUNGAN_KEPERAWATAN kp  ON kp.id_kunjungan      = k.id_kunjungan
+                                                        AND kp.nama_hewan      = k.nama_hewan
+                                                        AND kp.no_identitas_klien = k.no_identitas_klien
+            JOIN    PETCLINIC.PERAWATAN_OBAT       po  ON po.kode_perawatan    = kp.kode_perawatan
+            JOIN    PETCLINIC.PERAWATAN            p   ON p.kode_perawatan     = kp.kode_perawatan
+            JOIN    PETCLINIC.OBAT                 o   ON o.kode               = po.kode_obat
+            WHERE   c.email = %s
+            ORDER BY k.timestamp_awal DESC, kp.kode_perawatan, o.nama;
+        """, [user_email])
+        prescriptions = cursor.fetchall()
+
+    context = {
+        'prescriptions': prescriptions,
+        'user_role': 'klien',
+    }
+    return render(request, 'manajemen_obat/list_resep.html', context)
+
 @role_required(['dokter', 'perawat'])
 def create_perawatan(request):
     if request.method == 'POST':
@@ -562,8 +595,6 @@ def create_resep(request):
             quantity = int(quantity)
             if quantity <= 0:
                 errors['quantity'] = 'Kuantitas harus lebih dari 0'
-            elif quantity > med_stock:
-                errors['quantity'] = f'Stok obat tidak mencukupi (tersedia: {med_stock})'
         except ValueError:
             errors['quantity'] = 'Kuantitas harus berupa angka'
             

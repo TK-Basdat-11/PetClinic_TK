@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Update Treatment{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 max-w-4xl">
+    <h1 class="text-2xl font-bold mb-6">Update Treatment</h1>
+
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+        <div class="p-4 {% if message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'error' %}bg-red-100 text-red-700{% endif %} rounded mb-2">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            {% if errors.duplicate %}
+                <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <strong>Error:</strong> {{ errors.duplicate }}
+                </div>
+            {% endif %}
+
+            <!-- Detail Kunjungan (Read-only) -->
+            <div class="mb-6 p-4 bg-gray-50 rounded-md border border-gray-200">
+                <h4 class="font-semibold text-gray-800 mb-3">Detail Kunjungan:</h4>
+                <div class="space-y-2 text-sm">
+                    <div><span class="font-semibold text-gray-900">ID Kunjungan:</span> <span class="text-gray-700 font-mono text-xs ml-1">{{ treatment_data.0 }}</span></div>
+                    <div><span class="font-semibold text-gray-900">Nama Hewan:</span> <span class="text-gray-700 ml-1">{{ treatment_data.2 }}</span></div>
+                    <div><span class="font-semibold text-gray-900">ID Klien:</span> <span class="text-gray-700 font-mono text-xs ml-1">{{ treatment_data.3 }}</span></div>
+                    <div><span class="font-semibold text-gray-900">Front Desk:</span> <span class="text-gray-700 ml-1">{{ treatment_data.5 }}</span></div>
+                    <div><span class="font-semibold text-gray-900">Dokter Hewan:</span> <span class="text-gray-700 ml-1">{{ treatment_data.6 }}</span></div>
+                    <div><span class="font-semibold text-gray-900">Perawat Hewan:</span> <span class="text-gray-700 ml-1">{{ treatment_data.7 }}</span></div>
+                    <div><span class="font-semibold text-gray-900">Catatan:</span> <span class="text-gray-700 ml-1">{{ treatment_data.8|default:"-" }}</span></div>
+                </div>
+                
+                <!-- Hidden input untuk kunjungan yang tidak bisa diubah -->
+                <input type="hidden" name="kunjungan" value="{{ treatment_data.0 }}">
+            </div>
+
+
+            <!-- Perawatan Selection -->
+            <div class="mb-6">
+                <label for="perawatan" class="block text-sm font-bold text-gray-700 mb-2">Jenis Perawatan Baru *</label>
+                <select id="perawatan" name="perawatan" class="mt-1 block w-full p-3 border border-gray-300 rounded-md" required>
+                    <option value="">Pilih Jenis Perawatan</option>
+                    {% for treatment in perawatan_list %}
+                        <option value="{{ treatment.0 }}" {% if selected_perawatan == treatment.0 %}selected{% endif %}>
+                            {{ treatment.0 }} - {{ treatment.1 }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if errors.perawatan %}
+                    <p class="text-red-500 text-sm mt-1">{{ errors.perawatan }}</p>
+                {% endif %}
+            </div>
+
+            <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                <a href="{% url 'perawatan_hewan:list_treatment' %}" class="py-2 px-6 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 transition duration-150 ease-in-out">
+                    Cancel
+                </a>
+                <button type="submit" class="py-2 px-6 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition duration-150 ease-in-out font-medium">
+                    Update Treatment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

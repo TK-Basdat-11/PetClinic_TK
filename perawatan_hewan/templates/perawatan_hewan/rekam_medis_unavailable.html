@@ -8,13 +8,15 @@
         <h1 class="text-2xl font-bold mb-4 text-red-600">Rekam Medis tidak Tersedia</h1>
         
         <div class="mb-6">
-            <p class="text-gray-700 mb-4">Maaf, sepertinya belum ada rekam medis yang dibuat untuk kunjungan ini </p>
+            <p class="text-gray-700 mb-4">Maaf, sepertinya belum ada rekam medis yang dibuat untuk kunjungan ini.</p>
         </div>
         
         <div class="flex justify-end space-x-4">
-            <a href="{% url 'perawatan_hewan:create_rekam_medis' %}" class="py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-md">
+            {% if user_role == 'dokter' %}
+            <a href="{% url 'perawatan_hewan:create_rekam_medis' id_kunjungan %}" class="py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-md">
                 Create
             </a>
+            {% endif %}
             <a href="{% url 'perawatan_hewan:list_kunjungan' %}" class="py-2 px-4 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
                 OK
             </a>
